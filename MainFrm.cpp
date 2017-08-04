@@ -173,6 +173,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 }
 
+INT_PTR CMainFrame::DoWindowsDialog()
+{
+    // Same as ShowWindowsDialog() but returns result
+    CMFCWindowsManagerDialog dlg(this, m_bShowWindowsDlgHelpButton);
+    return dlg.DoModal() == IDOK;
+}
+
 BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if( !CMDIFrameWndEx::PreCreateWindow(cs) )

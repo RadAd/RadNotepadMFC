@@ -19,6 +19,7 @@ public:
 
 // Operations
 public:
+    INT_PTR DoWindowsDialog();
 
 // Overrides
 public:

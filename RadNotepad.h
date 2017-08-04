@@ -31,6 +31,7 @@ public:
 	virtual void PreLoadState();
 	virtual void LoadCustomState();
 	virtual void SaveCustomState();
+    virtual BOOL SaveAllModified();
 
 	afx_msg void OnAppAbout();
 	DECLARE_MESSAGE_MAP()

@@ -72,7 +72,7 @@ BOOL CRadNotepadApp::InitInstance()
 	InitCommonControlsEx(&InitCtrls);
 
     HMODULE m_hSciDLL = LoadLibrary(_T("SciLexer.dll"));
-    // TODO Free iDLL 
+    // TODO Free iDLL
     if (m_hSciDLL == nullptr)
     {
         AfxMessageBox(_T("Scintilla DLL is not installed, Please download the SciTE editor and copy the SciLexer.dll into this application's directory"));
@@ -93,7 +93,7 @@ BOOL CRadNotepadApp::InitInstance()
 
 	EnableTaskbarInteraction();
 
-	// AfxInitRichEdit2() is required to use RichEdit control	
+	// AfxInitRichEdit2() is required to use RichEdit control
 	// AfxInitRichEdit2();
 
 	// Standard initialization
@@ -229,5 +229,34 @@ void CRadNotepadApp::SaveCustomState()
 
 // CRadNotepadApp message handlers
 
+BOOL CRadNotepadApp::SaveAllModified()
+{
+    //return CWinAppEx::SaveAllModified();
+    int nModified = 0;
+    POSITION pos = m_pDocManager->GetFirstDocTemplatePosition();
+    while (pos != NULL)
+    {
+        CDocTemplate* pTemplate = (CDocTemplate*) m_pDocManager->GetNextDocTemplate(pos);
+        ASSERT_KINDOF(CDocTemplate, pTemplate);
+        {
+            POSITION pos = pTemplate->GetFirstDocPosition();
+            while (pos != NULL)
+            {
+                CDocument* pDoc = pTemplate->GetNextDoc(pos);
+                if (pDoc->IsModified())
+                    ++nModified;
+            }
+        }
+    }
 
-
+    if (nModified == 1)
+        return CWinAppEx::SaveAllModified();
+    else if (nModified > 0)
+    {
+        // TODO Need a better dialog
+        CMainFrame* pMainWnd = (CMainFrame*) m_pMainWnd;
+        return pMainWnd->DoWindowsDialog() == IDOK;
+    }
+    else
+        return TRUE;
+}
