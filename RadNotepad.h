@@ -9,6 +9,13 @@
 
 #include "resource.h"       // main symbols
 
+struct Settings
+{
+    BOOL bEmptyFileOnStartup = TRUE;
+    BOOL bShowLineNumbers = FALSE;
+    BOOL bShowBookmarks = TRUE;
+    BOOL bShowFolds = FALSE;
+};
 
 // CRadNotepadApp:
 // See RadNotepad.cpp for the implementation of this class
@@ -28,6 +35,7 @@ public:
 
 // Implementation
 	BOOL  m_bHiColorIcons;
+    Settings m_Settings;
 
 	virtual void PreLoadState();
 	virtual void LoadCustomState();

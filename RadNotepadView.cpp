@@ -312,14 +312,17 @@ void CRadNotepadView::OnInitialUpdate()
         }
     }
 
+    const Settings& settings = theApp.m_Settings;
+
     //Setup folding
-    rCtrl.SetMarginWidthN(MARGIN_FOLDS, 16);
+    rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.bShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
     rCtrl.SetMarginSensitiveN(MARGIN_FOLDS, TRUE);
     rCtrl.SetMarginTypeN(MARGIN_FOLDS, SC_MARGIN_SYMBOL);
     rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
     rCtrl.SetProperty(_T("fold"), _T("1"));
 
-    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, GetWidth(rCtrl, MARGIN_LINENUMBERS));
+    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.bShowFolds ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
 
     //Setup markers
     DefineMarker(SC_MARKNUM_FOLDEROPEN,     SC_MARK_BOXMINUS,           COLOR_WHITE, COLOR_BLACK);

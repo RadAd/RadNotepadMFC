@@ -144,6 +144,8 @@ BOOL CRadNotepadApp::InitInstance()
 
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
+    if (!m_Settings.bEmptyFileOnStartup)
+        cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
 	ParseCommandLine(cmdInfo);
 
 
