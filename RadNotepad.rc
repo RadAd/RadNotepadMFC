@@ -164,8 +164,10 @@ BEGIN
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
         MENUITEM "Re&vert",                     ID_FILE_REVERT
         MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "Close All",                   ID_FILE_CLOSEALL
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM "Save A&ll",                   ID_FILE_SAVEALL
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
         MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
@@ -197,6 +199,10 @@ BEGIN
             MENUITEM "<placeholder>",               ID_VIEW_TOOLBAR
         END
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Line Numbers",                ID_VIEW_LINENUMBERS
+        MENUITEM "Bookmarks",                   ID_VIEW_BOOKMARKS
+        MENUITEM "Folds",                       ID_VIEW_FOLDS
     END
     POPUP "&Window"
     BEGIN

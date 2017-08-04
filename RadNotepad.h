@@ -19,6 +19,7 @@ class CRadNotepadApp : public CWinAppEx
 public:
 	CRadNotepadApp();
 
+    int GetModifiedDocumentCount() const;
 
 // Overrides
 public:
@@ -35,6 +36,10 @@ public:
 
 	afx_msg void OnAppAbout();
 	DECLARE_MESSAGE_MAP()
+    afx_msg void OnFileCloseAll();
+    afx_msg void OnUpdateFileCloseAll(CCmdUI *pCmdUI);
+    afx_msg void OnFileSaveAll();
+    afx_msg void OnUpdateFileSaveAll(CCmdUI *pCmdUI);
 };
 
 extern CRadNotepadApp theApp;

@@ -94,22 +94,22 @@ Style vStyle[] = {
     { SCLEX_NULL },
 };
 
-void ApplyStyle(CScintillaCtrl& rCtrl, const Style& vStyle)
+void ApplyStyle(CScintillaCtrl& rCtrl, const Style& rStyle)
 {
-    if (vStyle.fore != COLOR_NONE)
-        rCtrl.StyleSetFore(vStyle.nStyle, vStyle.fore);
-    if (vStyle.back != COLOR_NONE)
-        rCtrl.StyleSetBack(vStyle.nStyle, vStyle.back);
-    if (vStyle.size >= 1)
-        rCtrl.StyleSetSize(vStyle.nStyle, vStyle.size);
-    if (vStyle.face != nullptr)
-        rCtrl.StyleSetFont(vStyle.nStyle, vStyle.face);
-    if (vStyle.bold)
-        rCtrl.StyleSetBold(vStyle.nStyle, TRUE);
-    if (vStyle.italic)
-        rCtrl.StyleSetItalic(vStyle.nStyle, TRUE);
-    if (vStyle.underline)
-        rCtrl.StyleSetUnderline(vStyle.nStyle, TRUE);
+    if (rStyle.fore != COLOR_NONE)
+        rCtrl.StyleSetFore(rStyle.nStyle, rStyle.fore);
+    if (rStyle.back != COLOR_NONE)
+        rCtrl.StyleSetBack(rStyle.nStyle, rStyle.back);
+    if (rStyle.size >= 1)
+        rCtrl.StyleSetSize(rStyle.nStyle, rStyle.size);
+    if (rStyle.face != nullptr)
+        rCtrl.StyleSetFont(rStyle.nStyle, rStyle.face);
+    if (rStyle.bold)
+        rCtrl.StyleSetBold(rStyle.nStyle, TRUE);
+    if (rStyle.italic)
+        rCtrl.StyleSetItalic(rStyle.nStyle, TRUE);
+    if (rStyle.underline)
+        rCtrl.StyleSetUnderline(rStyle.nStyle, TRUE);
 }
 
 enum Margin
@@ -118,6 +118,26 @@ enum Margin
     MARGIN_SYMBOLS,
     MARGIN_FOLDS,
 };
+
+enum Margin GetMarginFromMenu(UINT nId)
+{
+    switch (nId)
+    {
+    default: ASSERT(FALSE);
+    case ID_VIEW_LINENUMBERS:   return MARGIN_LINENUMBERS;
+    case ID_VIEW_BOOKMARKS:     return MARGIN_SYMBOLS;
+    case ID_VIEW_FOLDS:         return MARGIN_FOLDS;
+    }
+}
+
+int GetWidth(CScintillaCtrl& rCtrl, Margin m)
+{
+    switch (m)
+    {
+    case MARGIN_LINENUMBERS: return rCtrl.TextWidth(STYLE_LINENUMBER, "99999");
+    default: return 16;
+    }
+}
 
 // CRadNotepadView
 
@@ -130,6 +150,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
 	ON_WM_RBUTTONUP()
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CRadNotepadView::OnUpdateLine)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CRadNotepadView::OnUpdateInsert)
+    ON_COMMAND_RANGE(ID_VIEW_LINENUMBERS, ID_VIEW_FOLDS, &CRadNotepadView::OnViewMarker)
+    ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_LINENUMBERS, ID_VIEW_FOLDS, &CRadNotepadView::OnUpdateViewMarker)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -291,7 +313,7 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
     rCtrl.SetProperty(_T("fold"), _T("1"));
 
-    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, rCtrl.TextWidth(STYLE_LINENUMBER, "99999"));
+    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, GetWidth(rCtrl, MARGIN_LINENUMBERS));
 
     //Setup markers
     DefineMarker(SC_MARKNUM_FOLDEROPEN,     SC_MARK_BOXMINUS,           COLOR_WHITE, COLOR_BLACK);
@@ -321,4 +343,24 @@ void CRadNotepadView::DefineMarker(int marker, int markerType, COLORREF fore, CO
     rCtrl.MarkerDefine(marker, markerType);
     rCtrl.MarkerSetFore(marker, fore);
     rCtrl.MarkerSetBack(marker, back);
+}
+
+
+void CRadNotepadView::OnViewMarker(UINT nId)
+{
+    Margin nMarker = GetMarginFromMenu(nId);
+    CScintillaCtrl& rCtrl = GetCtrl();
+    int nMarginWidth = rCtrl.GetMarginWidthN(nMarker);
+    if (nMarginWidth)
+        rCtrl.SetMarginWidthN(nMarker, 0);
+    else
+        rCtrl.SetMarginWidthN(nMarker, GetWidth(rCtrl, nMarker));
+}
+
+
+void CRadNotepadView::OnUpdateViewMarker(CCmdUI *pCmdUI)
+{
+    Margin nMarker = GetMarginFromMenu(pCmdUI->m_nID);
+    CScintillaCtrl& rCtrl = GetCtrl();
+    pCmdUI->SetCheck(rCtrl.GetMarginWidthN(nMarker) != 0);
 }

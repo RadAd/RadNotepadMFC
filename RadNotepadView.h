@@ -47,6 +47,8 @@ protected:
     DECLARE_MESSAGE_MAP()
 public:
     virtual void OnInitialUpdate();
+    afx_msg void OnViewMarker(UINT nId);
+    afx_msg void OnUpdateViewMarker(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

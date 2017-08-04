@@ -50,4 +50,5 @@ public:
     void SyncModified();
     afx_msg void OnFileRevert();
     afx_msg void OnUpdateFileRevert(CCmdUI *pCmdUI);
+    afx_msg void OnUpdateFileSave(CCmdUI *pCmdUI);
 };

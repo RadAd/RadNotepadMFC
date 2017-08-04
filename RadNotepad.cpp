@@ -26,6 +26,10 @@ BEGIN_MESSAGE_MAP(CRadNotepadApp, CWinAppEx)
 	ON_COMMAND(ID_FILE_OPEN, &CWinAppEx::OnFileOpen)
 	// Standard print setup command
 	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinAppEx::OnFilePrintSetup)
+    ON_COMMAND(ID_FILE_CLOSEALL, &CRadNotepadApp::OnFileCloseAll)
+    ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEALL, &CRadNotepadApp::OnUpdateFileCloseAll)
+    ON_COMMAND(ID_FILE_SAVEALL, &CRadNotepadApp::OnFileSaveAll)
+    ON_UPDATE_COMMAND_UI(ID_FILE_SAVEALL, &CRadNotepadApp::OnUpdateFileSaveAll)
 END_MESSAGE_MAP()
 
 
@@ -163,6 +167,27 @@ int CRadNotepadApp::ExitInstance()
 	return CWinAppEx::ExitInstance();
 }
 
+int CRadNotepadApp::GetModifiedDocumentCount() const
+{
+    int nModified = 0;
+    POSITION posTemplate = m_pDocManager->GetFirstDocTemplatePosition();
+    while (posTemplate != NULL)
+    {
+        CDocTemplate* pTemplate = (CDocTemplate*) m_pDocManager->GetNextDocTemplate(posTemplate);
+        ASSERT_KINDOF(CDocTemplate, pTemplate);
+        {
+            POSITION pos = pTemplate->GetFirstDocPosition();
+            while (pos != NULL)
+            {
+                CDocument* pDoc = pTemplate->GetNextDoc(pos);
+                if (pDoc->IsModified())
+                    ++nModified;
+            }
+        }
+    }
+    return nModified;
+}
+
 // CRadNotepadApp message handlers
 
 
@@ -232,22 +257,7 @@ void CRadNotepadApp::SaveCustomState()
 BOOL CRadNotepadApp::SaveAllModified()
 {
     //return CWinAppEx::SaveAllModified();
-    int nModified = 0;
-    POSITION pos = m_pDocManager->GetFirstDocTemplatePosition();
-    while (pos != NULL)
-    {
-        CDocTemplate* pTemplate = (CDocTemplate*) m_pDocManager->GetNextDocTemplate(pos);
-        ASSERT_KINDOF(CDocTemplate, pTemplate);
-        {
-            POSITION pos = pTemplate->GetFirstDocPosition();
-            while (pos != NULL)
-            {
-                CDocument* pDoc = pTemplate->GetNextDoc(pos);
-                if (pDoc->IsModified())
-                    ++nModified;
-            }
-        }
-    }
+    int nModified = GetModifiedDocumentCount();
 
     if (nModified == 1)
         return CWinAppEx::SaveAllModified();
@@ -259,4 +269,39 @@ BOOL CRadNotepadApp::SaveAllModified()
     }
     else
         return TRUE;
+}
+
+
+void CRadNotepadApp::OnFileCloseAll()
+{
+    CloseAllDocuments(FALSE);
+}
+
+void CRadNotepadApp::OnUpdateFileCloseAll(CCmdUI *pCmdUI)
+{
+    pCmdUI->Enable(m_pDocManager->GetOpenDocumentCount() > 0);
+}
+
+void CRadNotepadApp::OnFileSaveAll()
+{
+    POSITION posTemplate = m_pDocManager->GetFirstDocTemplatePosition();
+    while (posTemplate != NULL)
+    {
+        CDocTemplate* pTemplate = (CDocTemplate*) m_pDocManager->GetNextDocTemplate(posTemplate);
+        ASSERT_KINDOF(CDocTemplate, pTemplate);
+        {
+            POSITION pos = pTemplate->GetFirstDocPosition();
+            while (pos != NULL)
+            {
+                CDocument* pDoc = pTemplate->GetNextDoc(pos);
+                if (pDoc->IsModified())
+                    pDoc->DoFileSave();
+            }
+        }
+    }
+}
+
+void CRadNotepadApp::OnUpdateFileSaveAll(CCmdUI *pCmdUI)
+{
+    pCmdUI->Enable(GetModifiedDocumentCount() > 0);
 }
