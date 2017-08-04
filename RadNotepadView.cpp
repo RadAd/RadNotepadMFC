@@ -432,12 +432,21 @@ int CRadNotepadView::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
 
     CCreateContext* pContext = (CCreateContext*) lpCreateStruct->lpCreateParams;
+#if 0
     CRadNotepadView* pLastView = (CRadNotepadView*) pContext->m_pLastView;
     if (pLastView != nullptr)
     {
         void* p = pLastView->GetCtrl().GetDocPointer();
         GetCtrl().SetDocPointer(p);
     }
+#else
+    CRadNotepadDoc* pDoc = (CRadNotepadDoc*) pContext->m_pCurrentDoc;
+    if (pDoc->GetView() != this)
+    {
+        void* p = pDoc->GetView()->GetCtrl().GetDocPointer();
+        GetCtrl().SetDocPointer(p);
+    }
+#endif
 
     return 0;
 }
