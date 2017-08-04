@@ -158,6 +158,7 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_UPDATE_COMMAND_UI(ID_VIEW_ENDOFLINE, &CRadNotepadView::OnUpdateViewEndOfLine)
     ON_COMMAND(ID_VIEW_WORDWRAP, &CRadNotepadView::OnViewWordWrap)
     ON_UPDATE_COMMAND_UI(ID_VIEW_WORDWRAP, &CRadNotepadView::OnUpdateViewWordWrap)
+    ON_WM_CREATE()
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -422,4 +423,21 @@ void CRadNotepadView::OnUpdateViewWordWrap(CCmdUI *pCmdUI)
 {
     CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetWrapMode() != SC_WRAP_NONE);
+}
+
+
+int CRadNotepadView::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CScintillaView::OnCreate(lpCreateStruct) == -1)
+        return -1;
+
+    CCreateContext* pContext = (CCreateContext*) lpCreateStruct->lpCreateParams;
+    CRadNotepadView* pLastView = (CRadNotepadView*) pContext->m_pLastView;
+    if (pLastView != nullptr)
+    {
+        void* p = pLastView->GetCtrl().GetDocPointer();
+        GetCtrl().SetDocPointer(p);
+    }
+
+    return 0;
 }

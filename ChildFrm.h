@@ -12,7 +12,7 @@ public:
 
 // Attributes
 protected:
-	//CSplitterWndEx m_wndSplitter;
+	CSplitterWndEx m_wndSplitter;
 public:
 
 // Operations

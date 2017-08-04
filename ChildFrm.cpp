@@ -29,9 +29,9 @@ CChildFrame::~CChildFrame()
 {
 }
 
-BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
+BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT /*lpcs*/, CCreateContext* pContext)
 {
-#if 1
+#if 0
     return CMDIChildWndEx::OnCreateClient(lpcs, pContext);
 #else
     BOOL bRet = m_wndSplitter.Create(this,
@@ -39,7 +39,7 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
         CSize(10, 10),	// TODO: adjust the minimum pane size
         pContext);
     if (bRet)
-        m_wndSplitter.SetScrollStyle(WS_VSCROLL);
+        m_wndSplitter.SetScrollStyle(0);
     return bRet;
 #endif
 }
