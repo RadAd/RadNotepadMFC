@@ -6,6 +6,7 @@
 #include "RadNotepad.h"
 
 #include "MainFrm.h"
+#include "ChildFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,6 +36,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
 	ON_WM_SETTINGCHANGE()
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CMainFrame::OnUpdateClear)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CMainFrame::OnUpdateClear)
+    ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, &CMainFrame::OnAfxWmOnGetTabTooltip)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -71,6 +73,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	mdiTabParams.m_bTabIcons = TRUE;    // set to TRUE to enable document icons on MDI taba
 	mdiTabParams.m_bAutoColor = FALSE;    // set to FALSE to disable auto-coloring of MDI tabs
 	mdiTabParams.m_bDocumentMenu = TRUE; // enable the document menu at the right edge of the tab area
+    mdiTabParams.m_nTabBorderSize = 0;
+    mdiTabParams.m_bTabCustomTooltips = TRUE;
 	EnableMDITabbedGroups(TRUE, mdiTabParams);
 
 	if (!m_wndMenuBar.Create(this))
@@ -396,4 +400,14 @@ void CMainFrame::OnUpdateClear(CCmdUI* pCmdUI)
 {
     pCmdUI->SetText(_T(""));
     pCmdUI->Enable(FALSE);
+}
+
+
+afx_msg LRESULT CMainFrame::OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam)
+{
+    CMFCTabToolTipInfo* pInfo = (CMFCTabToolTipInfo*) lParam;
+    CChildFrame* pChildFrame = DYNAMIC_DOWNCAST(CChildFrame, pInfo->m_pTabWnd->GetTabWnd(pInfo->m_nTabIndex));
+    if (pChildFrame != nullptr)
+        pInfo->m_strText = pChildFrame->GetActiveDocument()->GetPathName();
+    return 0;
 }

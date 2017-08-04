@@ -144,14 +144,12 @@ void CRadNotepadDoc::Dump(CDumpContext& dc) const
 void CRadNotepadDoc::SetTitle(LPCTSTR lpszTitle)
 {
     // TODO: Add your specialized code here and/or call the base class
+    CScintillaView* pView = GetView();
     CString strTitle = lpszTitle ? lpszTitle : GetTitle();
     strTitle.Remove(_T('^'));
     strTitle.Remove(_T('*'));
-#if 0
-    // TODO
-    if (IsReadOnly())
+    if (pView->GetCtrl().GetReadOnly())
         strTitle += _T('^');
-#endif
     if (IsModified())
         strTitle += _T('*');
 
