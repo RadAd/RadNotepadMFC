@@ -162,6 +162,7 @@ BEGIN
     BEGIN
         MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "Re&vert",                     ID_FILE_REVERT
         MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
@@ -185,9 +186,9 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
         MENUITEM SEPARATOR
-        MENUITEM "&Find\tCtrl+F",               ID_EDIT_FIND
+        MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
         MENUITEM "Find Next\tF3",               ID_EDIT_REPEAT
-        MENUITEM "&Replace\tCtrl+H",            ID_EDIT_REPLACE
+        MENUITEM "&Replace...\tCtrl+H",         ID_EDIT_REPLACE
     END
     POPUP "&View"
     BEGIN

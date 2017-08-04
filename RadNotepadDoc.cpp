@@ -22,6 +22,8 @@
 IMPLEMENT_DYNCREATE(CRadNotepadDoc, CScintillaDoc)
 
 BEGIN_MESSAGE_MAP(CRadNotepadDoc, CScintillaDoc)
+    ON_COMMAND(ID_FILE_REVERT, &CRadNotepadDoc::OnFileRevert)
+    ON_UPDATE_COMMAND_UI(ID_FILE_REVERT, &CRadNotepadDoc::OnUpdateFileRevert)
 END_MESSAGE_MAP()
 
 
@@ -164,4 +166,16 @@ void CRadNotepadDoc::SyncModified()
         m_bModified = pView->GetCtrl().GetModify();
         SetTitle(nullptr);
     }
+}
+
+
+void CRadNotepadDoc::OnFileRevert()
+{
+    OnOpenDocument(GetPathName());
+}
+
+
+void CRadNotepadDoc::OnUpdateFileRevert(CCmdUI *pCmdUI)
+{
+    pCmdUI->Enable(!GetPathName().IsEmpty() && PathFileExists(GetPathName()));
 }

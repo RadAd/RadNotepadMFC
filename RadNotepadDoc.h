@@ -48,4 +48,6 @@ public:
     virtual void SetTitle(LPCTSTR lpszTitle);
 
     void SyncModified();
+    afx_msg void OnFileRevert();
+    afx_msg void OnUpdateFileRevert(CCmdUI *pCmdUI);
 };
