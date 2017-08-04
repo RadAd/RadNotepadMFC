@@ -152,6 +152,12 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CRadNotepadView::OnUpdateInsert)
     ON_COMMAND_RANGE(ID_VIEW_LINENUMBERS, ID_VIEW_FOLDS, &CRadNotepadView::OnViewMarker)
     ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_LINENUMBERS, ID_VIEW_FOLDS, &CRadNotepadView::OnUpdateViewMarker)
+    ON_COMMAND(ID_VIEW_WHITESPACE, &CRadNotepadView::OnViewWhitespace)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_WHITESPACE, &CRadNotepadView::OnUpdateViewWhitespace)
+    ON_COMMAND(ID_VIEW_ENDOFLINE, &CRadNotepadView::OnViewEndOfLine)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_ENDOFLINE, &CRadNotepadView::OnUpdateViewEndOfLine)
+    ON_COMMAND(ID_VIEW_WORDWRAP, &CRadNotepadView::OnViewWordWrap)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_WORDWRAP, &CRadNotepadView::OnUpdateViewWordWrap)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -324,6 +330,8 @@ void CRadNotepadView::OnInitialUpdate()
     DefineMarker(SC_MARKNUM_FOLDEROPENMID,  SC_MARK_BOXMINUSCONNECTED,  COLOR_WHITE, COLOR_BLACK);
     DefineMarker(SC_MARKNUM_FOLDERMIDTAIL,  SC_MARK_TCORNER,            COLOR_WHITE, COLOR_BLACK);
 
+    rCtrl.SetTabWidth(4);
+
 #if 0
     //Setup auto completion
     rCtrl.AutoCSetSeparator(10); //Use a separator of line feed
@@ -363,4 +371,52 @@ void CRadNotepadView::OnUpdateViewMarker(CCmdUI *pCmdUI)
     Margin nMarker = GetMarginFromMenu(pCmdUI->m_nID);
     CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetMarginWidthN(nMarker) != 0);
+}
+
+
+void CRadNotepadView::OnViewWhitespace()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    int ws = rCtrl.GetViewWS();
+    ws = ws == SCWS_VISIBLEALWAYS ? SCWS_INVISIBLE : SCWS_VISIBLEALWAYS;
+    rCtrl.SetViewWS(ws);
+}
+
+
+void CRadNotepadView::OnUpdateViewWhitespace(CCmdUI *pCmdUI)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    pCmdUI->SetCheck(rCtrl.GetViewWS() != SCWS_INVISIBLE);
+}
+
+
+void CRadNotepadView::OnViewEndOfLine()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    BOOL bEol = rCtrl.GetViewEOL();
+    bEol = !bEol;
+    rCtrl.SetViewEOL(bEol);
+}
+
+
+void CRadNotepadView::OnUpdateViewEndOfLine(CCmdUI *pCmdUI)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    pCmdUI->SetCheck(rCtrl.GetViewEOL());
+}
+
+
+void CRadNotepadView::OnViewWordWrap()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    int wm = rCtrl.GetWrapMode();
+    wm = wm == SC_WRAP_WORD ? SC_WRAP_NONE : SC_WRAP_WORD;
+    rCtrl.SetWrapMode(wm);
+}
+
+
+void CRadNotepadView::OnUpdateViewWordWrap(CCmdUI *pCmdUI)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    pCmdUI->SetCheck(rCtrl.GetWrapMode() != SC_WRAP_NONE);
 }

@@ -49,6 +49,12 @@ public:
     virtual void OnInitialUpdate();
     afx_msg void OnViewMarker(UINT nId);
     afx_msg void OnUpdateViewMarker(CCmdUI *pCmdUI);
+    afx_msg void OnViewWhitespace();
+    afx_msg void OnUpdateViewWhitespace(CCmdUI *pCmdUI);
+    afx_msg void OnViewEndOfLine();
+    afx_msg void OnUpdateViewEndOfLine(CCmdUI *pCmdUI);
+    afx_msg void OnViewWordWrap();
+    afx_msg void OnUpdateViewWordWrap(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

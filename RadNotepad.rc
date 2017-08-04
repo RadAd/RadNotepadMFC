@@ -203,6 +203,10 @@ BEGIN
         MENUITEM "Line Numbers",                ID_VIEW_LINENUMBERS
         MENUITEM "Bookmarks",                   ID_VIEW_BOOKMARKS
         MENUITEM "Folds",                       ID_VIEW_FOLDS
+        MENUITEM SEPARATOR
+        MENUITEM "White Space",                 ID_VIEW_WHITESPACE
+        MENUITEM "End of Line",                 ID_VIEW_ENDOFLINE
+        MENUITEM "Word Wrap",                   ID_VIEW_WORDWRAP
     END
     POPUP "&Window"
     BEGIN
