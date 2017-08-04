@@ -63,39 +63,5 @@ BEGIN
     IDS_SCINTILLA_DEFAULT_PRINT_FOOTER "Page %1"
 END
 
-STRINGTABLE
-BEGIN
-    ID_INDICATOR_LINE       "Line: 999, Col: 999, Character: 999"
-    IDS_LINE_INDICATOR      "Line: %ld, Col: %ld, Character: %ld"
-    ID_INDICATOR_STYLE      "Style: 99"
-    IDS_STYLE_INDICATOR     "Style: %d"
-    ID_INDICATOR_FOLD       "Folding level: 9"
-    IDS_FOLD_INDICATOR      "Folding level: %d"
-END
-
 #endif    // English (United States) resources
-/////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////
-// English (Ireland) resources
-
-#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENI)
-LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_EIRE
-#pragma code_page(1252)
-
-#ifdef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// TEXTINCLUDE
-//
-
-1 TEXTINCLUDE 
-BEGIN
-    "resource.h\0"
-END
-
-#endif    // APSTUDIO_INVOKED
-
-#endif    // English (Ireland) resources
 /////////////////////////////////////////////////////////////////////////////

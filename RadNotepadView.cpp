@@ -52,7 +52,15 @@ const LexerData* GetLexerData(PCTSTR ext)
     return &vLexerData[i];
 }
 
-#define COLOR_NONE RGB(0xFE, 0, 0xFE)
+#define COLOR_NONE          RGB(0xFE, 0x00, 0xFE)
+#define COLOR_WHITE         RGB(0xFF, 0xFF, 0xFF)
+#define COLOR_BLACK         RGB(0x00, 0x00, 0x00)
+#define COLOR_LT_RED        RGB(0x80, 0x00, 0x00)
+#define COLOR_LT_GREEN      RGB(0x00, 0x80, 0x00)
+#define COLOR_LT_BLUE       RGB(0x00, 0x00, 0x80)
+#define COLOR_LT_CYAN       RGB(0x00, 0x80, 0x80)
+#define COLOR_LT_MAGENTA    RGB(0x80, 0x00, 0x80)
+#define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
 
 struct Style
 {
@@ -67,22 +75,22 @@ struct Style
     bool underline;
 };
 
-Style vStyleDefault = { SCLEX_NULL, STYLE_DEFAULT, RGB(0, 0, 0), RGB(0xff, 0xff, 0xff), 10, "Consolas" };
+Style vStyleDefault = { SCLEX_NULL, STYLE_DEFAULT, COLOR_BLACK, COLOR_WHITE, 10, "Consolas" };
 
 Style vStyle[] = {
-    { SCLEX_CPP, SCE_C_DEFAULT,                 RGB(0, 0, 0),       COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENT,                 RGB(0, 0x80, 0),    COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTLINE,             RGB(0, 0x80, 0),    COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTDOC,              RGB(0, 0x80, 0),    COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTLINEDOC,          RGB(0, 0x80, 0),    COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORD,       RGB(0, 0x80, 0),    COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORDERROR,  RGB(0, 0x80, 0),    COLOR_NONE },
-    { SCLEX_CPP, SCE_C_NUMBER,                  RGB(0, 0x80, 0x80), COLOR_NONE },
-    { SCLEX_CPP, SCE_C_WORD,                    RGB(0, 0, 0x80),    COLOR_NONE, 0, nullptr, true },
-    { SCLEX_CPP, SCE_C_STRING,                  RGB(0x80, 0, 0x80), COLOR_NONE },
-    { SCLEX_CPP, SCE_C_IDENTIFIER,              RGB(0, 0, 0),       COLOR_NONE },
-    { SCLEX_CPP, SCE_C_PREPROCESSOR,            RGB(0x80, 0, 0),    COLOR_NONE },
-    { SCLEX_CPP, SCE_C_OPERATOR,                RGB(0x80, 0x80, 0), COLOR_NONE },
+    { SCLEX_CPP, SCE_C_DEFAULT,                 COLOR_BLACK,        COLOR_NONE },
+    { SCLEX_CPP, SCE_C_COMMENT,                 COLOR_LT_GREEN,     COLOR_NONE },
+    { SCLEX_CPP, SCE_C_COMMENTLINE,             COLOR_LT_GREEN,     COLOR_NONE },
+    { SCLEX_CPP, SCE_C_COMMENTDOC,              COLOR_LT_GREEN,     COLOR_NONE },
+    { SCLEX_CPP, SCE_C_COMMENTLINEDOC,          COLOR_LT_GREEN,     COLOR_NONE },
+    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORD,       COLOR_LT_GREEN,     COLOR_NONE },
+    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORDERROR,  COLOR_LT_GREEN,     COLOR_NONE },
+    { SCLEX_CPP, SCE_C_NUMBER,                  COLOR_LT_CYAN,      COLOR_NONE },
+    { SCLEX_CPP, SCE_C_WORD,                    COLOR_LT_BLUE,      COLOR_NONE, 0, nullptr, true },
+    { SCLEX_CPP, SCE_C_STRING,                  COLOR_LT_MAGENTA,   COLOR_NONE },
+    { SCLEX_CPP, SCE_C_IDENTIFIER,              COLOR_BLACK,        COLOR_NONE },
+    { SCLEX_CPP, SCE_C_PREPROCESSOR,            COLOR_LT_RED,       COLOR_NONE },
+    { SCLEX_CPP, SCE_C_OPERATOR,                COLOR_LT_YELLOW,    COLOR_NONE },
     { SCLEX_NULL },
 };
 
@@ -120,6 +128,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CRadNotepadView::OnFilePrintPreview)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
+    ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CRadNotepadView::OnUpdateLine)
+    ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CRadNotepadView::OnUpdateInsert)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -185,6 +195,27 @@ void CRadNotepadView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 #ifndef SHARED_HANDLERS
 	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
 #endif
+}
+
+void CRadNotepadView::OnUpdateLine(CCmdUI* pCmdUI)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    Sci_Position nPos = rCtrl.GetCurrentPos();
+    int nLine = rCtrl.LineFromPosition(nPos);
+    int nColumn = rCtrl.GetColumn(nPos);
+
+    CString sLine;
+    sLine.Format(ID_INDICATOR_LINE, nLine, nColumn, nPos);
+    pCmdUI->SetText(sLine);
+    pCmdUI->Enable();
+}
+
+void CRadNotepadView::OnUpdateInsert(CCmdUI* pCmdUI)
+{
+    CString sText;
+    sText.LoadString(ID_INDICATOR_OVR);
+    pCmdUI->SetText(sText);
+    pCmdUI->Enable(GetCtrl().GetOvertype());
 }
 
 
@@ -263,13 +294,13 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, rCtrl.TextWidth(STYLE_LINENUMBER, "99999"));
 
     //Setup markers
-    DefineMarker(SC_MARKNUM_FOLDEROPEN,     SC_MARK_BOXMINUS,           RGB(0xff, 0xff, 0xff), RGB(0, 0, 0xFF));
-    DefineMarker(SC_MARKNUM_FOLDER,         SC_MARK_BOXPLUS,            RGB(0xff, 0xff, 0xff), RGB(0, 0, 0));
-    DefineMarker(SC_MARKNUM_FOLDERSUB,      SC_MARK_VLINE,              RGB(0xff, 0xff, 0xff), RGB(0, 0, 0));
-    DefineMarker(SC_MARKNUM_FOLDERTAIL,     SC_MARK_LCORNER,            RGB(0xff, 0xff, 0xff), RGB(0, 0, 0));
-    DefineMarker(SC_MARKNUM_FOLDEREND,      SC_MARK_BOXPLUSCONNECTED,   RGB(0xff, 0xff, 0xff), RGB(0, 0, 0));
-    DefineMarker(SC_MARKNUM_FOLDEROPENMID,  SC_MARK_BOXMINUSCONNECTED,  RGB(0xff, 0xff, 0xff), RGB(0, 0, 0));
-    DefineMarker(SC_MARKNUM_FOLDERMIDTAIL,  SC_MARK_TCORNER,            RGB(0xff, 0xff, 0xff), RGB(0, 0, 0));
+    DefineMarker(SC_MARKNUM_FOLDEROPEN,     SC_MARK_BOXMINUS,           COLOR_WHITE, COLOR_BLACK);
+    DefineMarker(SC_MARKNUM_FOLDER,         SC_MARK_BOXPLUS,            COLOR_WHITE, COLOR_BLACK);
+    DefineMarker(SC_MARKNUM_FOLDERSUB,      SC_MARK_VLINE,              COLOR_WHITE, COLOR_BLACK);
+    DefineMarker(SC_MARKNUM_FOLDERTAIL,     SC_MARK_LCORNER,            COLOR_WHITE, COLOR_BLACK);
+    DefineMarker(SC_MARKNUM_FOLDEREND,      SC_MARK_BOXPLUSCONNECTED,   COLOR_WHITE, COLOR_BLACK);
+    DefineMarker(SC_MARKNUM_FOLDEROPENMID,  SC_MARK_BOXMINUSCONNECTED,  COLOR_WHITE, COLOR_BLACK);
+    DefineMarker(SC_MARKNUM_FOLDERMIDTAIL,  SC_MARK_TCORNER,            COLOR_WHITE, COLOR_BLACK);
 
 #if 0
     //Setup auto completion

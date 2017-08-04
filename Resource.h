@@ -4,6 +4,7 @@
 //
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
+#define ID_INDICATOR_LINE               101
 #define IDR_POPUP_EDIT                  119
 #define ID_STATUSBAR_PANE1              120
 #define ID_STATUSBAR_PANE2              121
@@ -14,7 +15,7 @@
 #define ID_VIEW_CUSTOMIZE               126
 #define IDR_MAINFRAME                   128
 #define IDR_MAINFRAME_256               129
-#define IDR_RadNotepadTYPE                130
+#define IDR_RadNotepadTYPE              130
 #define ID_WINDOW_MANAGER               131
 #define ID_VIEW_FILEVIEW                133
 #define ID_VIEW_CLASSVIEW               134

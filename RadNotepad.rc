@@ -32,7 +32,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\RadNotepad.ico"
 
-IDR_RadNotepadTYPE        ICON                    "res\\RadNotepadDoc.ico"
+IDR_RadNotepadTYPE      ICON                    "res\\RadNotepadDoc.ico"
 
 IDI_FILE_VIEW           ICON                    "res\\file_view.ico"
 
@@ -204,7 +204,7 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "&About...",          ID_APP_ABOUT
+        MENUITEM "&About...",                   ID_APP_ABOUT
     END
 END
 
@@ -366,12 +366,13 @@ END
 STRINGTABLE
 BEGIN
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
+    ID_INDICATOR_LINE       "Line: %ld, Col: %ld, Character: %ld"
 END
 
 STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "RadNotepad"
-    IDR_RadNotepadTYPE        "\n\nRadNotepad\n\n\nRadNotepad.Document\nRadNotepad.Document"
+    IDR_RadNotepadTYPE      "\n\nRadNotepad\n\n\nRadNotepad.Document\nRadNotepad.Document"
     ID_WINDOW_MANAGER       "&Windows..."
 END
 
@@ -492,8 +493,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_STATUS_PANE1        "Pane 1"
-    IDS_STATUS_PANE2        "Pane 2"
     IDS_TOOLBAR_STANDARD    "Standard"
     IDS_TOOLBAR_CUSTOMIZE   "Customize..."
 END

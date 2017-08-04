@@ -58,6 +58,7 @@ protected:
 	afx_msg void OnViewPropertiesWindow();
 	afx_msg void OnUpdateViewPropertiesWindow(CCmdUI* pCmdUI);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+    afx_msg void OnUpdateClear(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();

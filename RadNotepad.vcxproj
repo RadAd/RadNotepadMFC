@@ -255,7 +255,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="res\RadNotepad.rc2" />
-    <None Include="scintillawrappers\ScintillaDemo.rc2" />
+    <None Include="scintillawrappers\ScintillaDocView.rc2" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

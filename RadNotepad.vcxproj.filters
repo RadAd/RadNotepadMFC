@@ -194,7 +194,7 @@
     <None Include="res\RadNotepad.rc2">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="scintillawrappers\ScintillaDemo.rc2">
+    <None Include="scintillawrappers\ScintillaDocView.rc2">
       <Filter>ScintillaWrapper</Filter>
     </None>
   </ItemGroup>
