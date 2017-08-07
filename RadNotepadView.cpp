@@ -62,10 +62,22 @@ const LexerData* GetLexerData(PCTSTR ext)
 #define COLOR_LT_MAGENTA    RGB(0x80, 0x00, 0x80)
 #define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
 
-struct Style
+enum ThemeItem
 {
-    int nID;
-    int nStyle;
+    THEME_BACKGROUND,
+    THEME_DEFAULT,
+    THEME_COMMENT,
+    THEME_NUMBER,
+    THEME_WORD,
+    THEME_STRING,
+    THEME_IDENTIFIER,
+    THEME_PREPROCESSOR,
+    THEME_OPERATOR,
+};
+
+struct Theme
+{
+    ThemeItem nItem;
     COLORREF fore;
     COLORREF back;
     int size;
@@ -75,41 +87,76 @@ struct Style
     bool underline;
 };
 
-Style vStyleDefault = { SCLEX_NULL, STYLE_DEFAULT, COLOR_BLACK, COLOR_WHITE, 10, "Consolas" };
+Theme vThemeDefault[] = {
+    { THEME_DEFAULT,        COLOR_BLACK,        COLOR_WHITE, 10, "Consolas" },
+    { THEME_COMMENT,        COLOR_LT_GREEN,     COLOR_NONE },
+    { THEME_NUMBER,         COLOR_LT_CYAN,      COLOR_NONE },
+    { THEME_WORD,           COLOR_LT_BLUE,      COLOR_NONE, 0, nullptr, true },
+    { THEME_STRING,         COLOR_LT_MAGENTA,   COLOR_NONE },
+    { THEME_IDENTIFIER,     COLOR_BLACK,        COLOR_NONE },
+    { THEME_PREPROCESSOR,   COLOR_LT_RED,       COLOR_NONE },
+    { THEME_OPERATOR,       COLOR_LT_YELLOW,    COLOR_NONE },
+};
+
+const Theme* GetTheme(ThemeItem nItem)
+{
+    for (int i = 0; i < ARRAYSIZE(vThemeDefault); ++i)
+    {
+        if (vThemeDefault[i].nItem == nItem)
+            return &vThemeDefault[i];
+    }
+    return nullptr;
+};
+
+void ApplyTheme(CScintillaCtrl& rCtrl, int nStyle, const Theme& rTheme)
+{
+    if (rTheme.fore != COLOR_NONE)
+        rCtrl.StyleSetFore(nStyle, rTheme.fore);
+    if (rTheme.back != COLOR_NONE)
+        rCtrl.StyleSetBack(nStyle, rTheme.back);
+    if (rTheme.size >= 1)
+        rCtrl.StyleSetSize(nStyle, rTheme.size);
+    if (rTheme.face != nullptr)
+        rCtrl.StyleSetFont(nStyle, rTheme.face);
+    if (rTheme.bold)
+        rCtrl.StyleSetBold(nStyle, TRUE);
+    if (rTheme.italic)
+        rCtrl.StyleSetItalic(nStyle, TRUE);
+    if (rTheme.underline)
+        rCtrl.StyleSetUnderline(nStyle, TRUE);
+}
+
+struct Style
+{
+    int nID;
+    int nStyle;
+    ThemeItem nTheme;
+};
+
+Style vStyleDefault = { SCLEX_NULL, STYLE_DEFAULT, THEME_DEFAULT };
 
 Style vStyle[] = {
-    { SCLEX_CPP, SCE_C_DEFAULT,                 COLOR_BLACK,        COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENT,                 COLOR_LT_GREEN,     COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTLINE,             COLOR_LT_GREEN,     COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTDOC,              COLOR_LT_GREEN,     COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTLINEDOC,          COLOR_LT_GREEN,     COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORD,       COLOR_LT_GREEN,     COLOR_NONE },
-    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORDERROR,  COLOR_LT_GREEN,     COLOR_NONE },
-    { SCLEX_CPP, SCE_C_NUMBER,                  COLOR_LT_CYAN,      COLOR_NONE },
-    { SCLEX_CPP, SCE_C_WORD,                    COLOR_LT_BLUE,      COLOR_NONE, 0, nullptr, true },
-    { SCLEX_CPP, SCE_C_STRING,                  COLOR_LT_MAGENTA,   COLOR_NONE },
-    { SCLEX_CPP, SCE_C_IDENTIFIER,              COLOR_BLACK,        COLOR_NONE },
-    { SCLEX_CPP, SCE_C_PREPROCESSOR,            COLOR_LT_RED,       COLOR_NONE },
-    { SCLEX_CPP, SCE_C_OPERATOR,                COLOR_LT_YELLOW,    COLOR_NONE },
+    { SCLEX_CPP, SCE_C_DEFAULT,                 THEME_DEFAULT },
+    { SCLEX_CPP, SCE_C_COMMENT,                 THEME_COMMENT },
+    { SCLEX_CPP, SCE_C_COMMENTLINE,             THEME_COMMENT },
+    { SCLEX_CPP, SCE_C_COMMENTDOC,              THEME_COMMENT },
+    { SCLEX_CPP, SCE_C_COMMENTLINEDOC,          THEME_COMMENT },
+    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORD,       THEME_COMMENT },
+    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORDERROR,  THEME_COMMENT },
+    { SCLEX_CPP, SCE_C_NUMBER,                  THEME_NUMBER },
+    { SCLEX_CPP, SCE_C_WORD,                    THEME_WORD },
+    { SCLEX_CPP, SCE_C_STRING,                  THEME_STRING },
+    { SCLEX_CPP, SCE_C_IDENTIFIER,              THEME_IDENTIFIER },
+    { SCLEX_CPP, SCE_C_PREPROCESSOR,            THEME_PREPROCESSOR },
+    { SCLEX_CPP, SCE_C_OPERATOR,                THEME_OPERATOR },
     { SCLEX_NULL },
 };
 
 void ApplyStyle(CScintillaCtrl& rCtrl, const Style& rStyle)
 {
-    if (rStyle.fore != COLOR_NONE)
-        rCtrl.StyleSetFore(rStyle.nStyle, rStyle.fore);
-    if (rStyle.back != COLOR_NONE)
-        rCtrl.StyleSetBack(rStyle.nStyle, rStyle.back);
-    if (rStyle.size >= 1)
-        rCtrl.StyleSetSize(rStyle.nStyle, rStyle.size);
-    if (rStyle.face != nullptr)
-        rCtrl.StyleSetFont(rStyle.nStyle, rStyle.face);
-    if (rStyle.bold)
-        rCtrl.StyleSetBold(rStyle.nStyle, TRUE);
-    if (rStyle.italic)
-        rCtrl.StyleSetItalic(rStyle.nStyle, TRUE);
-    if (rStyle.underline)
-        rCtrl.StyleSetUnderline(rStyle.nStyle, TRUE);
+    const Theme* pTheme = GetTheme(rStyle.nTheme);
+    if (pTheme != nullptr)
+        ApplyTheme(rCtrl, rStyle.nStyle, *pTheme);
 }
 
 enum Margin
@@ -322,7 +369,7 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
     rCtrl.SetProperty(_T("fold"), _T("1"));
 
-    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.bShowFolds ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.bShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
     rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
 
     //Setup markers
