@@ -82,13 +82,18 @@
 #define ID_VIEW_WHITESPACE              32790
 #define ID_VIEW_ENDOFLINE               32791
 #define ID_VIEW_WORDWRAP                32792
+#define ID_VIEW_USETABS                 32793
+#define ID_EDIT_TOGGLEBOOKMARK          32794
+#define ID_VIEW_TOGGLE                  32795
+#define ID_EDIT_PREVIOUSBOOKMARK        32798
+#define ID_EDIT_NEXTBOOKMARK            32799
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         32793
+#define _APS_NEXT_COMMAND_VALUE         32803
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

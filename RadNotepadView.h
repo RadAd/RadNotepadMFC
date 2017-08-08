@@ -56,6 +56,11 @@ public:
     afx_msg void OnViewWordWrap();
     afx_msg void OnUpdateViewWordWrap(CCmdUI *pCmdUI);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnViewUseTabs();
+    afx_msg void OnUpdateViewUseTabs(CCmdUI *pCmdUI);
+    afx_msg void OnEditToggleBookmark();
+    afx_msg void OnEditPreviousBookmark();
+    afx_msg void OnEditNextBookmark();
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

@@ -1,6 +1,8 @@
 
 #pragma once
 
+struct Settings;
+
 class CPropertiesToolBar : public CMFCToolBar
 {
 public:
@@ -29,10 +31,11 @@ public:
 	}
 
 protected:
+    Settings* m_pSettings;
 	CFont m_fntPropList;
-	CComboBox m_wndObjectCombo;
+	//CComboBox m_wndObjectCombo;
 	CPropertiesToolBar m_wndToolBar;
-	CMFCPropertyGridCtrl m_wndPropList;
+    CMFCPropertyGridCtrl m_wndPropList;
 
 // Implementation
 public:
@@ -51,6 +54,7 @@ protected:
 	afx_msg void OnUpdateProperties2(CCmdUI* pCmdUI);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+    afx_msg LRESULT OnPropertyChanged(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
 

@@ -17,6 +17,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define RAD_MARKER_BOOKMARK 2
+
 struct LexerData
 {
     int nID;
@@ -52,16 +54,6 @@ const LexerData* GetLexerData(PCTSTR ext)
     return &vLexerData[i];
 }
 
-#define COLOR_NONE          RGB(0xFE, 0x00, 0xFE)
-#define COLOR_WHITE         RGB(0xFF, 0xFF, 0xFF)
-#define COLOR_BLACK         RGB(0x00, 0x00, 0x00)
-#define COLOR_LT_RED        RGB(0x80, 0x00, 0x00)
-#define COLOR_LT_GREEN      RGB(0x00, 0x80, 0x00)
-#define COLOR_LT_BLUE       RGB(0x00, 0x00, 0x80)
-#define COLOR_LT_CYAN       RGB(0x00, 0x80, 0x80)
-#define COLOR_LT_MAGENTA    RGB(0x80, 0x00, 0x80)
-#define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
-
 enum ThemeItem
 {
     THEME_BACKGROUND,
@@ -75,35 +67,28 @@ enum ThemeItem
     THEME_OPERATOR,
 };
 
-struct Theme
+struct
 {
     ThemeItem nItem;
-    COLORREF fore;
-    COLORREF back;
-    int size;
-    const char* face;
-    bool bold;
-    bool italic;
-    bool underline;
-};
-
-Theme vThemeDefault[] = {
-    { THEME_DEFAULT,        COLOR_BLACK,        COLOR_WHITE, 10, "Consolas" },
+    Theme theme;
+} vThemeDefault[] = {
     { THEME_COMMENT,        COLOR_LT_GREEN,     COLOR_NONE },
     { THEME_NUMBER,         COLOR_LT_CYAN,      COLOR_NONE },
-    { THEME_WORD,           COLOR_LT_BLUE,      COLOR_NONE, 0, nullptr, true },
+    { THEME_WORD,           COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) },
     { THEME_STRING,         COLOR_LT_MAGENTA,   COLOR_NONE },
     { THEME_IDENTIFIER,     COLOR_BLACK,        COLOR_NONE },
     { THEME_PREPROCESSOR,   COLOR_LT_RED,       COLOR_NONE },
     { THEME_OPERATOR,       COLOR_LT_YELLOW,    COLOR_NONE },
 };
 
-const Theme* GetTheme(ThemeItem nItem)
+const Theme* GetTheme(ThemeItem nItem, const Settings* pSettings)
 {
+    if (nItem == THEME_DEFAULT)
+        return &pSettings->tDefault;
     for (int i = 0; i < ARRAYSIZE(vThemeDefault); ++i)
     {
         if (vThemeDefault[i].nItem == nItem)
-            return &vThemeDefault[i];
+            return &vThemeDefault[i].theme;
     }
     return nullptr;
 };
@@ -114,15 +99,24 @@ void ApplyTheme(CScintillaCtrl& rCtrl, int nStyle, const Theme& rTheme)
         rCtrl.StyleSetFore(nStyle, rTheme.fore);
     if (rTheme.back != COLOR_NONE)
         rCtrl.StyleSetBack(nStyle, rTheme.back);
-    if (rTheme.size >= 1)
-        rCtrl.StyleSetSize(nStyle, rTheme.size);
-    if (rTheme.face != nullptr)
-        rCtrl.StyleSetFont(nStyle, rTheme.face);
-    if (rTheme.bold)
+    if (rTheme.font.lfHeight != 0)
+    {
+        CWindowDC dc(&rCtrl);
+        int nLogY = dc.GetDeviceCaps(LOGPIXELSY);
+        if (nLogY != 0)
+        {
+            int pt = MulDiv(72, -rTheme.font.lfHeight, nLogY);
+            rCtrl.StyleSetSize(nStyle, pt);
+        }
+    }
+    if (rTheme.font.lfFaceName[0] != _T('\0'))
+        rCtrl.StyleSetFont(nStyle, rTheme.font.lfFaceName);
+    rCtrl.StyleSetCharacterSet(nStyle, rTheme.font.lfCharSet);
+    if (rTheme.font.lfWeight >= FW_BOLD)
         rCtrl.StyleSetBold(nStyle, TRUE);
-    if (rTheme.italic)
+    if (rTheme.font.lfItalic)
         rCtrl.StyleSetItalic(nStyle, TRUE);
-    if (rTheme.underline)
+    if (rTheme.font.lfUnderline)
         rCtrl.StyleSetUnderline(nStyle, TRUE);
 }
 
@@ -152,9 +146,9 @@ Style vStyle[] = {
     { SCLEX_NULL },
 };
 
-void ApplyStyle(CScintillaCtrl& rCtrl, const Style& rStyle)
+void ApplyStyle(CScintillaCtrl& rCtrl, const Style& rStyle, const Settings* pSettings)
 {
-    const Theme* pTheme = GetTheme(rStyle.nTheme);
+    const Theme* pTheme = GetTheme(rStyle.nTheme, pSettings);
     if (pTheme != nullptr)
         ApplyTheme(rCtrl, rStyle.nStyle, *pTheme);
 }
@@ -193,7 +187,8 @@ IMPLEMENT_DYNCREATE(CRadNotepadView, CScintillaView)
 BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
 	// Standard printing commands
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CRadNotepadView::OnFilePrintPreview)
-	ON_WM_CONTEXTMENU()
+    ON_WM_CREATE()
+    ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CRadNotepadView::OnUpdateLine)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CRadNotepadView::OnUpdateInsert)
@@ -205,7 +200,11 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_UPDATE_COMMAND_UI(ID_VIEW_ENDOFLINE, &CRadNotepadView::OnUpdateViewEndOfLine)
     ON_COMMAND(ID_VIEW_WORDWRAP, &CRadNotepadView::OnViewWordWrap)
     ON_UPDATE_COMMAND_UI(ID_VIEW_WORDWRAP, &CRadNotepadView::OnUpdateViewWordWrap)
-    ON_WM_CREATE()
+    ON_COMMAND(ID_VIEW_USETABS, &CRadNotepadView::OnViewUseTabs)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_USETABS, &CRadNotepadView::OnUpdateViewUseTabs)
+    ON_COMMAND(ID_EDIT_TOGGLEBOOKMARK, &CRadNotepadView::OnEditToggleBookmark)
+    ON_COMMAND(ID_EDIT_PREVIOUSBOOKMARK, &CRadNotepadView::OnEditPreviousBookmark)
+    ON_COMMAND(ID_EDIT_NEXTBOOKMARK, &CRadNotepadView::OnEditNextBookmark)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -345,8 +344,10 @@ void CRadNotepadView::OnInitialUpdate()
         rCtrl.SetLexer(SCLEX_NULL);
     }
 
+    const Settings& settings = theApp.m_Settings;
+
     //Setup styles
-    ApplyStyle(rCtrl, vStyleDefault);
+    ApplyStyle(rCtrl, vStyleDefault, &settings);
     rCtrl.StyleClearAll();
     if (pLexerData != nullptr)
     {
@@ -355,33 +356,44 @@ void CRadNotepadView::OnInitialUpdate()
         while (vStyle[i].nID != SCLEX_NULL)
         {
             if (vStyle[i].nID == pLexerData->nID)
-                ApplyStyle(rCtrl, vStyle[i]);
+                ApplyStyle(rCtrl, vStyle[i], &settings);
             ++i;
         }
     }
 
-    const Settings& settings = theApp.m_Settings;
-
     //Setup folding
-    rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.bShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.PropShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
     rCtrl.SetMarginSensitiveN(MARGIN_FOLDS, TRUE);
     rCtrl.SetMarginTypeN(MARGIN_FOLDS, SC_MARGIN_SYMBOL);
     rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
     rCtrl.SetProperty(_T("fold"), _T("1"));
 
-    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.bShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
-    rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.PropShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.PropShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
 
     //Setup markers
-    DefineMarker(SC_MARKNUM_FOLDEROPEN,     SC_MARK_BOXMINUS,           COLOR_WHITE, COLOR_BLACK);
-    DefineMarker(SC_MARKNUM_FOLDER,         SC_MARK_BOXPLUS,            COLOR_WHITE, COLOR_BLACK);
-    DefineMarker(SC_MARKNUM_FOLDERSUB,      SC_MARK_VLINE,              COLOR_WHITE, COLOR_BLACK);
-    DefineMarker(SC_MARKNUM_FOLDERTAIL,     SC_MARK_LCORNER,            COLOR_WHITE, COLOR_BLACK);
-    DefineMarker(SC_MARKNUM_FOLDEREND,      SC_MARK_BOXPLUSCONNECTED,   COLOR_WHITE, COLOR_BLACK);
-    DefineMarker(SC_MARKNUM_FOLDEROPENMID,  SC_MARK_BOXMINUSCONNECTED,  COLOR_WHITE, COLOR_BLACK);
-    DefineMarker(SC_MARKNUM_FOLDERMIDTAIL,  SC_MARK_TCORNER,            COLOR_WHITE, COLOR_BLACK);
+    int MTMarker[] = {
+        SC_MARKNUM_FOLDEROPEN,
+        SC_MARKNUM_FOLDER,
+        SC_MARKNUM_FOLDERSUB,
+        SC_MARKNUM_FOLDERTAIL,
+        SC_MARKNUM_FOLDEREND,
+        SC_MARKNUM_FOLDEROPENMID,
+        SC_MARKNUM_FOLDERMIDTAIL,
+    };
+    int MT[][7] = {
+        { SC_MARK_ARROWDOWN,   SC_MARK_ARROW,      SC_MARK_EMPTY, SC_MARK_EMPTY,        SC_MARK_EMPTY,               SC_MARK_EMPTY,                SC_MARK_EMPTY },
+        { SC_MARK_MINUS,       SC_MARK_PLUS,       SC_MARK_EMPTY, SC_MARK_EMPTY,        SC_MARK_EMPTY,               SC_MARK_EMPTY,                SC_MARK_EMPTY },
+        { SC_MARK_CIRCLEMINUS, SC_MARK_CIRCLEPLUS, SC_MARK_VLINE, SC_MARK_LCORNERCURVE, SC_MARK_CIRCLEPLUSCONNECTED, SC_MARK_CIRCLEMINUSCONNECTED, SC_MARK_TCORNERCURVE },
+        { SC_MARK_BOXMINUS,    SC_MARK_BOXPLUS,    SC_MARK_VLINE, SC_MARK_LCORNER,      SC_MARK_BOXPLUSCONNECTED,    SC_MARK_BOXMINUSCONNECTED,    SC_MARK_TCORNER },
+    };
+    for (int i = 0; i < ARRAYSIZE(MTMarker); ++i)
+        DefineMarker(MTMarker[i], MT[settings.nFoldType][i], settings.cFoldFG, settings.cFoldBG);
 
-    rCtrl.SetTabWidth(4);
+    DefineMarker(RAD_MARKER_BOOKMARK, SC_MARK_BOOKMARK, settings.cFoldFG, settings.cFoldBG);
+
+    rCtrl.SetUseTabs(settings.bUseTabs);
+    rCtrl.SetTabWidth(settings.nTabWidth);
 
 #if 0
     //Setup auto completion
@@ -496,4 +508,52 @@ int CRadNotepadView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 #endif
 
     return 0;
+}
+
+void CRadNotepadView::OnViewUseTabs()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    rCtrl.SetUseTabs(!rCtrl.GetUseTabs());
+}
+
+void CRadNotepadView::OnUpdateViewUseTabs(CCmdUI *pCmdUI)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    pCmdUI->SetCheck(rCtrl.GetUseTabs());
+}
+
+
+void CRadNotepadView::OnEditToggleBookmark()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    Sci_Position nPos = rCtrl.GetCurrentPos();
+    int nLine = rCtrl.LineFromPosition(nPos);
+    if (rCtrl.MarkerGet(nLine) & (1 << RAD_MARKER_BOOKMARK))
+        rCtrl.MarkerDelete(nLine, RAD_MARKER_BOOKMARK);
+    else
+        rCtrl.MarkerAdd(nLine, RAD_MARKER_BOOKMARK);
+}
+
+void CRadNotepadView::OnEditPreviousBookmark()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    Sci_Position nPos = rCtrl.GetCurrentPos();
+    int nLine = rCtrl.LineFromPosition(nPos);
+    nLine = rCtrl.MarkerPrevious(nLine - 1, 1 << RAD_MARKER_BOOKMARK);
+    if (nLine < 0)
+        nLine = rCtrl.MarkerPrevious(rCtrl.GetLineCount() - 1, 1 << RAD_MARKER_BOOKMARK);
+    if (nLine >= 0)
+        rCtrl.GotoLine(nLine);
+}
+
+void CRadNotepadView::OnEditNextBookmark()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    Sci_Position nPos = rCtrl.GetCurrentPos();
+    int nLine = rCtrl.LineFromPosition(nPos);
+    nLine = rCtrl.MarkerNext(nLine + 1, 1 << RAD_MARKER_BOOKMARK);
+    if (nLine < 0)
+        nLine = rCtrl.MarkerNext(0, 1 << RAD_MARKER_BOOKMARK);
+    if (nLine >= 0)
+        rCtrl.GotoLine(nLine);
 }
