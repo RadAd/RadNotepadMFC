@@ -270,13 +270,6 @@ void CRadNotepadApp::SaveCustomState()
 
 BOOL CRadNotepadApp::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* /*pTemplate*/)
 {
-    CFileDialog dlgFile(bOpenFileDialog, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, NULL, 0);
-
-    CString title;
-    ENSURE(title.LoadString(nIDSTitle));
-
-    dlgFile.m_ofn.Flags |= lFlags;
-
     CString strFilter;
 #if 0
     CString strDefault;
@@ -299,17 +292,30 @@ BOOL CRadNotepadApp::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
         }
     }
 #endif
+    strFilter += _T("CPP files|*.cpp;*.c;*.cc;*.h|");
 
     // append the "*.*" all files filter
     CString allFilter;
     VERIFY(allFilter.LoadString(AFX_IDS_ALLFILTER));
     strFilter += allFilter;
-    strFilter += (TCHAR)'\0';   // next string please
-    strFilter += _T("*.*");
-    strFilter += (TCHAR)'\0';   // last string
-    dlgFile.m_ofn.nMaxCustFilter++;
+    strFilter += _T("|*.*|");
 
-    dlgFile.m_ofn.lpstrFilter = strFilter;
+    int nFilterCount = 0;
+    {
+        int nFind = -1;
+        while ((nFind = strFilter.Find(_T('|'), nFind + 1)) != -1)
+            ++nFilterCount;
+        nFilterCount /= 2;
+    }
+
+    CFileDialog dlgFile(bOpenFileDialog, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, strFilter);
+
+    CString title;
+    ENSURE(title.LoadString(nIDSTitle));
+
+    dlgFile.m_ofn.Flags |= lFlags;
+    dlgFile.m_ofn.nFilterIndex = nFilterCount;
+
     dlgFile.m_ofn.lpstrTitle = title;
     dlgFile.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
 
