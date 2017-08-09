@@ -17,6 +17,7 @@ public:
 
 // Operations
 public:
+    void SetLineEndingsMode(int mode);
 
 // Overrides
 public:
@@ -61,6 +62,10 @@ public:
     afx_msg void OnEditToggleBookmark();
     afx_msg void OnEditPreviousBookmark();
     afx_msg void OnEditNextBookmark();
+    afx_msg void OnLineEndingsWindows();
+    afx_msg void OnLineEndingsUnix();
+    afx_msg void OnLineEndingsMac();
+    afx_msg void OnUpdateLineEndings(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

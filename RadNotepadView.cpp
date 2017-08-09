@@ -205,6 +205,10 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_EDIT_TOGGLEBOOKMARK, &CRadNotepadView::OnEditToggleBookmark)
     ON_COMMAND(ID_EDIT_PREVIOUSBOOKMARK, &CRadNotepadView::OnEditPreviousBookmark)
     ON_COMMAND(ID_EDIT_NEXTBOOKMARK, &CRadNotepadView::OnEditNextBookmark)
+    ON_COMMAND(ID_LINEENDINGS_WINDOWS, &CRadNotepadView::OnLineEndingsWindows)
+    ON_COMMAND(ID_LINEENDINGS_UNIX, &CRadNotepadView::OnLineEndingsUnix)
+    ON_COMMAND(ID_LINEENDINGS_MAC, &CRadNotepadView::OnLineEndingsMac)
+    ON_UPDATE_COMMAND_UI_RANGE(ID_LINEENDINGS_WINDOWS, ID_LINEENDINGS_UNIX, &CRadNotepadView::OnUpdateLineEndings)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -314,6 +318,18 @@ CRadNotepadDoc* CRadNotepadView::GetDocument() const // non-debug version is inl
 }
 #endif //_DEBUG
 
+void CRadNotepadView::SetLineEndingsMode(int mode)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    if (rCtrl.GetEOLMode() != mode)
+    {
+        int r = AfxMessageBox(IDS_CONVERTLINEENDINGS, MB_YESNOCANCEL);
+        if (r == IDYES)
+            rCtrl.ConvertEOLs(mode);
+        if (r != IDCANCEL)
+            rCtrl.SetEOLMode(mode);
+    }
+}
 
 // CRadNotepadView message handlers
 
@@ -326,6 +342,8 @@ void CRadNotepadView::OnInitialUpdate()
     CString strFileName = pDoc->GetPathName();
     PCTSTR strExt = PathFindExtension(strFileName);
     const LexerData* pLexerData = GetLexerData(strExt);
+
+    // TODO Copy some settings from other ctrl (ie split view, new window)
 
     CScintillaCtrl& rCtrl = GetCtrl();
 
@@ -394,6 +412,8 @@ void CRadNotepadView::OnInitialUpdate()
 
     rCtrl.SetUseTabs(settings.bUseTabs);
     rCtrl.SetTabWidth(settings.nTabWidth);
+
+    // TODO Detect line endings and set current mode
 
 #if 0
     //Setup auto completion
@@ -556,4 +576,30 @@ void CRadNotepadView::OnEditNextBookmark()
         nLine = rCtrl.MarkerNext(0, 1 << RAD_MARKER_BOOKMARK);
     if (nLine >= 0)
         rCtrl.GotoLine(nLine);
+}
+
+
+void CRadNotepadView::OnLineEndingsWindows()
+{
+    SetLineEndingsMode(SC_EOL_CRLF);
+}
+
+
+void CRadNotepadView::OnLineEndingsUnix()
+{
+    SetLineEndingsMode(SC_EOL_LF);
+}
+
+
+void CRadNotepadView::OnLineEndingsMac()
+{
+    SetLineEndingsMode(SC_EOL_CR);
+}
+
+
+void CRadNotepadView::OnUpdateLineEndings(CCmdUI *pCmdUI)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    const int mode = pCmdUI->m_nID - ID_LINEENDINGS_WINDOWS;
+    pCmdUI->SetRadio(rCtrl.GetEOLMode() == mode);
 }

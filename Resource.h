@@ -6,10 +6,6 @@
 #define IDP_OLE_INIT_FAILED             100
 #define ID_INDICATOR_LINE               101
 #define IDR_POPUP_EDIT                  119
-#define ID_STATUSBAR_PANE1              120
-#define ID_STATUSBAR_PANE2              121
-#define IDS_STATUS_PANE1                122
-#define IDS_STATUS_PANE2                123
 #define IDS_TOOLBAR_STANDARD            124
 #define IDS_TOOLBAR_CUSTOMIZE           125
 #define ID_VIEW_CUSTOMIZE               126
@@ -84,16 +80,20 @@
 #define ID_VIEW_WORDWRAP                32792
 #define ID_VIEW_USETABS                 32793
 #define ID_EDIT_TOGGLEBOOKMARK          32794
-#define ID_VIEW_TOGGLE                  32795
 #define ID_EDIT_PREVIOUSBOOKMARK        32798
 #define ID_EDIT_NEXTBOOKMARK            32799
+#define ID_VIEW_LINEENDINGS             32803
+#define ID_LINEENDINGS_WINDOWS          32804
+#define ID_LINEENDINGS_UNIX             32806
+#define ID_LINEENDINGS_MAC              32805
+#define IDS_CONVERTLINEENDINGS          32807
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         32803
+#define _APS_NEXT_COMMAND_VALUE         32808
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
