@@ -268,7 +268,7 @@ void CRadNotepadApp::SaveCustomState()
 
 // CRadNotepadApp message handlers
 
-BOOL CRadNotepadApp::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate)
+BOOL CRadNotepadApp::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* /*pTemplate*/)
 {
     CFileDialog dlgFile(bOpenFileDialog, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, NULL, 0);
 
@@ -312,6 +312,21 @@ BOOL CRadNotepadApp::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
     dlgFile.m_ofn.lpstrFilter = strFilter;
     dlgFile.m_ofn.lpstrTitle = title;
     dlgFile.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
+
+    TCHAR Dir[MAX_PATH] = _T("");
+    CMainFrame* pMainWnd = (CMainFrame*) m_pMainWnd;
+    CMDIChildWnd* pChild = pMainWnd->MDIGetActive();
+    if (pChild != nullptr)
+    {
+        CDocument* pDoc = pChild->GetActiveDocument();
+        if (pDoc != nullptr)
+        {
+            CString FileName = pDoc->GetPathName();
+            StrCpy(Dir, FileName);
+            PathRemoveFileSpec(Dir);
+            dlgFile.m_ofn.lpstrInitialDir = Dir;
+        }
+    }
 
     INT_PTR nResult = dlgFile.DoModal();
     fileName.ReleaseBuffer();
