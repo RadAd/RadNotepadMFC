@@ -196,8 +196,8 @@ BEGIN
         MENUITEM "Previous Bookmark\tShift+F2", ID_EDIT_PREVIOUSBOOKMARK
         MENUITEM "Next Bookmark\tF2",           ID_EDIT_NEXTBOOKMARK
         MENUITEM SEPARATOR
-        MENUITEM "Make Uppercase",              ID_EDIT_MAKEUPPERCASE
-        MENUITEM "MakeLowercase",               ID_EDIT_MAKELOWERCASE
+        MENUITEM "Make Uppercase\tCtrl+Shift+U", ID_EDIT_MAKEUPPERCASE
+        MENUITEM "Make Lowercase\tCtrl+U",      ID_EDIT_MAKELOWERCASE
     END
     POPUP "&View"
     BEGIN
