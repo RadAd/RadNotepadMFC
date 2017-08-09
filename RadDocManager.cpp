@@ -25,6 +25,10 @@ CDocument* CRadDocManager::GetActiveDocument()
 
 BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* /*pTemplate*/)
 {
+    CString strDefaultExt = PathFindExtension(fileName);
+    if (strDefaultExt.IsEmpty())
+        strDefaultExt = _T("txt");
+
     CString strFilter;
 #if 0
     CString strDefault;
@@ -63,7 +67,7 @@ BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
         nFilterCount /= 2;
     }
 
-    CFileDialog dlgFile(bOpenFileDialog, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, strFilter);
+    CFileDialog dlgFile(bOpenFileDialog, strDefaultExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, strFilter);
 
     CString title;
     ENSURE(title.LoadString(nIDSTitle));
