@@ -35,11 +35,7 @@ public:
 	virtual void SaveCustomState();
     virtual BOOL SaveAllModified();
 
-    BOOL DoPromptFileName(CString& fileName, UINT nIDSTitle,
-        DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
-
     afx_msg void OnAppAbout();
-    afx_msg void OnFileOpen();
 	DECLARE_MESSAGE_MAP()
     afx_msg void OnFileCloseAll();
     afx_msg void OnUpdateFileCloseAll(CCmdUI *pCmdUI);
