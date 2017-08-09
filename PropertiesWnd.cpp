@@ -18,6 +18,7 @@ enum PropType
     PROP_INT,
     PROP_COLOR,
     PROP_FONT,
+    PROP_INDEX,
 };
 
 struct Property
@@ -31,6 +32,13 @@ struct Property
     Property(INT* i)
         : nType(PROP_INT)
         , valInt(i)
+    {
+    }
+
+    template <class E>
+    Property(E* i, LPCTSTR* /*items*/)
+        : nType(PROP_INDEX)
+        , valInt(reinterpret_cast<INT*>(i))
     {
     }
 
@@ -82,6 +90,31 @@ CMFCPropertyGridColorProperty* CreateProperty(const CString& strName, COLORREF* 
 CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pFont)
 {
     return new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) new Property(pFont));
+}
+
+template <class E>
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, LPCTSTR* items, int nItemCount)
+{
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items[*pIndex], nullptr, (DWORD_PTR) new Property(pIndex, items));
+    for (int i = 0; i < nItemCount; ++i)
+        p->AddOption(items[i]);
+    p->AllowEdit(FALSE);
+    return p;
+}
+
+
+int GetOptionIndex(CMFCPropertyGridProperty* pProp)
+{
+    const COleVariant& v = pProp->GetValue();
+    if (v.vt == VT_BSTR)
+    {
+        for (int i = 0; i < pProp->GetOptionCount(); ++i)
+        {
+            if (wcscmp(pProp->GetOption(i), v.bstrVal) == 0)
+                return i;
+        }
+    }
+    return -1;
 }
 
 class CMFCThemeProperty : public CMFCPropertyGridProperty
@@ -201,6 +234,10 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
 
     case PROP_INT:
         *prop->valInt = pProp->GetValue().intVal;
+        break;
+
+    case PROP_INDEX:
+        *prop->valInt = GetOptionIndex(pProp);
         break;
 
     case PROP_COLOR:
@@ -398,15 +435,8 @@ void CPropertiesWnd::InitPropList()
         pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &m_pSettings->PropShowLineNumbers));
         pGroup->AddSubItem(CreateProperty(_T("Bookmarks"), &m_pSettings->PropShowBookmarks));
         pGroup->AddSubItem(CreateProperty(_T("Folds"), &m_pSettings->PropShowFolds));
-        {
-            //pGroup->AddSubItem(CreateProperty(_T("Fold Marker"), &m_pSettings->nMarkerType));
-            const wchar_t* n[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
-            CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(_T("Fold Marker"), (_variant_t) n[m_pSettings->nFoldType], nullptr);
-            for (int i = 0; i < ARRAYSIZE(n); ++i)
-                p->AddOption(n[i]);
-            p->AllowEdit(FALSE);
-            pGroup->AddSubItem(p);
-        }
+        LPCTSTR n[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
+        pGroup->AddSubItem(CreateProperty(_T("Fold Marker"), &m_pSettings->nFoldType, n, ARRAYSIZE(n)));
         pGroup->AddSubItem(CreateProperty(_T("Fold Background"), &m_pSettings->cFoldBG));
         pGroup->AddSubItem(CreateProperty(_T("Fold Foreground"), &m_pSettings->cFoldFG));
 
