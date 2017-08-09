@@ -23,7 +23,7 @@ BEGIN_MESSAGE_MAP(CRadNotepadApp, CWinAppEx)
 	ON_COMMAND(ID_APP_ABOUT, &CRadNotepadApp::OnAppAbout)
 	// Standard file based document commands
 	ON_COMMAND(ID_FILE_NEW, &CWinAppEx::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, &CWinAppEx::OnFileOpen)
+	ON_COMMAND(ID_FILE_OPEN, &CRadNotepadApp::OnFileOpen)
 	// Standard print setup command
 	ON_COMMAND(ID_FILE_PRINT_SETUP, &CWinAppEx::OnFilePrintSetup)
     ON_COMMAND(ID_FILE_CLOSEALL, &CRadNotepadApp::OnFileCloseAll)
@@ -232,6 +232,18 @@ void CRadNotepadApp::OnAppAbout()
 	aboutDlg.DoModal();
 }
 
+void CRadNotepadApp::OnFileOpen()
+{
+    // prompt the user (with all document templates)
+    CString newName;
+    if (!DoPromptFileName(newName, AFX_IDS_OPENFILE,
+        OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, TRUE, NULL))
+        return; // open cancelled
+
+    OpenDocumentFile(newName);
+    // if returns NULL, the user has already been alerted
+}
+
 // CRadNotepadApp customization load/save methods
 
 void CRadNotepadApp::PreLoadState()
@@ -255,6 +267,56 @@ void CRadNotepadApp::SaveCustomState()
 }
 
 // CRadNotepadApp message handlers
+
+BOOL CRadNotepadApp::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate)
+{
+    CFileDialog dlgFile(bOpenFileDialog, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, NULL, NULL, 0);
+
+    CString title;
+    ENSURE(title.LoadString(nIDSTitle));
+
+    dlgFile.m_ofn.Flags |= lFlags;
+
+    CString strFilter;
+#if 0
+    CString strDefault;
+    if (pTemplate != NULL)
+    {
+        ASSERT_VALID(pTemplate);
+        _AfxAppendFilterSuffix(strFilter, dlgFile.m_ofn, pTemplate, &strDefault);
+    }
+    else
+    {
+        // do for all doc template
+        POSITION pos = m_templateList.GetHeadPosition();
+        BOOL bFirst = TRUE;
+        while (pos != NULL)
+        {
+            pTemplate = (CDocTemplate*) m_templateList.GetNext(pos);
+            _AfxAppendFilterSuffix(strFilter, dlgFile.m_ofn, pTemplate,
+                bFirst ? &strDefault : NULL);
+            bFirst = FALSE;
+        }
+    }
+#endif
+
+    // append the "*.*" all files filter
+    CString allFilter;
+    VERIFY(allFilter.LoadString(AFX_IDS_ALLFILTER));
+    strFilter += allFilter;
+    strFilter += (TCHAR)'\0';   // next string please
+    strFilter += _T("*.*");
+    strFilter += (TCHAR)'\0';   // last string
+    dlgFile.m_ofn.nMaxCustFilter++;
+
+    dlgFile.m_ofn.lpstrFilter = strFilter;
+    dlgFile.m_ofn.lpstrTitle = title;
+    dlgFile.m_ofn.lpstrFile = fileName.GetBuffer(_MAX_PATH);
+
+    INT_PTR nResult = dlgFile.DoModal();
+    fileName.ReleaseBuffer();
+    return nResult == IDOK;
+}
 
 BOOL CRadNotepadApp::SaveAllModified()
 {
