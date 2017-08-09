@@ -195,6 +195,9 @@ BEGIN
         MENUITEM "Toggle Bookmark\tCtrl+F2",    ID_EDIT_TOGGLEBOOKMARK
         MENUITEM "Previous Bookmark\tShift+F2", ID_EDIT_PREVIOUSBOOKMARK
         MENUITEM "Next Bookmark\tF2",           ID_EDIT_NEXTBOOKMARK
+        MENUITEM SEPARATOR
+        MENUITEM "Make Uppercase",              ID_EDIT_MAKEUPPERCASE
+        MENUITEM "MakeLowercase",               ID_EDIT_MAKELOWERCASE
     END
     POPUP "&View"
     BEGIN
@@ -306,6 +309,8 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    "U",            ID_EDIT_MAKELOWERCASE,  VIRTKEY, CONTROL, NOINVERT
+    "U",            ID_EDIT_MAKEUPPERCASE,  VIRTKEY, SHIFT, CONTROL, NOINVERT
 END
 
 
@@ -393,6 +398,10 @@ STRINGTABLE
 BEGIN
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
     ID_INDICATOR_LINE       "Line: %ld, Col: %ld, Character: %ld"
+END
+
+STRINGTABLE
+BEGIN
     IDS_CONVERTLINEENDINGS  "Convert line endings?"
 END
 

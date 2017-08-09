@@ -222,6 +222,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_LINEENDINGS_UNIX, &CRadNotepadView::OnLineEndingsUnix)
     ON_COMMAND(ID_LINEENDINGS_MAC, &CRadNotepadView::OnLineEndingsMac)
     ON_UPDATE_COMMAND_UI_RANGE(ID_LINEENDINGS_WINDOWS, ID_LINEENDINGS_UNIX, &CRadNotepadView::OnUpdateLineEndings)
+    ON_COMMAND(ID_EDIT_MAKEUPPERCASE, &CRadNotepadView::OnEditMakeUppercase)
+    ON_COMMAND(ID_EDIT_MAKELOWERCASE, &CRadNotepadView::OnEditMakeLowercase)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -616,4 +618,36 @@ void CRadNotepadView::OnUpdateLineEndings(CCmdUI *pCmdUI)
     CScintillaCtrl& rCtrl = GetCtrl();
     const int mode = pCmdUI->m_nID - ID_LINEENDINGS_WINDOWS;
     pCmdUI->SetRadio(rCtrl.GetEOLMode() == mode);
+}
+
+
+void CRadNotepadView::OnEditMakeUppercase()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    CString sel = rCtrl.GetSelText();
+    if (!sel.IsEmpty())
+    {
+        sel.MakeUpper();
+        rCtrl.ReplaceSel(sel);
+
+        Sci_Position start = rCtrl.GetSelectionStart();
+        Sci_Position end = rCtrl.GetSelectionStart();
+        rCtrl.SetSel(start - sel.GetLength(), end);
+    }
+}
+
+
+void CRadNotepadView::OnEditMakeLowercase()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    CString sel = rCtrl.GetSelText();
+    if (!sel.IsEmpty())
+    {
+        sel.MakeLower();
+        rCtrl.ReplaceSel(sel);
+
+        Sci_Position start = rCtrl.GetSelectionStart();
+        Sci_Position end = rCtrl.GetSelectionStart();
+        rCtrl.SetSel(start - sel.GetLength(), end);
+    }
 }

@@ -66,6 +66,8 @@ public:
     afx_msg void OnLineEndingsUnix();
     afx_msg void OnLineEndingsMac();
     afx_msg void OnUpdateLineEndings(CCmdUI *pCmdUI);
+    afx_msg void OnEditMakeUppercase();
+    afx_msg void OnEditMakeLowercase();
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

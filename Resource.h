@@ -84,16 +84,18 @@
 #define ID_EDIT_NEXTBOOKMARK            32799
 #define ID_VIEW_LINEENDINGS             32803
 #define ID_LINEENDINGS_WINDOWS          32804
-#define ID_LINEENDINGS_UNIX             32806
 #define ID_LINEENDINGS_MAC              32805
+#define ID_LINEENDINGS_UNIX             32806
 #define IDS_CONVERTLINEENDINGS          32807
+#define ID_EDIT_MAKEUPPERCASE           32808
+#define ID_EDIT_MAKELOWERCASE           32809
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         32808
+#define _APS_NEXT_COMMAND_VALUE         32813
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
