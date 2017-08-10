@@ -16,11 +16,13 @@ public:
 
 // Operations
 public:
+    void CheckUpdated();
+    void CheckReadOnly();
 
 // Overrides
 public:
 	virtual BOOL OnNewDocument();
-	//virtual void Serialize(CArchive& ar);
+	virtual void Serialize(CArchive& ar);
 #ifdef SHARED_HANDLERS
 	virtual void InitializeSearchContent();
 	virtual void OnDrawThumbnail(CDC& dc, LPRECT lprcBounds);
@@ -35,6 +37,7 @@ public:
 #endif
 
 protected:
+    FILETIME m_ftWrite;
 
 // Generated message map functions
 protected:

@@ -68,6 +68,9 @@ public:
     afx_msg void OnUpdateLineEndings(CCmdUI *pCmdUI);
     afx_msg void OnEditMakeUppercase();
     afx_msg void OnEditMakeLowercase();
+    virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
+protected:
+    afx_msg LRESULT OnCheckUpdate(WPARAM wParam, LPARAM lParam);
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

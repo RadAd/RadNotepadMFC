@@ -17,6 +17,8 @@
 #define new DEBUG_NEW
 #endif
 
+#define WM_CHECKUPDATE (WM_USER + 1)
+
 #define RAD_MARKER_BOOKMARK 2
 
 struct LexerData
@@ -224,6 +226,7 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_UPDATE_COMMAND_UI_RANGE(ID_LINEENDINGS_WINDOWS, ID_LINEENDINGS_UNIX, &CRadNotepadView::OnUpdateLineEndings)
     ON_COMMAND(ID_EDIT_MAKEUPPERCASE, &CRadNotepadView::OnEditMakeUppercase)
     ON_COMMAND(ID_EDIT_MAKELOWERCASE, &CRadNotepadView::OnEditMakeLowercase)
+    ON_MESSAGE(WM_CHECKUPDATE, &CRadNotepadView::OnCheckUpdate)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -650,4 +653,27 @@ void CRadNotepadView::OnEditMakeLowercase()
         Sci_Position end = rCtrl.GetSelectionStart();
         rCtrl.SetSel(start - sel.GetLength(), end);
     }
+}
+
+void CRadNotepadView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
+{
+    if (bActivate)
+        PostMessage(WM_CHECKUPDATE);
+
+    CScintillaView::OnActivateView(bActivate, pActivateView, pDeactiveView);
+}
+
+
+afx_msg LRESULT CRadNotepadView::OnCheckUpdate(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+    static bool bIn = false;
+    if (!bIn)
+    {
+        bIn = true;
+        CRadNotepadDoc* pDoc = GetDocument();
+        pDoc->CheckUpdated();
+        pDoc->CheckReadOnly();
+        bIn = false;
+    }
+    return 0;
 }

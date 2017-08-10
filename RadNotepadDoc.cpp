@@ -32,12 +32,61 @@ END_MESSAGE_MAP()
 
 CRadNotepadDoc::CRadNotepadDoc()
 {
-	// TODO: add one-time construction code here
-
+    m_ftWrite.dwHighDateTime = 0;
+    m_ftWrite.dwLowDateTime = 0;
 }
 
 CRadNotepadDoc::~CRadNotepadDoc()
 {
+}
+
+void CRadNotepadDoc::CheckUpdated()
+{
+    if (!GetPathName().IsEmpty())
+    {
+        FILETIME ftWrite = {};
+        {
+            CFile rFile;
+            if (rFile.Open(GetPathName(), CFile::modeRead))
+            {
+                GetFileTime(rFile, NULL, NULL, &ftWrite);
+            }
+        }
+
+        if (ftWrite.dwHighDateTime == 0 && ftWrite.dwLowDateTime == 0)
+        {
+            m_bModified = TRUE;
+            SetTitle(nullptr);
+        }
+        else if (CompareFileTime(&ftWrite, &m_ftWrite) != 0)
+        {
+            if (/*!IsModified() ||*/ AfxMessageBox(IDS_FILE_REVERT, MB_ICONQUESTION | MB_YESNO) == IDYES)
+                OnFileRevert();
+            else
+            {
+                m_ftWrite = ftWrite;
+                m_bModified = TRUE;
+                SetTitle(nullptr);
+            }
+        }
+    }
+}
+
+void CRadNotepadDoc::CheckReadOnly()
+{
+    if (!GetPathName().IsEmpty())
+    {
+        CScintillaView* pView = GetView();
+        CScintillaCtrl& rCtrl = pView->GetCtrl();
+
+        DWORD dwAttr = GetFileAttributes(GetPathName());
+        BOOL bReadOnly = pView->GetUseROFileAttributeDuringLoading() && dwAttr != INVALID_FILE_ATTRIBUTES && dwAttr & FILE_ATTRIBUTE_READONLY;
+        if (bReadOnly != rCtrl.GetReadOnly())
+        {
+            rCtrl.SetReadOnly(bReadOnly);
+            SetTitle(nullptr);
+        }
+    }
 }
 
 BOOL CRadNotepadDoc::OnNewDocument()
@@ -51,24 +100,67 @@ BOOL CRadNotepadDoc::OnNewDocument()
 	return TRUE;
 }
 
-
-
-
 // CRadNotepadDoc serialization
 
-#if 0
 void CRadNotepadDoc::Serialize(CArchive& ar)
 {
-	if (ar.IsStoring())
-	{
-		// TODO: add storing code here
-	}
-	else
-	{
-		// TODO: add loading code here
-	}
+    CScintillaView* pView = GetView();
+    CScintillaCtrl& rCtrl = pView->GetCtrl();
+
+    if (ar.IsLoading())
+    {
+        //Tell the control not to maintain any undo info while we stream the data
+        rCtrl.Cancel();
+        rCtrl.SetUndoCollection(FALSE);
+
+        //Read the data in from the file in blocks
+        CFile* pFile = ar.GetFile();
+        char Buffer[4096];
+        int nBytesRead = 0;
+        do
+        {
+            nBytesRead = pFile->Read(Buffer, 4096);
+            if (nBytesRead)
+                rCtrl.AddText(nBytesRead, Buffer);
+        } while (nBytesRead);
+
+        CheckReadOnly();
+        GetFileTime(*pFile, NULL, NULL, &m_ftWrite);
+
+        //Reinitialize the control settings
+        rCtrl.SetUndoCollection(TRUE);
+        rCtrl.EmptyUndoBuffer();
+        rCtrl.SetSavePoint();
+        rCtrl.GotoPos(0);
+    }
+    else
+    {
+        //Get the length of the document
+        int nDocLength = rCtrl.GetLength();
+
+        //Write the data in blocks to disk
+        CFile* pFile = ar.GetFile();
+        for (int i = 0; i<nDocLength; i += 4095) //4095 because data will be returned nullptr terminated
+        {
+            int nGrabSize = nDocLength - i;
+            if (nGrabSize > 4095)
+                nGrabSize = 4095;
+
+            //Get the data from the control
+            Sci_TextRange tr;
+            tr.chrg.cpMin = i;
+            tr.chrg.cpMax = i + nGrabSize;
+            char Buffer[4096];
+            tr.lpstrText = Buffer;
+            rCtrl.GetTextRange(&tr);
+
+            //Write it to disk
+            pFile->Write(Buffer, nGrabSize);
+        }
+
+        GetFileTime(*pFile, NULL, NULL, &m_ftWrite);
+    }
 }
-#endif
 
 #ifdef SHARED_HANDLERS
 
