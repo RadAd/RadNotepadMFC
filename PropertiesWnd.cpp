@@ -144,11 +144,20 @@ public:
             return;
         }
 
+#if 0
         CFont* pOldFont = NULL;
         if (IsModified() && m_pWndList->IsMarkModifiedProperties())
         {
             pOldFont = pDC->SelectObject(&m_pWndList->GetBoldFont());
         }
+#else
+        CFont font;
+        if (m_pFont->GetLogFont()->lfFaceName[0] == _T('\0'))   // TODO Determine font mix
+            font.CreateFontIndirectW(&m_pDefaultTheme->font);
+        else
+            font.CreateFontIndirectW(m_pFont->GetLogFont());
+        CFont* pOldFont = pDC->SelectObject(&font);
+#endif
         COLORREF cOldBg = pDC->SetBkColor(GetBackgroundColor());
         int nOldMode = pDC->SetBkMode(OPAQUE);
         COLORREF cOldFg = pDC->SetTextColor(GetForegroundColor());
@@ -253,6 +262,7 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
             CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
             PLOGFONT f = p->GetLogFont();
             *prop->valFont = *f;
+            // TODO Compare against default font
         }
         break;
 
