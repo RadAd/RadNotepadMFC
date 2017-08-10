@@ -3,11 +3,12 @@
 //
 
 #include "stdafx.h"
-#include "afxwinappex.h"
-#include "afxdialogex.h"
-#include "RadNotepad.h"
-#include "MainFrm.h"
+#include <afxwinappex.h>
+#include <afxdialogex.h>
 
+#include "RadNotepad.h"
+#include "AboutDlg.h"
+#include "MainFrm.h"
 #include "ChildFrm.h"
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
@@ -39,6 +40,7 @@ END_MESSAGE_MAP()
 CRadNotepadApp::CRadNotepadApp()
 {
 	m_bHiColorIcons = TRUE;
+    m_hSciDLL = NULL;
 
 	// support Restart Manager
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_ALL_ASPECTS;
@@ -52,9 +54,6 @@ CRadNotepadApp::CRadNotepadApp()
 	// TODO: replace application ID string below with unique ID string; recommended
 	// format for string is CompanyName.ProductName.SubProduct.VersionInformation
 	SetAppID(_T("RadNotepad.AppID.NoVersion"));
-
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
 }
 
 // The one and only CRadNotepadApp object
@@ -76,9 +75,8 @@ BOOL CRadNotepadApp::InitInstance()
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
-    HMODULE m_hSciDLL = LoadLibrary(_T("SciLexer.dll"));
-    // TODO Free iDLL
-    if (m_hSciDLL == nullptr)
+    m_hSciDLL = LoadLibrary(_T("SciLexer.dll"));
+    if (m_hSciDLL == NULL)
     {
         AfxMessageBox(_T("Scintilla DLL is not installed, Please download the SciTE editor and copy the SciLexer.dll into this application's directory"));
         return FALSE;
@@ -167,8 +165,10 @@ BOOL CRadNotepadApp::InitInstance()
 
 int CRadNotepadApp::ExitInstance()
 {
-	//TODO: handle additional resources you may have added
 	AfxOleTerm(FALSE);
+
+    FreeLibrary(m_hSciDLL);
+    m_hSciDLL = NULL;
 
 	return CWinAppEx::ExitInstance();
 }
@@ -196,45 +196,6 @@ int CRadNotepadApp::GetModifiedDocumentCount() const
 
 // CRadNotepadApp message handlers
 
-
-// CAboutDlg dialog used for App About
-
-class CAboutDlg : public CDialogEx
-{
-public:
-	CAboutDlg();
-
-// Dialog Data
-#ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_ABOUTBOX };
-#endif
-
-protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-
-// Implementation
-protected:
-	DECLARE_MESSAGE_MAP()
-};
-
-CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
-{
-}
-
-void CAboutDlg::DoDataExchange(CDataExchange* pDX)
-{
-	CDialogEx::DoDataExchange(pDX);
-}
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
-END_MESSAGE_MAP()
-
-// App command to run the dialog
-void CRadNotepadApp::OnAppAbout()
-{
-	CAboutDlg aboutDlg;
-	aboutDlg.DoModal();
-}
 
 // CRadNotepadApp customization load/save methods
 

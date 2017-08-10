@@ -28,6 +28,7 @@ public:
 
 // Implementation
 	BOOL  m_bHiColorIcons;
+    HMODULE m_hSciDLL;
     Settings m_Settings;
 
 	virtual void PreLoadState();
