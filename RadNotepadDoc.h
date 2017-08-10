@@ -4,6 +4,13 @@
 
 #pragma once
 
+enum Encoding
+{
+    BOM_ANSI,
+    BOM_UTF16_LE,
+    BOM_UTF16_BE,
+    BOM_UTF8,
+};
 
 class CRadNotepadDoc : public CScintillaDoc
 {
@@ -37,6 +44,7 @@ public:
 #endif
 
 protected:
+    Encoding m_eEncoding;
     FILETIME m_ftWrite;
 
 // Generated message map functions

@@ -17,6 +17,49 @@
 #define new DEBUG_NEW
 #endif
 
+static const Encoding g_EncodingList[] = { BOM_ANSI, BOM_UTF16_LE, BOM_UTF16_BE, BOM_UTF8 };
+
+static BYTE g_BomBytes[][4] = {
+    { 0 },  // BOM_ANSI
+    { u'\xFF', u'\xFE', 0 }, // BOM_UTF16_LE
+    { u'\xFE', u'\xFF', 0 }, // BOM_UTF16_BE
+    { u'\xEF', u'\xBB', u'\xBF', 0 }, // BOM_UTF8
+};
+
+static void byteswap16(unsigned short* data, size_t count)
+{
+    for (size_t i = 0; i < count; ++i)
+        data[i] = _byteswap_ushort(data[i]);
+}
+
+static UINT GetBomLength(Encoding eEncoding)
+{
+    PBYTE pBomData = g_BomBytes[eEncoding];
+    int i = 0;
+    for (i = 0; pBomData[i] != 0; ++i)
+        ;
+    return i;
+}
+
+static BOOL IsBom(PBYTE pData, PBYTE pBomData)
+{
+    int i = 0;
+    for (i = 0; pBomData[i] != 0; ++i)
+        if (pBomData[i] != pData[i])
+            break;
+    return (pBomData[i] == 0);
+}
+
+static Encoding CheckBom(PBYTE pData)
+{
+    for (Encoding eEncoding : g_EncodingList)
+    {
+        if (g_BomBytes[eEncoding][0] != 0 && IsBom(pData, g_BomBytes[eEncoding]))
+            return eEncoding;
+    }
+    return BOM_ANSI;
+}
+
 // CRadNotepadDoc
 
 IMPLEMENT_DYNCREATE(CRadNotepadDoc, CScintillaDoc)
@@ -34,6 +77,7 @@ END_MESSAGE_MAP()
 
 CRadNotepadDoc::CRadNotepadDoc()
 {
+    m_eEncoding = BOM_ANSI; // TODO Default
     m_ftWrite.dwHighDateTime = 0;
     m_ftWrite.dwLowDateTime = 0;
 }
@@ -104,10 +148,76 @@ BOOL CRadNotepadDoc::OnNewDocument()
 
 // CRadNotepadDoc serialization
 
+static void AddText(CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesRead, Encoding eEncoding)
+{
+    if (nBytesRead > 0)
+    {
+        switch (eEncoding)
+        {
+        case BOM_ANSI:
+        case BOM_UTF8:
+            rCtrl.AddText(nBytesRead / sizeof(char), reinterpret_cast<char*>(Buffer));
+            break;
+
+        case BOM_UTF16_BE:
+            byteswap16(reinterpret_cast<unsigned short*>(Buffer), nBytesRead / sizeof(unsigned short));
+            // fallthrough
+        case BOM_UTF16_LE:
+            rCtrl.AddText(nBytesRead / sizeof(wchar_t), reinterpret_cast<wchar_t*>(Buffer));
+            break;
+
+        default:
+            ASSERT(FALSE);
+            break;
+        }
+    }
+}
+
+static void WriteBom(CFile* pFile, Encoding eEncoding)
+{
+    UINT nLen = GetBomLength(eEncoding);
+    if (nLen > 0)
+        pFile->Write(g_BomBytes[eEncoding], GetBomLength(eEncoding));
+}
+
+static void WriteText(CFile* pFile, const char* Buffer, int nBytes, Encoding eEncoding)
+{
+    if (nBytes > 0)
+    {
+        switch (eEncoding)
+        {
+        case BOM_ANSI:
+        case BOM_UTF8:
+            pFile->Write(Buffer, nBytes);
+            break;
+
+        case BOM_UTF16_BE:
+        case BOM_UTF16_LE:
+            {
+                CStringW s = CScintillaCtrl::UTF82W(Buffer, nBytes);
+                if (eEncoding == BOM_UTF16_BE)
+                {
+                    int nLen = s.GetLength();
+                    byteswap16(reinterpret_cast<unsigned short*>(s.GetBuffer()), nLen);
+                    s.ReleaseBuffer(nLen);
+                }
+                pFile->Write(s, s.GetLength() * sizeof(WCHAR));
+            }
+            break;
+
+        default:
+            ASSERT(FALSE);
+            break;
+        }
+    }
+}
+
 void CRadNotepadDoc::Serialize(CArchive& ar)
 {
     CScintillaView* pView = GetView();
     CScintillaCtrl& rCtrl = pView->GetCtrl();
+
+    const int BUFSIZE = 4096;
 
     if (ar.IsLoading())
     {
@@ -117,13 +227,22 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
 
         //Read the data in from the file in blocks
         CFile* pFile = ar.GetFile();
-        char Buffer[4096];
+        BYTE Buffer[BUFSIZE];
         int nBytesRead = 0;
+        bool bFirst = true;
         do
         {
-            nBytesRead = pFile->Read(Buffer, 4096);
-            if (nBytesRead)
-                rCtrl.AddText(nBytesRead, Buffer);
+            nBytesRead = pFile->Read(Buffer, BUFSIZE);
+            if (bFirst)
+            {
+                ASSERT(nBytesRead >= 3);
+                bFirst = false;
+                m_eEncoding = CheckBom(Buffer);
+                UINT nLen = GetBomLength(m_eEncoding);
+                AddText(rCtrl, Buffer + nLen, nBytesRead - nLen, m_eEncoding);
+            }
+            else
+                AddText(rCtrl, Buffer, nBytesRead, m_eEncoding);
         } while (nBytesRead);
 
         CheckReadOnly();
@@ -142,22 +261,23 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
 
         //Write the data in blocks to disk
         CFile* pFile = ar.GetFile();
-        for (int i = 0; i<nDocLength; i += 4095) //4095 because data will be returned nullptr terminated
+        WriteBom(pFile, m_eEncoding);
+        for (int i = 0; i<nDocLength; i += (BUFSIZE - 1)) // (BUFSIZE - 1) because data will be returned nullptr terminated
         {
             int nGrabSize = nDocLength - i;
-            if (nGrabSize > 4095)
-                nGrabSize = 4095;
+            if (nGrabSize > (BUFSIZE - 1))
+                nGrabSize = (BUFSIZE - 1);
 
             //Get the data from the control
             Sci_TextRange tr;
             tr.chrg.cpMin = i;
             tr.chrg.cpMax = i + nGrabSize;
-            char Buffer[4096];
+            char Buffer[BUFSIZE];
             tr.lpstrText = Buffer;
             rCtrl.GetTextRange(&tr);
 
             //Write it to disk
-            pFile->Write(Buffer, nGrabSize);
+            WriteText(pFile, Buffer, nGrabSize, m_eEncoding);
         }
 
         GetFileTime(*pFile, NULL, NULL, &m_ftWrite);
@@ -238,7 +358,6 @@ void CRadNotepadDoc::Dump(CDumpContext& dc) const
 
 void CRadNotepadDoc::SetTitle(LPCTSTR lpszTitle)
 {
-    // TODO: Add your specialized code here and/or call the base class
     CScintillaView* pView = GetView();
     CString strTitle = lpszTitle ? lpszTitle : GetTitle();
     strTitle.Remove(_T('^'));
@@ -302,5 +421,6 @@ void CRadNotepadDoc::OnUpdateFileReadOnly(CCmdUI *pCmdUI)
 {
     CScintillaView* pView = GetView();
     CScintillaCtrl& rCtrl = pView->GetCtrl();
+    pCmdUI->Enable(!GetPathName().IsEmpty());
     pCmdUI->SetCheck(rCtrl.GetReadOnly());
 }
