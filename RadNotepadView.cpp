@@ -163,17 +163,6 @@ enum Margin
     MARGIN_FOLDS,
 };
 
-enum Margin GetMarginFromMenu(UINT nId)
-{
-    switch (nId)
-    {
-    default: ASSERT(FALSE);
-    case ID_VIEW_LINENUMBERS:   return MARGIN_LINENUMBERS;
-    case ID_VIEW_BOOKMARKS:     return MARGIN_SYMBOLS;
-    case ID_VIEW_FOLDS:         return MARGIN_FOLDS;
-    }
-}
-
 int GetWidth(CScintillaCtrl& rCtrl, Margin m)
 {
     switch (m)
@@ -221,9 +210,7 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_EDIT_TOGGLEBOOKMARK, &CRadNotepadView::OnEditToggleBookmark)
     ON_COMMAND(ID_EDIT_PREVIOUSBOOKMARK, &CRadNotepadView::OnEditPreviousBookmark)
     ON_COMMAND(ID_EDIT_NEXTBOOKMARK, &CRadNotepadView::OnEditNextBookmark)
-    ON_COMMAND(ID_LINEENDINGS_WINDOWS, &CRadNotepadView::OnLineEndingsWindows)
-    ON_COMMAND(ID_LINEENDINGS_UNIX, &CRadNotepadView::OnLineEndingsUnix)
-    ON_COMMAND(ID_LINEENDINGS_MAC, &CRadNotepadView::OnLineEndingsMac)
+    ON_COMMAND_RANGE(ID_LINEENDINGS_WINDOWS, ID_LINEENDINGS_UNIX, &CRadNotepadView::OnLineEndings)
     ON_UPDATE_COMMAND_UI_RANGE(ID_LINEENDINGS_WINDOWS, ID_LINEENDINGS_UNIX, &CRadNotepadView::OnUpdateLineEndings)
     ON_COMMAND(ID_EDIT_MAKEUPPERCASE, &CRadNotepadView::OnEditMakeUppercase)
     ON_COMMAND(ID_EDIT_MAKELOWERCASE, &CRadNotepadView::OnEditMakeLowercase)
@@ -458,9 +445,9 @@ void CRadNotepadView::DefineMarker(int marker, int markerType, COLORREF fore, CO
 }
 
 
-void CRadNotepadView::OnViewMarker(UINT nId)
+void CRadNotepadView::OnViewMarker(UINT nID)
 {
-    Margin nMarker = GetMarginFromMenu(nId);
+    Margin nMarker = static_cast<Margin>(nID - ID_VIEW_LINENUMBERS);
     CScintillaCtrl& rCtrl = GetCtrl();
     int nMarginWidth = rCtrl.GetMarginWidthN(nMarker);
     if (nMarginWidth)
@@ -472,7 +459,7 @@ void CRadNotepadView::OnViewMarker(UINT nId)
 
 void CRadNotepadView::OnUpdateViewMarker(CCmdUI *pCmdUI)
 {
-    Margin nMarker = GetMarginFromMenu(pCmdUI->m_nID);
+    Margin nMarker = static_cast<Margin>(pCmdUI->m_nID - ID_VIEW_LINENUMBERS);
     CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetMarginWidthN(nMarker) != 0);
 }
@@ -600,23 +587,11 @@ void CRadNotepadView::OnEditNextBookmark()
 }
 
 
-void CRadNotepadView::OnLineEndingsWindows()
+void CRadNotepadView::OnLineEndings(UINT nID)
 {
-    SetLineEndingsMode(SC_EOL_CRLF);
+    const int mode = nID - ID_LINEENDINGS_WINDOWS;
+    SetLineEndingsMode(mode);
 }
-
-
-void CRadNotepadView::OnLineEndingsUnix()
-{
-    SetLineEndingsMode(SC_EOL_LF);
-}
-
-
-void CRadNotepadView::OnLineEndingsMac()
-{
-    SetLineEndingsMode(SC_EOL_CR);
-}
-
 
 void CRadNotepadView::OnUpdateLineEndings(CCmdUI *pCmdUI)
 {

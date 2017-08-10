@@ -64,4 +64,6 @@ public:
     afx_msg void OnUpdateFileSave(CCmdUI *pCmdUI);
     afx_msg void OnFileReadOnly();
     afx_msg void OnUpdateFileReadOnly(CCmdUI *pCmdUI);
+    afx_msg void OnEncoding(UINT nID);
+    afx_msg void OnUpdateEncoding(CCmdUI *pCmdUI);
 };

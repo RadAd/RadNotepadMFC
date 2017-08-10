@@ -48,7 +48,7 @@ protected:
     DECLARE_MESSAGE_MAP()
 public:
     virtual void OnInitialUpdate();
-    afx_msg void OnViewMarker(UINT nId);
+    afx_msg void OnViewMarker(UINT nID);
     afx_msg void OnUpdateViewMarker(CCmdUI *pCmdUI);
     afx_msg void OnViewWhitespace();
     afx_msg void OnUpdateViewWhitespace(CCmdUI *pCmdUI);
@@ -62,9 +62,7 @@ public:
     afx_msg void OnEditToggleBookmark();
     afx_msg void OnEditPreviousBookmark();
     afx_msg void OnEditNextBookmark();
-    afx_msg void OnLineEndingsWindows();
-    afx_msg void OnLineEndingsUnix();
-    afx_msg void OnLineEndingsMac();
+    afx_msg void OnLineEndings(UINT nID);
     afx_msg void OnUpdateLineEndings(CCmdUI *pCmdUI);
     afx_msg void OnEditMakeUppercase();
     afx_msg void OnEditMakeLowercase();

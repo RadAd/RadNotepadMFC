@@ -70,6 +70,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadDoc, CScintillaDoc)
     ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, &CRadNotepadDoc::OnUpdateFileSave)
     ON_COMMAND(ID_FILE_READONLY, &CRadNotepadDoc::OnFileReadOnly)
     ON_UPDATE_COMMAND_UI(ID_FILE_READONLY, &CRadNotepadDoc::OnUpdateFileReadOnly)
+    ON_COMMAND_RANGE(ID_ENCODING_ANSI, ID_ENCODING_UTF8, &CRadNotepadDoc::OnEncoding)
+    ON_UPDATE_COMMAND_UI_RANGE(ID_ENCODING_ANSI, ID_ENCODING_UTF8, &CRadNotepadDoc::OnUpdateEncoding)
 END_MESSAGE_MAP()
 
 
@@ -423,4 +425,22 @@ void CRadNotepadDoc::OnUpdateFileReadOnly(CCmdUI *pCmdUI)
     CScintillaCtrl& rCtrl = pView->GetCtrl();
     pCmdUI->Enable(!GetPathName().IsEmpty());
     pCmdUI->SetCheck(rCtrl.GetReadOnly());
+}
+
+
+void CRadNotepadDoc::OnEncoding(UINT nID)
+{
+    Encoding e = static_cast<Encoding>(nID - ID_ENCODING_ANSI);
+    if (m_eEncoding != e)
+    {
+        m_eEncoding = e;
+        m_bModified = TRUE;
+        SetTitle(nullptr);
+    }
+}
+
+void CRadNotepadDoc::OnUpdateEncoding(CCmdUI *pCmdUI)
+{
+    Encoding e = static_cast<Encoding>(pCmdUI->m_nID - ID_ENCODING_ANSI);
+    pCmdUI->SetCheck(e == m_eEncoding);
 }
