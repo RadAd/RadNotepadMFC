@@ -131,7 +131,7 @@ int GetOptionIndex(CMFCPropertyGridProperty* pProp)
 class CMFCThemeProperty : public CMFCPropertyGridProperty
 {
 public:
-    CMFCThemeProperty(const CString& strGroupName, Theme* pTheme, const Theme* pDefaultTheme)
+    CMFCThemeProperty(const CString& strGroupName, ThemeItem* pTheme, const ThemeItem* pDefaultTheme)
         : CMFCPropertyGridProperty(strGroupName, 0, TRUE)
         , m_pDefaultTheme(pDefaultTheme)
         , m_pBackground(CreateProperty(_T("Background"), &pTheme->back, pDefaultTheme != nullptr ? &pDefaultTheme->back : nullptr))
@@ -229,13 +229,13 @@ public:
         return c;
     }
 private:
-    const Theme* m_pDefaultTheme;
+    const ThemeItem* m_pDefaultTheme;
     CMFCPropertyGridColorProperty* m_pBackground;
     CMFCPropertyGridColorProperty* m_pForeground;
     CMFCPropertyGridFontProperty* m_pFont;
 };
 
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, Theme* pTheme, const Theme* pDefaultTheme)
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, ThemeItem* pTheme, const ThemeItem* pDefaultTheme)
 {
 #if 0
     CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(strName, 0, TRUE);

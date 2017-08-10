@@ -12,7 +12,8 @@
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
 #include "GoToLineDlg.h"
-#include <SciLexer.h>
+#include "Theme.h"
+#include "LexerData.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -22,112 +23,11 @@
 
 #define RAD_MARKER_BOOKMARK 2
 
-struct LexerData
-{
-    int nID;
-    PCTSTR strExtensions;
-    PCTSTR strKeywords[KEYWORDSET_MAX];
-};
-
-const TCHAR cppKeyWords[] =
-    _T("and and_eq asm auto bitand bitor bool break ")
-    _T("case catch char class compl const const_cast continue ")
-    _T("default delete do double dynamic_cast else enum explicit export extern false float for ")
-    _T("friend goto if inline int long mutable namespace new not not_eq ")
-    _T("operator or or_eq private protected public ")
-    _T("register reinterpret_cast return short signed sizeof static static_cast struct switch ")
-    _T("template this throw true try typedef typeid typename union unsigned using ")
-    _T("virtual void volatile wchar_t while xor xor_eq ");
-
-const LexerData vLexerData[] = {
-    { SCLEX_CPP, _T(".cpp;.cc;.c;.h"), { cppKeyWords } },
-    { SCLEX_NULL },
-};
-
-const LexerData* GetLexerData(PCTSTR ext)
-{
-    int i = 0;
-    while (vLexerData[i].strExtensions != nullptr)
-    {
-        // TODO Better search for extension
-        if (ext[0] != _T('\0') && _tcsstr(vLexerData[i].strExtensions, ext) != nullptr)
-            break;
-        ++i;
-    }
-    return &vLexerData[i];
-}
-
-enum ThemeItem
-{
-    THEME_BACKGROUND,
-    THEME_DEFAULT,
-    THEME_COMMENT,
-    THEME_NUMBER,
-    THEME_WORD,
-    THEME_STRING,
-    THEME_IDENTIFIER,
-    THEME_PREPROCESSOR,
-    THEME_OPERATOR,
-};
-
-struct
-{
-    ThemeItem nItem;
-    Theme theme;
-} vThemeDefault[] = {
-    { THEME_COMMENT,        COLOR_LT_GREEN,     COLOR_NONE },
-    { THEME_NUMBER,         COLOR_LT_CYAN,      COLOR_NONE },
-    { THEME_WORD,           COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) },
-    { THEME_STRING,         COLOR_LT_MAGENTA,   COLOR_NONE },
-    { THEME_IDENTIFIER,     COLOR_BLACK,        COLOR_NONE },
-    { THEME_PREPROCESSOR,   COLOR_LT_RED,       COLOR_NONE },
-    { THEME_OPERATOR,       COLOR_LT_YELLOW,    COLOR_NONE },
-};
-
-const Theme* GetTheme(ThemeItem nItem, const Settings* pSettings)
-{
-    if (nItem == THEME_DEFAULT)
-        return &pSettings->tDefault;
-    for (int i = 0; i < ARRAYSIZE(vThemeDefault); ++i)
-    {
-        if (vThemeDefault[i].nItem == nItem)
-            return &vThemeDefault[i].theme;
-    }
-    return nullptr;
-};
-
-void ApplyTheme(CScintillaCtrl& rCtrl, int nStyle, const Theme& rTheme)
-{
-    if (rTheme.fore != COLOR_NONE)
-        rCtrl.StyleSetFore(nStyle, rTheme.fore);
-    if (rTheme.back != COLOR_NONE)
-        rCtrl.StyleSetBack(nStyle, rTheme.back);
-    if (rTheme.font.lfHeight != 0)
-    {
-        CWindowDC dc(&rCtrl);
-        int nLogY = dc.GetDeviceCaps(LOGPIXELSY);
-        if (nLogY != 0)
-        {
-            int pt = MulDiv(72, -rTheme.font.lfHeight, nLogY);
-            rCtrl.StyleSetSize(nStyle, pt);
-        }
-    }
-    if (rTheme.font.lfFaceName[0] != _T('\0'))
-        rCtrl.StyleSetFont(nStyle, rTheme.font.lfFaceName);
-    rCtrl.StyleSetCharacterSet(nStyle, rTheme.font.lfCharSet);
-    if (rTheme.font.lfWeight >= FW_BOLD)
-        rCtrl.StyleSetBold(nStyle, TRUE);
-    if (rTheme.font.lfItalic)
-        rCtrl.StyleSetItalic(nStyle, TRUE);
-    if (rTheme.font.lfUnderline)
-        rCtrl.StyleSetUnderline(nStyle, TRUE);
-}
-
 struct Style
 {
     int nID;
     int nStyle;
-    ThemeItem nTheme;
+    ThemeType nTheme;
 };
 
 Style vStyleDefault = { SCLEX_NULL, STYLE_DEFAULT, THEME_DEFAULT };
@@ -151,7 +51,7 @@ Style vStyle[] = {
 
 void ApplyStyle(CScintillaCtrl& rCtrl, const Style& rStyle, const Settings* pSettings)
 {
-    const Theme* pTheme = GetTheme(rStyle.nTheme, pSettings);
+    const ThemeItem* pTheme = GetTheme(rStyle.nTheme, pSettings);
     if (pTheme != nullptr)
         ApplyTheme(rCtrl, rStyle.nStyle, *pTheme);
 }

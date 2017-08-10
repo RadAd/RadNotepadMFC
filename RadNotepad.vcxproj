@@ -191,6 +191,7 @@
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="GoToLineDlg.h" />
+    <ClInclude Include="LexerData.h" />
     <ClInclude Include="RadDocManager.h" />
     <ClInclude Include="RadNotepad.h" />
     <ClInclude Include="RadNotepadDoc.h" />
@@ -205,6 +206,7 @@
     <ClInclude Include="Settings.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Theme.h" />
     <ClInclude Include="ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
@@ -212,6 +214,7 @@
     <ClCompile Include="ClassView.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="GoToLineDlg.cpp" />
+    <ClCompile Include="LexerData.cpp" />
     <ClCompile Include="RadDocManager.cpp" />
     <ClCompile Include="RadNotepad.cpp" />
     <ClCompile Include="RadNotepadDoc.cpp" />
@@ -227,6 +230,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Theme.cpp" />
     <ClCompile Include="ViewTree.cpp" />
   </ItemGroup>
   <ItemGroup>
