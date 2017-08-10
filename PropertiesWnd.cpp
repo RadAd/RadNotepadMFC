@@ -12,6 +12,8 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+// TODO A CMFCPropertyGridColorProperty which knows common color names
+
 enum PropType
 {
     PROP_BOOL,
@@ -42,15 +44,17 @@ struct Property
     {
     }
 
-    Property(COLORREF* c)
+    Property(COLORREF* c, const COLORREF* def)
         : nType(PROP_COLOR)
         , valColor(c)
+        , defColor(def)
     {
     }
 
-    Property(LOGFONT* f)
+    Property(LOGFONT* f, const LOGFONT* def)
         : nType(PROP_FONT)
         , valFont(f)
+        , defFont(def)
     {
     }
 
@@ -62,9 +66,12 @@ struct Property
         COLORREF* valColor;
         LOGFONT* valFont;
     };
+    union
+    {
+        const COLORREF* defColor;
+        const LOGFONT* defFont;
+    };
 };
-
-// TODO new Property aren't been deleted
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, bool* pBool)
 {
@@ -80,16 +87,20 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, int* pInt)
 
 CMFCPropertyGridColorProperty* CreateProperty(const CString& strName, COLORREF* pColor, const COLORREF* pDefaultColor = nullptr)
 {
-    CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) new Property(pColor));
+    CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) new Property(pColor, pDefaultColor));
     if (pDefaultColor != nullptr)
         p->EnableAutomaticButton(_T("Default"), *pDefaultColor);
     p->EnableOtherButton(_T("More Colors..."));
     return p;
 }
 
-CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pFont)
+CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pFont, const LOGFONT* pFontDef)
 {
-    return new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) new Property(pFont));
+    CMFCPropertyGridFontProperty* p = new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) new Property(pFont, pFontDef));
+    PLOGFONT f = p->GetLogFont();
+    if (f->lfFaceName[0] == _T('\0'))
+        wcscpy_s(f->lfFaceName, _T("Default"));
+    return p;
 }
 
 template <class E>
@@ -125,7 +136,7 @@ public:
         , m_pDefaultTheme(pDefaultTheme)
         , m_pBackground(CreateProperty(_T("Background"), &pTheme->back, pDefaultTheme != nullptr ? &pDefaultTheme->back : nullptr))
         , m_pForeground(CreateProperty(_T("Foreground"), &pTheme->fore, pDefaultTheme != nullptr ? &pDefaultTheme->fore : nullptr))
-        , m_pFont(CreateProperty(_T("Font"), &pTheme->font))
+        , m_pFont(CreateProperty(_T("Font"), &pTheme->font, pDefaultTheme != nullptr ? &pDefaultTheme->font : nullptr))
     {
         AddSubItem(m_pBackground);
         AddSubItem(m_pForeground);
@@ -152,10 +163,15 @@ public:
         }
 #else
         CFont font;
-        if (m_pFont->GetLogFont()->lfFaceName[0] == _T('\0'))   // TODO Determine font mix
-            font.CreateFontIndirectW(&m_pDefaultTheme->font);
-        else
-            font.CreateFontIndirectW(m_pFont->GetLogFont());
+        LOGFONT f = *m_pFont->GetLogFont();
+        if (f.lfFaceName[0] == _T('\0') || wcscmp(f.lfFaceName, _T("Default")) == 0)
+            wcscpy_s(f.lfFaceName, m_pDefaultTheme->font.lfFaceName);
+        if (f.lfHeight == 0)
+            f.lfHeight = m_pDefaultTheme->font.lfHeight;
+        if (f.lfWeight == 0)
+            f.lfWeight = m_pDefaultTheme->font.lfWeight;
+        // TODO What to do with italic and underline
+        font.CreateFontIndirectW(&f);
         CFont* pOldFont = pDC->SelectObject(&font);
 #endif
         COLORREF cOldBg = pDC->SetBkColor(GetBackgroundColor());
@@ -221,7 +237,6 @@ private:
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, Theme* pTheme, const Theme* pDefaultTheme)
 {
-    // TODO Override rendering
 #if 0
     CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(strName, 0, TRUE);
     pGroup->AddSubItem(CreateProperty(_T("Background"), &pTheme->back, pDefaultTheme != nullptr ? &pDefaultTheme->back : nullptr));
@@ -261,8 +276,17 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         {
             CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
             PLOGFONT f = p->GetLogFont();
+            if (prop->defFont != nullptr)
+            {
+                if (wcscmp(prop->defFont->lfFaceName, f->lfFaceName) == 0)
+                    wcscpy_s(f->lfFaceName, _T("Default"));
+                if (prop->defFont->lfHeight == f->lfHeight)
+                    f->lfHeight = 0;
+                if (prop->defFont->lfWeight == f->lfWeight)
+                    f->lfWeight = 0;
+                // TODO What to do with italic and underline
+            }
             *prop->valFont = *f;
-            // TODO Compare against default font
         }
         break;
 
@@ -299,6 +323,7 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
 	ON_WM_SETFOCUS()
 	ON_WM_SETTINGCHANGE()
     ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -549,12 +574,55 @@ void CPropertiesWnd::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 	SetPropListFont();
 }
 
+static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
+{
+    for (int i = 0; i < pProp->GetSubItemsCount(); ++i)
+        Refresh(pProp->GetSubItem(i), propdef);
+    Property* prop = (Property*) pProp->GetData();
+    if (prop != nullptr && prop->nType == propdef->nType)
+    {
+        switch (prop->nType)
+        {
+        case PROP_BOOL:
+            break;
+
+        case PROP_INT:
+            break;
+
+        case PROP_INDEX:
+            break;
+
+        case PROP_COLOR:
+            if (prop->defColor == propdef->valColor)
+            {
+                CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
+                p->EnableAutomaticButton(_T("Default"), *prop->defColor);
+                pProp->Redraw();
+            }
+            break;
+
+        case PROP_FONT:
+            if (prop->defFont == propdef->valFont)
+                pProp->Redraw();
+            break;
+
+        default:
+            ASSERT(FALSE);
+            break;
+        }
+    }
+}
+
 LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM /*wParam*/, LPARAM lParam)
 {
     CMFCPropertyGridProperty* pProp = reinterpret_cast<CMFCPropertyGridProperty*>(lParam);
     Property* prop = (Property*) pProp->GetData();
     if (prop != nullptr)
         ::SetProperty(pProp, prop);
+
+    for (int i = 0; i < m_wndPropList.GetPropertyCount(); ++i)
+        Refresh(m_wndPropList.GetProperty(i), prop);
+
     return 0;
 }
 
@@ -578,4 +646,21 @@ void CPropertiesWnd::SetPropListFont()
 
 	m_wndPropList.SetFont(&m_fntPropList);
 	//m_wndObjectCombo.SetFont(&m_fntPropList);
+}
+
+static void CleanUp(CMFCPropertyGridProperty* pProp)
+{
+    for (int i = 0; i < pProp->GetSubItemsCount(); ++i)
+        CleanUp(pProp->GetSubItem(i));
+    Property* prop = (Property*) pProp->GetData();
+    if (prop != nullptr)
+        delete prop;
+}
+
+void CPropertiesWnd::OnDestroy()
+{
+    CDockablePane::OnDestroy();
+
+    for (int i = 0; i < m_wndPropList.GetPropertyCount(); ++i)
+        CleanUp(m_wndPropList.GetProperty(i));
 }

@@ -62,5 +62,7 @@ protected:
 	void SetPropListFont();
 
 	int m_nComboHeight;
+public:
+    afx_msg void OnDestroy();
 };
 
