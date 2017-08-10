@@ -25,6 +25,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadDoc, CScintillaDoc)
     ON_COMMAND(ID_FILE_REVERT, &CRadNotepadDoc::OnFileRevert)
     ON_UPDATE_COMMAND_UI(ID_FILE_REVERT, &CRadNotepadDoc::OnUpdateFileRevert)
     ON_UPDATE_COMMAND_UI(ID_FILE_SAVE, &CRadNotepadDoc::OnUpdateFileSave)
+    ON_COMMAND(ID_FILE_READONLY, &CRadNotepadDoc::OnFileReadOnly)
+    ON_UPDATE_COMMAND_UI(ID_FILE_READONLY, &CRadNotepadDoc::OnUpdateFileReadOnly)
 END_MESSAGE_MAP()
 
 
@@ -275,4 +277,30 @@ void CRadNotepadDoc::OnUpdateFileRevert(CCmdUI *pCmdUI)
 void CRadNotepadDoc::OnUpdateFileSave(CCmdUI *pCmdUI)
 {
     pCmdUI->Enable(IsModified());
+}
+
+
+void CRadNotepadDoc::OnFileReadOnly()
+{
+    if (!GetPathName().IsEmpty())
+    {
+        DWORD dwAttr = GetFileAttributes(GetPathName());
+        if (dwAttr != INVALID_FILE_ATTRIBUTES)
+        {
+            if (dwAttr & FILE_ATTRIBUTE_READONLY)
+                dwAttr &= ~FILE_ATTRIBUTE_READONLY;
+            else
+                dwAttr |= FILE_ATTRIBUTE_READONLY;
+            SetFileAttributes(GetPathName(), dwAttr);
+            CheckReadOnly();
+        }
+    }
+}
+
+
+void CRadNotepadDoc::OnUpdateFileReadOnly(CCmdUI *pCmdUI)
+{
+    CScintillaView* pView = GetView();
+    CScintillaCtrl& rCtrl = pView->GetCtrl();
+    pCmdUI->SetCheck(rCtrl.GetReadOnly());
 }
