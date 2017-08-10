@@ -25,14 +25,5 @@ struct Settings
     COLORREF cFoldFG = COLOR_LT_CYAN;
     COLORREF cFoldBG = COLOR_BLACK;
 
-    ThemeItem tDefault = { COLOR_BLACK,        COLOR_WHITE, Font(-13, _T("Consolas")) };
-    struct { const TCHAR* name; ThemeItem theme; } vecTheme[7] = {
-        { _T("Comment"),      { COLOR_LT_GREEN,     COLOR_NONE } },
-        { _T("Number"),       { COLOR_LT_CYAN,      COLOR_NONE } },
-        { _T("Word"),         { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } },
-        { _T("String"),       { COLOR_LT_MAGENTA,   COLOR_NONE } },
-        { _T("Identifier"),   { COLOR_BLACK,        COLOR_NONE } },
-        { _T("Preprocessor"), { COLOR_LT_RED,       COLOR_NONE } },
-        { _T("Operator"),     { COLOR_LT_YELLOW,    COLOR_NONE } },
-    };
+    Theme rTheme;
 };

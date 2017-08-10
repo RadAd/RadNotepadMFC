@@ -10,18 +10,14 @@
 #define COLOR_LT_MAGENTA    RGB(0x80, 0x00, 0x80)
 #define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
 
-enum ThemeType
-{
-    THEME_BACKGROUND,
-    THEME_DEFAULT,
-    THEME_COMMENT,
-    THEME_NUMBER,
-    THEME_WORD,
-    THEME_STRING,
-    THEME_IDENTIFIER,
-    THEME_PREPROCESSOR,
-    THEME_OPERATOR,
-};
+extern LPCTSTR THEME_DEFAULT;
+extern LPCTSTR THEME_COMMENT;
+extern LPCTSTR THEME_NUMBER;
+extern LPCTSTR THEME_WORD;
+extern LPCTSTR THEME_STRING;
+extern LPCTSTR THEME_IDENTIFIER;
+extern LPCTSTR THEME_PREPROCESSOR;
+extern LPCTSTR THEME_OPERATOR;
 
 struct ThemeItem
 {
@@ -40,6 +36,19 @@ inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
     return lf;
 }
 
-struct Settings;
-const ThemeItem* GetTheme(ThemeType nItem, const Settings* pSettings);
-void ApplyTheme(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme);
+struct Theme
+{
+    ThemeItem tDefault = { COLOR_BLACK,        COLOR_WHITE, Font(-13, _T("Consolas")) };
+    struct { const TCHAR* name; ThemeItem theme; } vecTheme[7] = {
+        { THEME_COMMENT,      { COLOR_LT_GREEN,     COLOR_NONE } },
+        { THEME_NUMBER,       { COLOR_LT_CYAN,      COLOR_NONE } },
+        { THEME_WORD,         { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } },
+        { THEME_STRING,       { COLOR_LT_MAGENTA,   COLOR_NONE } },
+        { THEME_IDENTIFIER,   { COLOR_BLACK,        COLOR_NONE } },
+        { THEME_PREPROCESSOR, { COLOR_LT_RED,       COLOR_NONE } },
+        { THEME_OPERATOR,     { COLOR_LT_YELLOW,    COLOR_NONE } },
+    };
+};
+
+const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pSettings);
+void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme);

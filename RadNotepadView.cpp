@@ -12,8 +12,8 @@
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
 #include "GoToLineDlg.h"
-#include "Theme.h"
 #include "LexerData.h"
+#include <SciLexer.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -22,39 +22,6 @@
 #define WM_CHECKUPDATE (WM_USER + 1)
 
 #define RAD_MARKER_BOOKMARK 2
-
-struct Style
-{
-    int nID;
-    int nStyle;
-    ThemeType nTheme;
-};
-
-Style vStyleDefault = { SCLEX_NULL, STYLE_DEFAULT, THEME_DEFAULT };
-
-Style vStyle[] = {
-    { SCLEX_CPP, SCE_C_DEFAULT,                 THEME_DEFAULT },
-    { SCLEX_CPP, SCE_C_COMMENT,                 THEME_COMMENT },
-    { SCLEX_CPP, SCE_C_COMMENTLINE,             THEME_COMMENT },
-    { SCLEX_CPP, SCE_C_COMMENTDOC,              THEME_COMMENT },
-    { SCLEX_CPP, SCE_C_COMMENTLINEDOC,          THEME_COMMENT },
-    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORD,       THEME_COMMENT },
-    { SCLEX_CPP, SCE_C_COMMENTDOCKEYWORDERROR,  THEME_COMMENT },
-    { SCLEX_CPP, SCE_C_NUMBER,                  THEME_NUMBER },
-    { SCLEX_CPP, SCE_C_WORD,                    THEME_WORD },
-    { SCLEX_CPP, SCE_C_STRING,                  THEME_STRING },
-    { SCLEX_CPP, SCE_C_IDENTIFIER,              THEME_IDENTIFIER },
-    { SCLEX_CPP, SCE_C_PREPROCESSOR,            THEME_PREPROCESSOR },
-    { SCLEX_CPP, SCE_C_OPERATOR,                THEME_OPERATOR },
-    { SCLEX_NULL },
-};
-
-void ApplyStyle(CScintillaCtrl& rCtrl, const Style& rStyle, const Settings* pSettings)
-{
-    const ThemeItem* pTheme = GetTheme(rStyle.nTheme, pSettings);
-    if (pTheme != nullptr)
-        ApplyTheme(rCtrl, rStyle.nStyle, *pTheme);
-}
 
 enum Margin
 {
@@ -253,38 +220,9 @@ void CRadNotepadView::OnInitialUpdate()
     // TODO Copy some settings from other ctrl (ie split view, new window)
 
     CScintillaCtrl& rCtrl = GetCtrl();
-
-    if (pLexerData != nullptr)
-    {
-        //Setup the Lexer
-        rCtrl.SetLexer(pLexerData->nID);
-        for (int i = 0; i < KEYWORDSET_MAX; ++i)
-        {
-            // TODO Can I do this just once? Is this state shared across ctrls?
-            rCtrl.SetKeyWords(i, pLexerData->strKeywords[i]);
-        }
-    }
-    else
-    {
-        rCtrl.SetLexer(SCLEX_NULL);
-    }
-
     const Settings& settings = theApp.m_Settings;
 
-    //Setup styles
-    ApplyStyle(rCtrl, vStyleDefault, &settings);
-    rCtrl.StyleClearAll();
-    if (pLexerData != nullptr)
-    {
-        // TODO Can I do this just once? Is this state shared across ctrls?
-        int i = 0;
-        while (vStyle[i].nID != SCLEX_NULL)
-        {
-            if (vStyle[i].nID == pLexerData->nID)
-                ApplyStyle(rCtrl, vStyle[i], &settings);
-            ++i;
-        }
-    }
+    Apply(rCtrl, pLexerData, &settings.rTheme);
 
     //Setup folding
     rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.PropShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);

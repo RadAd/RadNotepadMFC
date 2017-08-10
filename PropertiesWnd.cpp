@@ -479,10 +479,11 @@ void CPropertiesWnd::InitPropList()
     }
 
     {
+        Theme* pTheme = &m_pSettings->rTheme;
         CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
-        pGroup1->AddSubItem(CreateProperty(_T("Default"), &m_pSettings->tDefault, nullptr));
-        for (int i = 0; i < ARRAYSIZE(Settings::vecTheme); ++i)
-            pGroup1->AddSubItem(CreateProperty(m_pSettings->vecTheme[i].name, &m_pSettings->vecTheme[i].theme, &m_pSettings->tDefault));
+        pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr));
+        for (int i = 0; i < ARRAYSIZE(Theme::vecTheme); ++i)
+            pGroup1->AddSubItem(CreateProperty(pTheme->vecTheme[i].name, &pTheme->vecTheme[i].theme, &pTheme->tDefault));
         m_wndPropList.AddProperty(pGroup1);
     }
 

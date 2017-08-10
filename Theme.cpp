@@ -1,34 +1,28 @@
 #include "stdafx.h"
 #include "Theme.h"
-#include "Settings.h"
 
-struct
-{
-    ThemeType nItem;
-    ThemeItem theme;
-} vThemeDefault[] = {
-    { THEME_COMMENT,        COLOR_LT_GREEN,     COLOR_NONE },
-    { THEME_NUMBER,         COLOR_LT_CYAN,      COLOR_NONE },
-    { THEME_WORD,           COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) },
-    { THEME_STRING,         COLOR_LT_MAGENTA,   COLOR_NONE },
-    { THEME_IDENTIFIER,     COLOR_BLACK,        COLOR_NONE },
-    { THEME_PREPROCESSOR,   COLOR_LT_RED,       COLOR_NONE },
-    { THEME_OPERATOR,       COLOR_LT_YELLOW,    COLOR_NONE },
-};
+extern LPCTSTR THEME_DEFAULT = _T("Default");
+extern LPCTSTR THEME_COMMENT = _T("Comment");
+extern LPCTSTR THEME_NUMBER = _T("Number");
+extern LPCTSTR THEME_WORD = _T("Word");
+extern LPCTSTR THEME_STRING = _T("String");
+extern LPCTSTR THEME_IDENTIFIER = _T("Identifier");
+extern LPCTSTR THEME_PREPROCESSOR = _T("Preprocessor");
+extern LPCTSTR THEME_OPERATOR = _T("Operator");
 
-const ThemeItem* GetTheme(ThemeType nItem, const Settings* pSettings)
+const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme)
 {
-    if (nItem == THEME_DEFAULT)
-        return &pSettings->tDefault;
-    for (int i = 0; i < ARRAYSIZE(vThemeDefault); ++i)
+    if (_wcsicmp(strItem, THEME_DEFAULT) == 0)
+        return &pTheme->tDefault;
+    for (int i = 0; i < ARRAYSIZE(Theme::vecTheme); ++i)
     {
-        if (vThemeDefault[i].nItem == nItem)
-            return &vThemeDefault[i].theme;
+        if (_wcsicmp(strItem, pTheme->vecTheme[i].name) == 0)
+            return &pTheme->vecTheme[i].theme;
     }
     return nullptr;
 };
 
-void ApplyTheme(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
+void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
 {
     if (rTheme.fore != COLOR_NONE)
         rCtrl.StyleSetFore(nStyle, rTheme.fore);
