@@ -11,6 +11,7 @@
 
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
+#include "GoToLineDlg.h"
 #include <SciLexer.h>
 
 #ifdef _DEBUG
@@ -227,6 +228,7 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_EDIT_MAKEUPPERCASE, &CRadNotepadView::OnEditMakeUppercase)
     ON_COMMAND(ID_EDIT_MAKELOWERCASE, &CRadNotepadView::OnEditMakeLowercase)
     ON_MESSAGE(WM_CHECKUPDATE, &CRadNotepadView::OnCheckUpdate)
+    ON_COMMAND(ID_EDIT_GOTOLINE, &CRadNotepadView::OnEditGotoLine)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -302,7 +304,7 @@ void CRadNotepadView::OnUpdateLine(CCmdUI* pCmdUI)
     int nColumn = rCtrl.GetColumn(nPos);
 
     CString sLine;
-    sLine.Format(ID_INDICATOR_LINE, nLine, nColumn, nPos);
+    sLine.Format(ID_INDICATOR_LINE, nLine + 1, nColumn + 1, nPos + 1);
     pCmdUI->SetText(sLine);
     pCmdUI->Enable();
 }
@@ -676,4 +678,17 @@ afx_msg LRESULT CRadNotepadView::OnCheckUpdate(WPARAM /*wParam*/, LPARAM /*lPara
         bIn = false;
     }
     return 0;
+}
+
+void CRadNotepadView::OnEditGotoLine()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    Sci_Position nPos = rCtrl.GetCurrentPos();
+    int nLine = rCtrl.LineFromPosition(nPos);
+
+    CGoToLineDlg dlg;
+    dlg.m_nLine = nLine + 1;
+    dlg.m_nMaxLine = rCtrl.GetLineCount();
+    if (dlg.DoModal() == IDOK)
+        rCtrl.GotoLine(dlg.m_nLine - 1);
 }

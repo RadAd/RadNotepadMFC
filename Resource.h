@@ -69,6 +69,8 @@
 #define IDS_FIND_TAB                    302
 #define IDS_EXPLORER                    305
 #define IDS_EDIT_MENU                   306
+#define IDD_GOTOLINE                    310
+#define IDC_LINE                        1000
 #define ID_EDIT_FINDNEXT                32779
 #define ID_FILE_REVERT                  32784
 #define ID_VIEW_LINENUMBERS             32785
@@ -90,13 +92,14 @@
 #define IDS_CONVERTLINEENDINGS          32807
 #define ID_EDIT_MAKEUPPERCASE           32808
 #define ID_EDIT_MAKELOWERCASE           32809
+#define ID_EDIT_GOTOLINE                32815
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        310
-#define _APS_NEXT_COMMAND_VALUE         32813
+#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_COMMAND_VALUE         32816
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

@@ -71,6 +71,8 @@ public:
     virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
 protected:
     afx_msg LRESULT OnCheckUpdate(WPARAM wParam, LPARAM lParam);
+public:
+    afx_msg void OnEditGotoLine();
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

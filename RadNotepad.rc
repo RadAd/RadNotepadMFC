@@ -187,6 +187,7 @@ BEGIN
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
+        MENUITEM "&Goto Line\tCtrl+G",           ID_EDIT_GOTOLINE
         MENUITEM SEPARATOR
         MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
         MENUITEM "Find Next\tF3",               ID_EDIT_REPEAT
@@ -294,6 +295,8 @@ BEGIN
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
     "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "U",            ID_EDIT_MAKELOWERCASE,  VIRTKEY, CONTROL, NOINVERT
+    "U",            ID_EDIT_MAKEUPPERCASE,  VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_F2,          ID_EDIT_NEXTBOOKMARK,   VIRTKEY, NOINVERT
     "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
     VK_F2,          ID_EDIT_PREVIOUSBOOKMARK, VIRTKEY, SHIFT, NOINVERT
@@ -309,8 +312,7 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    "U",            ID_EDIT_MAKELOWERCASE,  VIRTKEY, CONTROL, NOINVERT
-    "U",            ID_EDIT_MAKEUPPERCASE,  VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "G",            ID_EDIT_GOTOLINE,       VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -328,6 +330,17 @@ BEGIN
     LTEXT           "RadNotepad, Version 1.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
     LTEXT           "Copyright (C) 2017",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "OK",IDOK,113,41,50,14,WS_GROUP
+END
+
+IDD_GOTOLINE DIALOGEX 0, 0, 157, 56
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Go To Line"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Line Number:",IDC_STATIC,7,7,143,11
+    EDITTEXT        IDC_LINE,7,18,143,15,ES_AUTOHSCROLL | ES_NUMBER
+    DEFPUSHBUTTON   "Go To",IDOK,45,35,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,100,35,50,14
 END
 
 
@@ -385,8 +398,25 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 55
     END
+
+    IDD_GOTOLINE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        TOPMARGIN, 7
+    END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_GOTOLINE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
 
 
 /////////////////////////////////////////////////////////////////////////////
