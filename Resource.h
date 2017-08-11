@@ -102,6 +102,8 @@
 #define ID_EDIT_FINDPREVIOUS            32822
 #define ID_EDIT_FINDNEXTCURRENTWORD     32825
 #define ID_EDIT_FINDPREVIOUSCURRENTWORD 32826
+#define ID_TOOLS_FIRSTTOOL              33000
+#define ID_TOOLS_LASTTOOL               33100
 
 // Next default values for new objects
 // 

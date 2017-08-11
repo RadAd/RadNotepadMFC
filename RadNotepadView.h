@@ -4,6 +4,7 @@
 
 #pragma once
 
+class CRadNotepadDoc;
 
 class CRadNotepadView : public CScintillaView
 {

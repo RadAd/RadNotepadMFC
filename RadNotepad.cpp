@@ -272,6 +272,7 @@ void CRadNotepadApp::PreLoadState()
 
 void CRadNotepadApp::LoadCustomState()
 {
+    InitTools(m_Tools);
 }
 
 void CRadNotepadApp::SaveCustomState()

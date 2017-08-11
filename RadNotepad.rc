@@ -236,6 +236,10 @@ BEGIN
         MENUITEM "End of Line",                 ID_VIEW_ENDOFLINE
         MENUITEM "Word Wrap",                   ID_VIEW_WORDWRAP
     END
+    POPUP "&Tools"
+    BEGIN
+        MENUITEM "<placeholder>",               ID_TOOLS_FIRSTTOOL
+    END
     POPUP "&Window"
     BEGIN
         MENUITEM "&New Window",                 ID_WINDOW_NEW

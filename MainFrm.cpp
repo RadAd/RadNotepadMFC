@@ -7,12 +7,108 @@
 
 #include "MainFrm.h"
 #include "ChildFrm.h"
+#include "RadNotepadView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 UINT NEAR WM_RADNOTEPAD = RegisterWindowMessage(_T("RADNOTEPAD"));
+
+static HICON ExtractIcon(CMFCToolBar& rToolBar, UINT nCommandId)
+{
+    int index = rToolBar.CommandToIndex(nCommandId);
+    if (index < 0)
+        return NULL;
+
+    CMFCToolBarButton* pToolBarButton = rToolBar.GetButton(index);
+    if (pToolBarButton == nullptr)
+        return NULL;
+
+    int image = pToolBarButton->GetImage();
+    if (image < 0)
+        return NULL;
+
+    CMFCToolBarImages* pToolBarImages = rToolBar.IsLocked() ? rToolBar.GetLockedImages() : CMFCToolBar::GetImages();
+
+    return pToolBarImages->ExtractIcon(image);
+}
+
+static bool IconToBitmap(CWnd *pWnd, HICON hIcon, CBitmap& hBitmapUnchecked, CBitmap& hBitmapChecked)
+{
+    CSize size;
+    {
+        ICONINFO iconInfo;
+        GetIconInfo(hIcon, &iconInfo);
+        DeleteObject(iconInfo.hbmMask);
+
+        CBitmap imageBitmap;
+        imageBitmap.Attach(iconInfo.hbmColor);
+
+        BITMAP imageInfo;
+        imageBitmap.GetObject(sizeof(BITMAP), (LPSTR) &imageInfo);
+
+        size.cx = imageInfo.bmWidth;
+        size.cy = imageInfo.bmHeight;
+    }
+#if 0
+    if (imageInfo.bmWidth >= 16)
+        imageInfo.bmWidth = 16;
+    if (imageInfo.bmHeight >= 15)
+        imageInfo.bmHeight = 15;
+#endif
+
+    CRect r(CPoint(0, 0), size);
+
+    CDC* tmpDc = pWnd->GetWindowDC();
+
+    CDC dcNew;
+    if (!dcNew.CreateCompatibleDC(tmpDc))
+        return false;
+
+    if (!hBitmapUnchecked.CreateCompatibleBitmap(tmpDc, size.cx, size.cy))
+        return false;
+
+    if (!hBitmapChecked.CreateCompatibleBitmap(tmpDc, size.cx, size.cy))
+        return false;
+
+    COLORREF bkColor = GetSysColor(COLOR_MENU);
+
+    CBitmap* hOldBitmap = dcNew.SelectObject(&hBitmapUnchecked);
+    COLORREF textColorSave = dcNew.SetTextColor(GetSysColor(COLOR_MENUTEXT));
+    COLORREF bkColorSave = dcNew.SetBkColor(bkColor);
+
+    dcNew.FillSolidRect(r, bkColor);
+
+#if 1
+    if (!DrawIconEx(dcNew, 0, 0, hIcon, size.cx, size.cy, NULL, NULL, DI_NORMAL))
+    {
+        /*AfxMessageBox("Failed on DrawIcon"); */
+        return false;
+    }
+#endif
+
+    dcNew.SelectObject(&hBitmapChecked);
+
+    dcNew.FillSolidRect(r, bkColor);
+
+#if 1
+    if (!DrawIconEx(dcNew, 0, 0, hIcon, size.cx, size.cy, NULL, NULL, DI_NORMAL))
+    {
+        /*AfxMessageBox("Failed on DrawIcon"); */
+        return false;
+    }
+#endif
+
+    dcNew.DrawEdge(r, BDR_SUNKENINNER, BF_RECT);
+
+    dcNew.SetTextColor(textColorSave);
+    dcNew.SetBkColor(bkColorSave);
+    dcNew.SelectObject(hOldBitmap);
+    pWnd->ReleaseDC(tmpDc);
+
+    return true;
+}
 
 // CMainFrame
 
@@ -40,6 +136,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
     ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, &CMainFrame::OnAfxWmOnGetTabTooltip)
     ON_REGISTERED_MESSAGE(WM_RADNOTEPAD, &CMainFrame::OnRadNotepad)
+    ON_COMMAND_RANGE(ID_TOOLS_FIRSTTOOL, ID_TOOLS_LASTTOOL, &CMainFrame::OnToolsTool)
+    ON_UPDATE_COMMAND_UI(ID_TOOLS_FIRSTTOOL, &CMainFrame::OnUpdateToolsTool)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -420,4 +518,70 @@ afx_msg LRESULT CMainFrame::OnAfxWmOnGetTabTooltip(WPARAM /*wParam*/, LPARAM lPa
 LRESULT CMainFrame::OnRadNotepad(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
     return MSG_RADNOTEPAD;
+}
+
+
+void CMainFrame::OnToolsTool(UINT nID)
+{
+    // TODO What to do if no active file
+
+    const Tool& tool = theApp.m_Tools[nID - ID_TOOLS_FIRSTTOOL];
+    CString cmd = tool.cmd;
+    CString param = tool.param;
+    CString directory = _T("{path}");
+
+    CChildFrame* pChildFrame = DYNAMIC_DOWNCAST(CChildFrame, MDIGetActive());
+    if (pChildFrame != nullptr)
+    {
+        CDocument* pDoc = pChildFrame->GetActiveDocument();
+        CRadNotepadView* pView = dynamic_cast<CRadNotepadView*>(pChildFrame->GetActiveView());
+
+        const CString& FileName = pDoc->GetPathName();
+        TCHAR Dir[MAX_PATH] = _T("");
+        StrCpy(Dir, FileName);
+        PathRemoveFileSpec(Dir);
+
+        for (CString* s : { &cmd, &param, &directory })
+        {
+            s->Replace(_T("{path}"), Dir);
+            s->Replace(_T("{file}"), FileName);
+            s->Replace(_T("{selected}"), pView->GetCtrl().GetSelText());
+        }
+    }
+
+    ShellExecute(GetSafeHwnd(), L"open", cmd, param, directory, SW_SHOW);
+}
+
+
+void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
+{
+    if (theApp.m_Tools.empty())
+    {
+        pCmdUI->Enable(FALSE);
+    }
+    else if (pCmdUI->m_pMenu != nullptr)
+    {
+        for (int i = 0; i < (ID_TOOLS_LASTTOOL - ID_TOOLS_FIRSTTOOL); ++i)
+            pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
+
+        for (const Tool& tool : theApp.m_Tools)
+        {
+            pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, MF_STRING | MF_BYPOSITION, pCmdUI->m_nID++, tool.name);
+            if (tool.hIcon != NULL)
+            {
+                CBitmap hBitmapUnchecked, hBitmapChecked;
+                if (IconToBitmap(this, tool.hIcon, hBitmapUnchecked, hBitmapChecked))
+                {
+                    pCmdUI->m_pMenu->SetMenuItemBitmaps(pCmdUI->m_nIndex - 1, MF_BYPOSITION, &hBitmapUnchecked, &hBitmapChecked);
+                    hBitmapUnchecked.Detach();
+                    hBitmapChecked.Detach();
+                }
+            }
+        }
+
+        pCmdUI->m_nIndex--; // point to last menu added
+        pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
+
+        pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
+    }
 }

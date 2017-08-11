@@ -69,6 +69,9 @@ protected:
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
     afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
+public:
+    afx_msg void OnToolsTool(UINT nID);
+    afx_msg void OnUpdateToolsTool(CCmdUI *pCmdUI);
 };
 
 
