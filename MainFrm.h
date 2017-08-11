@@ -8,6 +8,9 @@
 #include "OutputWnd.h"
 #include "PropertiesWnd.h"
 
+extern UINT NEAR WM_RADNOTEPAD;
+#define MSG_RADNOTEPAD 0xac20
+
 class CMainFrame : public CMDIFrameWndEx
 {
 	DECLARE_DYNAMIC(CMainFrame)
@@ -65,6 +68,7 @@ protected:
 	BOOL CreateDockingWindows();
 	void SetDockingWindowIcons(BOOL bHiColorIcons);
     afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
 };
 
 

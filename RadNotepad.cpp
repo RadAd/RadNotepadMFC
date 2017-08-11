@@ -18,6 +18,31 @@
 #define new DEBUG_NEW
 #endif
 
+static void PathMakeAbsolute(CString& strFileName)
+{
+    if (!PathIsRoot(strFileName))
+    {
+        TCHAR strCurrentDirectory[MAX_PATH];
+        TCHAR strTempFileName[MAX_PATH];
+        GetCurrentDirectory(ARRAYSIZE(strCurrentDirectory), strCurrentDirectory);
+        PathCombine(strTempFileName, strCurrentDirectory, strFileName);
+        strFileName = strTempFileName;
+    }
+}
+
+static BOOL CALLBACK FindRadNotepadProc(_In_ HWND hWnd, _In_ LPARAM lParam)
+{
+    DWORD_PTR lRet = 0;
+    ::SendMessageTimeout(hWnd, WM_RADNOTEPAD, 0, 0, SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT | SMTO_BLOCK, 1000, &lRet);
+    if (lRet == MSG_RADNOTEPAD)
+    {
+        HWND* phOther = (HWND*) lParam;
+        *phOther = hWnd;
+        return FALSE;
+    }
+    else
+        return TRUE;
+}
 
 // CRadNotepadApp
 
@@ -65,7 +90,41 @@ CRadNotepadApp theApp;
 
 BOOL CRadNotepadApp::InitInstance()
 {
-	// InitCommonControlsEx() is required on Windows XP if an application
+    HWND hOther = NULL;
+    EnumWindows(FindRadNotepadProc, (LPARAM) &hOther);
+
+    if (hOther != NULL)
+    {
+        CCommandLineInfo cli;
+        ParseCommandLine(cli);
+
+        switch (cli.m_nShellCommand)
+        {
+        case CCommandLineInfo::FileOpen:
+            {
+                PathMakeAbsolute(cli.m_strFileName);
+
+                HGLOBAL hMem = GlobalAlloc(GHND | GMEM_SHARE, sizeof(DROPFILES) + (cli.m_strFileName.GetLength() + 2) * sizeof(TCHAR));
+                DROPFILES* pDropFiles = (DROPFILES*) GlobalLock(hMem);
+                pDropFiles->pFiles = (DWORD) ((LPBYTE) (pDropFiles + 1) - (LPBYTE) pDropFiles);
+                pDropFiles->fWide = TRUE;
+                LPTSTR pDst = (LPTSTR) ((LPBYTE) pDropFiles + pDropFiles->pFiles);
+                int Size = (cli.m_strFileName.GetLength() + 1) * sizeof(TCHAR);
+                memcpy(pDst, cli.m_strFileName.GetBuffer(), Size);
+                pDst = (LPTSTR) ((LPBYTE) pDropFiles + pDropFiles->pFiles + Size);
+                *pDst = _T('\0');
+                GlobalUnlock(hMem);
+
+                PostMessage(hOther, WM_DROPFILES, (WPARAM) hMem, 0);
+            }
+            break;
+        }
+
+        SetForegroundWindow(hOther);
+        return FALSE;
+    }
+
+    // InitCommonControlsEx() is required on Windows XP if an application
 	// manifest specifies use of ComCtl32.dll version 6 or later to enable
 	// visual styles.  Otherwise, any window creation will fail.
 	INITCOMMONCONTROLSEX InitCtrls;
