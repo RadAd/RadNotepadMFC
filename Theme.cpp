@@ -5,10 +5,12 @@ extern LPCTSTR THEME_DEFAULT = _T("Default");
 extern LPCTSTR THEME_COMMENT = _T("Comment");
 extern LPCTSTR THEME_NUMBER = _T("Number");
 extern LPCTSTR THEME_WORD = _T("Word");
+extern LPCTSTR THEME_TYPE = _T("Type");
 extern LPCTSTR THEME_STRING = _T("String");
 extern LPCTSTR THEME_IDENTIFIER = _T("Identifier");
 extern LPCTSTR THEME_PREPROCESSOR = _T("Preprocessor");
 extern LPCTSTR THEME_OPERATOR = _T("Operator");
+extern LPCTSTR THEME_ERROR = _T("Error");
 
 const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme)
 {
