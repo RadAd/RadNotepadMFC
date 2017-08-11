@@ -170,7 +170,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CMFCToolBar::GetUserImages() == NULL)
 	{
 		// load user-defined toolbar images
-		if (m_UserImages.Load(_T(".\\UserImages.bmp")))
+		if (m_UserImages.Load(_T(".\\UserImages.bmp"))) // TODO Better define where this is located
 		{
 			CMFCToolBar::SetUserImages(&m_UserImages);
 		}
@@ -469,6 +469,8 @@ void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
         for (int i = 0; i < (ID_TOOLS_LASTTOOL - ID_TOOLS_FIRSTTOOL); ++i)
             pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
 
+        CMFCToolBarImages* pImages = CMFCToolBar::GetImages();
+
         for (const Tool& tool : theApp.m_Tools)
         {
             pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, MF_STRING | MF_BYPOSITION, pCmdUI->m_nID++, tool.name);
@@ -483,9 +485,11 @@ void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
                     hBitmapChecked.Detach();
                 }
 #else
-                CMFCToolBarImages* pImages = CMFCToolBar::GetUserImages();
-                int i = pImages->AddIcon(tool.hIcon);
-                GetCmdMgr()->SetCmdImage(pCmdUI->m_nID - 1, i, TRUE);
+                if (GetCmdMgr()->GetCmdImage(pCmdUI->m_nID - 1, FALSE) < 0)
+                {
+                    int i = pImages->AddIcon(tool.hIcon);
+                    GetCmdMgr()->SetCmdImage(pCmdUI->m_nID - 1, i, FALSE);
+                }
 #endif
             }
         }
