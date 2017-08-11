@@ -71,6 +71,9 @@ protected:
     afx_msg LRESULT OnCheckUpdate(WPARAM wParam, LPARAM lParam);
 public:
     afx_msg void OnEditGotoLine();
+    afx_msg void OnEditFindPrevious();
+    afx_msg void OnEditFindNextCurrentWord();
+    afx_msg void OnEditFindPreviousCurrentWord();
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

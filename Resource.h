@@ -99,13 +99,16 @@
 #define ID_ENCODING_UTF16LE             32819
 #define ID_ENCODING_UTF16BE             32820
 #define ID_ENCODING_UTF8                32821
+#define ID_EDIT_FINDPREVIOUS            32822
+#define ID_EDIT_FINDNEXTCURRENTWORD     32825
+#define ID_EDIT_FINDPREVIOUSCURRENTWORD 32826
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        312
-#define _APS_NEXT_COMMAND_VALUE         32822
+#define _APS_NEXT_COMMAND_VALUE         32829
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

@@ -83,6 +83,9 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_EDIT_MAKELOWERCASE, &CRadNotepadView::OnEditMakeLowercase)
     ON_MESSAGE(WM_CHECKUPDATE, &CRadNotepadView::OnCheckUpdate)
     ON_COMMAND(ID_EDIT_GOTOLINE, &CRadNotepadView::OnEditGotoLine)
+    ON_COMMAND(ID_EDIT_FINDPREVIOUS, &CRadNotepadView::OnEditFindPrevious)
+    ON_COMMAND(ID_EDIT_FINDNEXTCURRENTWORD, &CRadNotepadView::OnEditFindNextCurrentWord)
+    ON_COMMAND(ID_EDIT_FINDPREVIOUSCURRENTWORD, &CRadNotepadView::OnEditFindPreviousCurrentWord)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -504,4 +507,32 @@ void CRadNotepadView::OnEditGotoLine()
     dlg.m_nMaxLine = rCtrl.GetLineCount();
     if (dlg.DoModal() == IDOK)
         rCtrl.GotoLine(dlg.m_nLine - 1);
+}
+
+extern CScintillaEditState g_scintillaEditState;
+
+void CRadNotepadView::OnEditFindPrevious()
+{
+    if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
+        TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
+}
+
+
+void CRadNotepadView::OnEditFindNextCurrentWord()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    g_scintillaEditState.strFind = rCtrl.GetSelText();
+    g_scintillaEditState.bNext = TRUE;
+    if (!FindText(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
+        TextNotFound(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
+}
+
+
+void CRadNotepadView::OnEditFindPreviousCurrentWord()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    g_scintillaEditState.strFind = rCtrl.GetSelText();
+    g_scintillaEditState.bNext = TRUE;
+    if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
+        TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
 }

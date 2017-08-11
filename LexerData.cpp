@@ -77,7 +77,7 @@ void ApplyStyle(CScintillaCtrl& rCtrl, const LexerData* pLexerData, const Theme*
 {
     ApplyStyle(rCtrl, vStyleDefault, pTheme);
     rCtrl.StyleClearAll();
-    if (pLexerData != nullptr)
+    if (pLexerData != nullptr && pLexerData->vStyle != nullptr)
     {
         // TODO Can I do this just once? Is this state shared across ctrls?
         int i = 0;
