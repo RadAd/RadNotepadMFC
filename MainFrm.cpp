@@ -15,101 +15,6 @@
 
 UINT NEAR WM_RADNOTEPAD = RegisterWindowMessage(_T("RADNOTEPAD"));
 
-static HICON ExtractIcon(CMFCToolBar& rToolBar, UINT nCommandId)
-{
-    int index = rToolBar.CommandToIndex(nCommandId);
-    if (index < 0)
-        return NULL;
-
-    CMFCToolBarButton* pToolBarButton = rToolBar.GetButton(index);
-    if (pToolBarButton == nullptr)
-        return NULL;
-
-    int image = pToolBarButton->GetImage();
-    if (image < 0)
-        return NULL;
-
-    CMFCToolBarImages* pToolBarImages = rToolBar.IsLocked() ? rToolBar.GetLockedImages() : CMFCToolBar::GetImages();
-
-    return pToolBarImages->ExtractIcon(image);
-}
-
-static bool IconToBitmap(CWnd *pWnd, HICON hIcon, CBitmap& hBitmapUnchecked, CBitmap& hBitmapChecked)
-{
-    CSize size;
-    {
-        ICONINFO iconInfo;
-        GetIconInfo(hIcon, &iconInfo);
-        DeleteObject(iconInfo.hbmMask);
-
-        CBitmap imageBitmap;
-        imageBitmap.Attach(iconInfo.hbmColor);
-
-        BITMAP imageInfo;
-        imageBitmap.GetObject(sizeof(BITMAP), (LPSTR) &imageInfo);
-
-        size.cx = imageInfo.bmWidth;
-        size.cy = imageInfo.bmHeight;
-    }
-#if 0
-    if (imageInfo.bmWidth >= 16)
-        imageInfo.bmWidth = 16;
-    if (imageInfo.bmHeight >= 15)
-        imageInfo.bmHeight = 15;
-#endif
-
-    CRect r(CPoint(0, 0), size);
-
-    CDC* tmpDc = pWnd->GetWindowDC();
-
-    CDC dcNew;
-    if (!dcNew.CreateCompatibleDC(tmpDc))
-        return false;
-
-    if (!hBitmapUnchecked.CreateCompatibleBitmap(tmpDc, size.cx, size.cy))
-        return false;
-
-    if (!hBitmapChecked.CreateCompatibleBitmap(tmpDc, size.cx, size.cy))
-        return false;
-
-    COLORREF bkColor = GetSysColor(COLOR_MENU);
-
-    CBitmap* hOldBitmap = dcNew.SelectObject(&hBitmapUnchecked);
-    COLORREF textColorSave = dcNew.SetTextColor(GetSysColor(COLOR_MENUTEXT));
-    COLORREF bkColorSave = dcNew.SetBkColor(bkColor);
-
-    dcNew.FillSolidRect(r, bkColor);
-
-#if 1
-    if (!DrawIconEx(dcNew, 0, 0, hIcon, size.cx, size.cy, NULL, NULL, DI_NORMAL))
-    {
-        /*AfxMessageBox("Failed on DrawIcon"); */
-        return false;
-    }
-#endif
-
-    dcNew.SelectObject(&hBitmapChecked);
-
-    dcNew.FillSolidRect(r, bkColor);
-
-#if 1
-    if (!DrawIconEx(dcNew, 0, 0, hIcon, size.cx, size.cy, NULL, NULL, DI_NORMAL))
-    {
-        /*AfxMessageBox("Failed on DrawIcon"); */
-        return false;
-    }
-#endif
-
-    dcNew.DrawEdge(r, BDR_SUNKENINNER, BF_RECT);
-
-    dcNew.SetTextColor(textColorSave);
-    dcNew.SetBkColor(bkColorSave);
-    dcNew.SelectObject(hOldBitmap);
-    pWnd->ReleaseDC(tmpDc);
-
-    return true;
-}
-
 // CMainFrame
 
 IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndEx)
@@ -569,6 +474,7 @@ void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
             pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, MF_STRING | MF_BYPOSITION, pCmdUI->m_nID++, tool.name);
             if (tool.hIcon != NULL)
             {
+#if 0
                 CBitmap hBitmapUnchecked, hBitmapChecked;
                 if (IconToBitmap(this, tool.hIcon, hBitmapUnchecked, hBitmapChecked))
                 {
@@ -576,6 +482,11 @@ void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
                     hBitmapUnchecked.Detach();
                     hBitmapChecked.Detach();
                 }
+#else
+                CMFCToolBarImages* pImages = CMFCToolBar::GetUserImages();
+                int i = pImages->AddIcon(tool.hIcon);
+                GetCmdMgr()->SetCmdImage(pCmdUI->m_nID - 1, i, TRUE);
+#endif
             }
         }
 
