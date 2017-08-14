@@ -425,48 +425,16 @@ LRESULT CMainFrame::OnRadNotepad(WPARAM /*wParam*/, LPARAM /*lParam*/)
     return MSG_RADNOTEPAD;
 }
 
-struct CaptureOutputData
-{
-    HANDLE hProcess;
-    HANDLE hRead;
-    COutputWnd* pWndOutput; // TODO Maybe into the Scintilla control
-};
-
-DWORD WINAPI CaptureOutput(LPVOID lpParameter)
-{
-    CaptureOutputData* pData = reinterpret_cast<CaptureOutputData*>(lpParameter);
-
-    char Buffer[1024];
-    DWORD dwRead = 0;
-    while (ReadFile(pData->hRead, Buffer, ARRAYSIZE(Buffer), &dwRead, nullptr))
-    {
-        pData->pWndOutput->AppendText(Buffer, dwRead);
-        // TODO Scroll ?
-    }
-    CloseHandle(pData->hRead);
-
-    DWORD dwExitCode = 0;
-    GetExitCodeProcess(pData->hProcess, &dwExitCode);
-    CString msg;
-    msg.Format(_T("Exit code: %d\n"), dwExitCode);
-    pData->pWndOutput->AppendText(msg);
-
-    CloseHandle(pData->hProcess);
-
-    delete pData;
-
-    return 0;
-}
-
-
 void CMainFrame::OnToolsTool(UINT nID)
 {
     // TODO What to do if no active file
 
     const Tool& tool = theApp.m_Tools[nID - ID_TOOLS_FIRSTTOOL];
-    CString cmd = tool.cmd;
-    CString param = tool.param;
-    CString directory = _T("{path}");
+    ToolExecuteData ted;
+    ted.cmd = tool.cmd;
+    ted.param = tool.param;
+    ted.directory = _T("{path}");
+    ted.pWndOutput = &m_wndOutput;
 
     CChildFrame* pChildFrame = DYNAMIC_DOWNCAST(CChildFrame, MDIGetActive());
     if (pChildFrame != nullptr)
@@ -481,7 +449,7 @@ void CMainFrame::OnToolsTool(UINT nID)
 
         FileName = _T('"') + FileName + _T('"');
 
-        for (CString* s : { &cmd, &param, &directory })
+        for (CString* s : { &ted.cmd, &ted.param, &ted.directory })
         {
             s->Replace(_T("{path}"), Dir);
             s->Replace(_T("{file}"), FileName);
@@ -489,68 +457,7 @@ void CMainFrame::OnToolsTool(UINT nID)
         }
     }
 
-    if (tool.bCapture)
-    {
-        SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
-
-        HANDLE hRead, hWrite;
-        CreatePipe(&hRead, &hWrite, &sa, 1024);
-
-        STARTUPINFO si = { sizeof(STARTUPINFO) };
-        si.dwFlags = STARTF_USESTDHANDLES;
-        si.hStdOutput = hWrite;
-        si.hStdError = hWrite;
-        PROCESS_INFORMATION pi = {};
-        TCHAR cmdline[MAX_PATH] = _T("");
-        StrCpy(cmdline, cmd);
-        StrCat(cmdline, _T(" "));
-        StrCat(cmdline, param);
-        if (CreateProcess(nullptr, cmdline, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, directory, &si, &pi))
-        {
-            m_wndOutput.ShowPane(TRUE, FALSE, FALSE);
-            // TODO Clear window ?
-            m_wndOutput.AppendText(_T("\n"), -1);
-            m_wndOutput.AppendText(_T("Execute: "), -1);
-            m_wndOutput.AppendText(cmdline, -1);
-            m_wndOutput.AppendText(_T("\n"), -1);
-
-            CloseHandle(hWrite);
-            CloseHandle(pi.hThread);
-
-            CaptureOutputData* cd = new CaptureOutputData;
-            cd->hProcess = pi.hProcess;
-            cd->hRead = hRead;
-            cd->pWndOutput = &m_wndOutput;
-            if (CreateThread(nullptr, 0, CaptureOutput, cd, 0, nullptr) == NULL)
-            {
-                CloseHandle(hRead);
-                CloseHandle(pi.hProcess);
-
-                CString msg;
-                msg.Format(_T("Error CreateThread: %d"), GetLastError());
-                AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
-            }
-        }
-        else
-        {
-            CloseHandle(hRead);
-            CloseHandle(hWrite);
-
-            CString msg;
-            msg.Format(_T("Error CreateProcess: %d"), GetLastError());
-            AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
-        }
-    }
-    else
-    {
-        HINSTANCE hExeInst = ShellExecute(GetSafeHwnd(), L"open", cmd, param, directory, SW_SHOW);
-        if (reinterpret_cast<int>(hExeInst) <= 32)
-        {
-            CString msg;
-            msg.Format(_T("Error ShellExecute: %d"), reinterpret_cast<int>(hExeInst));
-            AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
-        }
-    }
+    ExecuteTool(tool, ted);
 }
 
 

@@ -38,4 +38,15 @@ struct Tool
     BOOL bCapture;
 };
 
+class COutputWnd;
+
+struct ToolExecuteData
+{
+    CString cmd;
+    CString param;
+    CString directory;
+    COutputWnd* pWndOutput; // TODO Maybe into the Scintilla control
+};
+
 void InitTools(std::vector<Tool>& rTools);
+void ExecuteTool(const Tool& tool, const ToolExecuteData& ted);

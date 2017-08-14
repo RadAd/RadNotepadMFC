@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Tools.h"
+#include "OutputWnd.h"
 
 void InitTools(std::vector<Tool>& rTools)
 {
@@ -30,5 +31,103 @@ void InitTools(std::vector<Tool>& rTools)
             t.hIcon = fi.hIcon;
         }
 #endif
+    }
+}
+struct CaptureOutputData
+{
+    HANDLE hProcess;
+    HANDLE hRead;
+    COutputWnd* pWndOutput; // TODO Maybe into the Scintilla control
+};
+
+static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
+{
+    CaptureOutputData* pData = reinterpret_cast<CaptureOutputData*>(lpParameter);
+
+    char Buffer[1024];
+    DWORD dwRead = 0;
+    while (ReadFile(pData->hRead, Buffer, ARRAYSIZE(Buffer), &dwRead, nullptr))
+    {
+        pData->pWndOutput->AppendText(Buffer, dwRead);
+        // TODO Scroll ?
+    }
+    CloseHandle(pData->hRead);
+
+    DWORD dwExitCode = 0;
+    GetExitCodeProcess(pData->hProcess, &dwExitCode);
+    CString msg;
+    msg.Format(_T("Exit code: %d\n"), dwExitCode);
+    pData->pWndOutput->AppendText(msg);
+
+    CloseHandle(pData->hProcess);
+
+    delete pData;
+
+    return 0;
+}
+
+void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
+{
+    if (tool.bCapture)
+    {
+        SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
+
+        HANDLE hRead, hWrite;
+        CreatePipe(&hRead, &hWrite, &sa, 1024);
+
+        STARTUPINFO si = { sizeof(STARTUPINFO) };
+        si.dwFlags = STARTF_USESTDHANDLES;
+        si.hStdOutput = hWrite;
+        si.hStdError = hWrite;
+        PROCESS_INFORMATION pi = {};
+        TCHAR cmdline[MAX_PATH] = _T("");
+        StrCpy(cmdline, ted.cmd);
+        StrCat(cmdline, _T(" "));
+        StrCat(cmdline, ted.param);
+        if (CreateProcess(nullptr, cmdline, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, ted.directory, &si, &pi))
+        {
+            ted.pWndOutput->ShowPane(TRUE, FALSE, FALSE);
+            // TODO Clear window ?
+            ted.pWndOutput->AppendText(_T("\n"), -1);
+            ted.pWndOutput->AppendText(_T("Execute: "), -1);
+            ted.pWndOutput->AppendText(cmdline, -1);
+            ted.pWndOutput->AppendText(_T("\n"), -1);
+
+            CloseHandle(hWrite);
+            CloseHandle(pi.hThread);
+
+            CaptureOutputData* cd = new CaptureOutputData;
+            cd->hProcess = pi.hProcess;
+            cd->hRead = hRead;
+            cd->pWndOutput = ted.pWndOutput;
+            if (CreateThread(nullptr, 0, CaptureOutput, cd, 0, nullptr) == NULL)
+            {
+                CloseHandle(hRead);
+                CloseHandle(pi.hProcess);
+
+                CString msg;
+                msg.Format(_T("Error CreateThread: %d"), GetLastError());
+                AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
+            }
+        }
+        else
+        {
+            CloseHandle(hRead);
+            CloseHandle(hWrite);
+
+            CString msg;
+            msg.Format(_T("Error CreateProcess: %d"), GetLastError());
+            AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
+        }
+    }
+    else
+    {
+        HINSTANCE hExeInst = ShellExecute(AfxGetMainWnd()->GetSafeHwnd(), L"open", ted.cmd, ted.param, ted.directory, SW_SHOW);
+        if (reinterpret_cast<int>(hExeInst) <= 32)
+        {
+            CString msg;
+            msg.Format(_T("Error ShellExecute: %d"), reinterpret_cast<int>(hExeInst));
+            AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
+        }
     }
 }
