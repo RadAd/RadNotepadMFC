@@ -86,6 +86,7 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_EDIT_FINDNEXTCURRENTWORD, &CRadNotepadView::OnEditFindNextCurrentWord)
     ON_COMMAND(ID_EDIT_FINDPREVIOUSCURRENTWORD, &CRadNotepadView::OnEditFindPreviousCurrentWord)
     ON_MESSAGE(WM_CHECKUPDATE, &CRadNotepadView::OnCheckUpdate)
+    ON_COMMAND(ID_EDIT_FINDMATCHINGBRACE, &CRadNotepadView::OnEditFindMatchingBrace)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -291,6 +292,11 @@ void CRadNotepadView::OnInitialUpdate()
 
     rCtrl.SetIndentationGuides(SC_IV_REAL);
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
+
+    rCtrl.ClearCmdKey('[' | (SCMOD_CTRL << 16));
+    rCtrl.ClearCmdKey('[' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));
+    rCtrl.ClearCmdKey(']' | (SCMOD_CTRL << 16));
+    rCtrl.ClearCmdKey(']' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));
 
 #if 0
     //Setup auto completion
@@ -584,4 +590,18 @@ void CRadNotepadView::OnEditFindPreviousCurrentWord()
     g_scintillaEditState.bNext = TRUE;
     if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
+}
+
+
+void CRadNotepadView::OnEditFindMatchingBrace()
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    Sci_Position nPos = rCtrl.GetCurrentPos();
+    int c = rCtrl.GetCharAt(nPos);
+    if (IsBrace(c))
+    {
+        Sci_Position nMatch = rCtrl.BraceMatch(nPos, 0);
+        if (nMatch >= 0)
+            rCtrl.GotoPos(nMatch);
+    }
 }

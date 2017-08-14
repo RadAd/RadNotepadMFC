@@ -76,6 +76,7 @@ public:
     afx_msg void OnEditFindPrevious();
     afx_msg void OnEditFindNextCurrentWord();
     afx_msg void OnEditFindPreviousCurrentWord();
+    afx_msg void OnEditFindMatchingBrace();
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp
