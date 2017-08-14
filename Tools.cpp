@@ -2,6 +2,10 @@
 #include "Tools.h"
 #include "OutputWnd.h"
 
+// TODO
+// Load from registry
+// Save before execute
+
 void InitTools(std::vector<Tool>& rTools)
 {
     // TODO Load form registry

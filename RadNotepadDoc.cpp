@@ -95,7 +95,7 @@ void CRadNotepadDoc::CheckUpdated()
         FILETIME ftWrite = {};
         {
             CFile rFile;
-            if (rFile.Open(GetPathName(), CFile::modeRead))
+            if (rFile.Open(GetPathName(), CFile::modeRead | CFile::shareDenyNone))
             {
                 GetFileTime(rFile, NULL, NULL, &ftWrite);
             }
