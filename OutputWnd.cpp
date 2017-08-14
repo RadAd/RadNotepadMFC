@@ -106,23 +106,23 @@ void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
 
 void COutputWnd::FillBuildWindow()
 {
-	m_wndOutputBuild.AddString(_T("Build output is being displayed here."));
-	m_wndOutputBuild.AddString(_T("The output is being displayed in rows of a list view"));
-	m_wndOutputBuild.AddString(_T("but you can change the way it is displayed as you wish..."));
+	m_wndOutputBuild.AppendText(-1, _T("Build output is being displayed here.\n"));
+	m_wndOutputBuild.AppendText(-1, _T("The output is being displayed in rows of a list view\n"));
+	m_wndOutputBuild.AppendText(-1, _T("but you can change the way it is displayed as you wish...\n"));
 }
 
 void COutputWnd::FillDebugWindow()
 {
-	m_wndOutputDebug.AddString(_T("Debug output is being displayed here."));
-	m_wndOutputDebug.AddString(_T("The output is being displayed in rows of a list view"));
-	m_wndOutputDebug.AddString(_T("but you can change the way it is displayed as you wish..."));
+	m_wndOutputDebug.AppendText(-1, _T("Debug output is being displayed here.\n"));
+	m_wndOutputDebug.AppendText(-1, _T("The output is being displayed in rows of a list view\n"));
+	m_wndOutputDebug.AppendText(-1, _T("but you can change the way it is displayed as you wish...\n"));
 }
 
 void COutputWnd::FillFindWindow()
 {
-	m_wndOutputFind.AddString(_T("Find output is being displayed here."));
-	m_wndOutputFind.AddString(_T("The output is being displayed in rows of a list view"));
-	m_wndOutputFind.AddString(_T("but you can change the way it is displayed as you wish..."));
+	m_wndOutputFind.AppendText(-1, _T("Find output is being displayed here.\n"));
+	m_wndOutputFind.AppendText(-1, _T("The output is being displayed in rows of a list view\n"));
+	m_wndOutputFind.AppendText(-1, _T("but you can change the way it is displayed as you wish...\n"));
 }
 
 void COutputWnd::UpdateFonts()

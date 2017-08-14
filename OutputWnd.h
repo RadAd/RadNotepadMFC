@@ -4,7 +4,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // COutputList window
 
-class COutputList : public CListBox
+class COutputList : public CScintillaCtrl
 {
 // Construction
 public:

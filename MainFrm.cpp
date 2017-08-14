@@ -441,10 +441,12 @@ void CMainFrame::OnToolsTool(UINT nID)
         CDocument* pDoc = pChildFrame->GetActiveDocument();
         CRadNotepadView* pView = dynamic_cast<CRadNotepadView*>(pChildFrame->GetActiveView());
 
-        const CString& FileName = pDoc->GetPathName();
+        CString FileName = pDoc->GetPathName();
         TCHAR Dir[MAX_PATH] = _T("");
         StrCpy(Dir, FileName);
         PathRemoveFileSpec(Dir);
+
+        FileName = _T('"') + FileName + _T('"');
 
         for (CString* s : { &cmd, &param, &directory })
         {
@@ -454,7 +456,36 @@ void CMainFrame::OnToolsTool(UINT nID)
         }
     }
 
-    ShellExecute(GetSafeHwnd(), L"open", cmd, param, directory, SW_SHOW);
+    if (tool.bCapture)
+    {
+        STARTUPINFO si = { sizeof(STARTUPINFO) };
+        PROCESS_INFORMATION pi = {};
+        TCHAR cmdline[MAX_PATH] = _T("");
+        StrCpy(cmdline, cmd);
+        StrCat(cmdline, _T(" "));
+        StrCat(cmdline, param);
+        if (CreateProcess(nullptr, cmdline, nullptr, nullptr, FALSE, 0 /*CREATE_NO_WINDOW*/, nullptr, directory, &si, &pi))
+        {
+            CloseHandle(pi.hThread);
+            CloseHandle(pi.hProcess);
+        }
+        else
+        {
+            CString msg;
+            msg.Format(_T("Error CreateProcess: %d"), GetLastError());
+            AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
+        }
+    }
+    else
+    {
+        HINSTANCE hExeInst = ShellExecute(GetSafeHwnd(), L"open", cmd, param, directory, SW_SHOW);
+        if (reinterpret_cast<int>(hExeInst) <= 32)
+        {
+            CString msg;
+            msg.Format(_T("Error ShellExecute: %d"), reinterpret_cast<int>(hExeInst));
+            AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
+        }
+    }
 }
 
 

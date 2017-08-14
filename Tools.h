@@ -4,11 +4,12 @@
 
 struct Tool
 {
-    Tool(CString name, CString cmd, CString param)
+    Tool(CString name, CString cmd, CString param, BOOL capture = FALSE)
         : name(name)
         , cmd(cmd)
         , param(param)
         , hIcon(NULL)
+        , bCapture(capture)
     {
 
     }
@@ -20,6 +21,7 @@ struct Tool
         , cmd(other.cmd)
         , param(other.param)
         , hIcon(other.hIcon)
+        , bCapture(other.bCapture)
     {
         other.hIcon = NULL;
     }
@@ -33,6 +35,7 @@ struct Tool
     CString cmd;
     CString param;
     HICON hIcon;
+    BOOL bCapture;
 };
 
 void InitTools(std::vector<Tool>& rTools);
