@@ -93,7 +93,6 @@ void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
         {
             ted.pWndOutput->ShowPane(TRUE, FALSE, FALSE);
             // TODO Clear window ?
-            ted.pWndOutput->AppendText(_T("\n"), -1);
             ted.pWndOutput->AppendText(_T("Execute: "), -1);
             ted.pWndOutput->AppendText(cmdline, -1);
             ted.pWndOutput->AppendText(_T("\n"), -1);

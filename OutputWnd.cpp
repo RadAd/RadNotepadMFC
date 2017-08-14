@@ -4,6 +4,7 @@
 #include "OutputWnd.h"
 #include "Resource.h"
 #include "MainFrm.h"
+#include <SciLexer.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,7 +71,7 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndTabs.AddTab(&m_wndOutputFind, strTabName, (UINT)2);
 
 	// Fill output tabs with some dummy text (nothing magic here)
-	FillBuildWindow();
+	//FillBuildWindow();
 	FillDebugWindow();
 	FillFindWindow();
 
@@ -159,6 +160,7 @@ BEGIN_MESSAGE_MAP(COutputList, CListBox)
 	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
 	ON_COMMAND(ID_VIEW_OUTPUTWND, OnViewOutput)
 	ON_WM_WINDOWPOSCHANGING()
+    ON_WM_CREATE()
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // COutputList message handlers
@@ -207,4 +209,44 @@ void COutputList::OnViewOutput()
 		pMainFrame->RecalcLayout();
 
 	}
+}
+
+
+int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    if (CScintillaCtrl::OnCreate(lpCreateStruct) == -1)
+        return -1;
+
+    SetupDirectAccess();    // Should be in CScintillaCtrl::OnCreate
+    SetLexer(SCLEX_ERRORLIST);
+    StyleSetFore(SCE_ERR_MS, RGB(255, 0, 0));
+
+#if 0   // TODO Set error theme
+#define SCE_ERR_DEFAULT 0
+#define SCE_ERR_PYTHON 1
+#define SCE_ERR_GCC 2
+#define SCE_ERR_MS 3
+#define SCE_ERR_CMD 4
+#define SCE_ERR_BORLAND 5
+#define SCE_ERR_PERL 6
+#define SCE_ERR_NET 7
+#define SCE_ERR_LUA 8
+#define SCE_ERR_CTAG 9
+#define SCE_ERR_DIFF_CHANGED 10
+#define SCE_ERR_DIFF_ADDITION 11
+#define SCE_ERR_DIFF_DELETION 12
+#define SCE_ERR_DIFF_MESSAGE 13
+#define SCE_ERR_PHP 14
+#define SCE_ERR_ELF 15
+#define SCE_ERR_IFC 16
+#define SCE_ERR_IFORT 17
+#define SCE_ERR_ABSF 18
+#define SCE_ERR_TIDY 19
+#define SCE_ERR_JAVA_STACK 20
+#define SCE_ERR_VALUE 21
+#define SCE_ERR_GCC_INCLUDED_FROM 22
+#define SCE_ERR_ESCSEQ 23
+#define SCE_ERR_ESCSEQ_UNKNOWN 24
+#endif
+    return 0;
 }

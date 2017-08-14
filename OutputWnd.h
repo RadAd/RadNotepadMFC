@@ -21,6 +21,8 @@ protected:
 	afx_msg void OnViewOutput();
 
 	DECLARE_MESSAGE_MAP()
+public:
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 };
 
 class COutputWnd : public CDockablePane
