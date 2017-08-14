@@ -51,6 +51,7 @@ BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
         }
     }
 #endif
+    // TODO Set filters
     strFilter += _T("CPP files|*.cpp;*.c;*.cc;*.h|");
 
     // append the "*.*" all files filter

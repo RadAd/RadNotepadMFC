@@ -595,6 +595,7 @@ void CRadNotepadView::OnEditFindPreviousCurrentWord()
 
 void CRadNotepadView::OnEditFindMatchingBrace()
 {
+    // TODO Handle shift to also select
     CScintillaCtrl& rCtrl = GetCtrl();
     Sci_Position nPos = rCtrl.GetCurrentPos();
     int c = rCtrl.GetCharAt(nPos);
