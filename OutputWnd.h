@@ -19,6 +19,7 @@ protected:
 	afx_msg void OnEditCopy();
 	afx_msg void OnEditClear();
 	afx_msg void OnViewOutput();
+    afx_msg void OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult);
 
 	DECLARE_MESSAGE_MAP()
 public:

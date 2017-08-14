@@ -159,6 +159,7 @@ BEGIN_MESSAGE_MAP(COutputList, CListBox)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
 	ON_COMMAND(ID_VIEW_OUTPUTWND, OnViewOutput)
+    ON_NOTIFY_REFLECT(SCN_HOTSPOTCLICK, OnHotSpotClick)
 	ON_WM_WINDOWPOSCHANGING()
     ON_WM_CREATE()
 END_MESSAGE_MAP()
@@ -211,6 +212,18 @@ void COutputList::OnViewOutput()
 	}
 }
 
+void COutputList::OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult)
+{
+    SCNotification* pSCNotification = reinterpret_cast<SCNotification*>(pHdr);
+    int nLine = LineFromPosition(pSCNotification->position);
+    CString strLine = GetLine(nLine);
+    // TODO Extract file name and line number
+    CString strFile = strLine.Left(strLine.Find(L"("));
+    strFile.Trim();
+    // TODO Combine with directory of process
+    // TODO Open to file and line
+    AfxMessageBox(strFile);
+}
 
 int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
@@ -220,6 +233,8 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
     SetupDirectAccess();    // Should be in CScintillaCtrl::OnCreate
     SetLexer(SCLEX_ERRORLIST);
     StyleSetFore(SCE_ERR_MS, RGB(255, 0, 0));
+    StyleSetHotSpot(SCE_ERR_MS, TRUE);
+    SetHotspotActiveUnderline(TRUE);
 
 #if 0   // TODO Set error theme
 #define SCE_ERR_DEFAULT 0
