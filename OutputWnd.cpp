@@ -132,6 +132,16 @@ void COutputWnd::UpdateFonts()
 	m_wndOutputFind.SetFont(&afxGlobalData.fontRegular);
 }
 
+void COutputWnd::AppendText(LPCSTR pText, int nLen)
+{
+    m_wndOutputBuild.AppendText(nLen, pText);
+}
+
+void COutputWnd::AppendText(LPCWSTR pText, int nLen)
+{
+    m_wndOutputBuild.AppendText(nLen, pText);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // COutputList1
 

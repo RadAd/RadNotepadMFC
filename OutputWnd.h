@@ -30,6 +30,9 @@ public:
 	COutputWnd();
 
 	void UpdateFonts();
+    void AppendText(LPCSTR pText, int nLen);
+    void AppendText(LPCWSTR pText, int nLen);
+    void AppendText(const CString& str) { AppendText(str, str.GetLength()); }
 
 // Attributes
 protected:

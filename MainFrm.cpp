@@ -425,6 +425,39 @@ LRESULT CMainFrame::OnRadNotepad(WPARAM /*wParam*/, LPARAM /*lParam*/)
     return MSG_RADNOTEPAD;
 }
 
+struct CaptureOutputData
+{
+    HANDLE hProcess;
+    HANDLE hRead;
+    COutputWnd* pWndOutput; // TODO Maybe into the Scintilla control
+};
+
+DWORD WINAPI CaptureOutput(LPVOID lpParameter)
+{
+    CaptureOutputData* pData = reinterpret_cast<CaptureOutputData*>(lpParameter);
+
+    char Buffer[1024];
+    DWORD dwRead = 0;
+    while (ReadFile(pData->hRead, Buffer, ARRAYSIZE(Buffer), &dwRead, nullptr))
+    {
+        pData->pWndOutput->AppendText(Buffer, dwRead);
+        // TODO Scroll ?
+    }
+    CloseHandle(pData->hRead);
+
+    DWORD dwExitCode = 0;
+    GetExitCodeProcess(pData->hProcess, &dwExitCode);
+    CString msg;
+    msg.Format(_T("Exit code: %d\n"), dwExitCode);
+    pData->pWndOutput->AppendText(msg);
+
+    CloseHandle(pData->hProcess);
+
+    delete pData;
+
+    return 0;
+}
+
 
 void CMainFrame::OnToolsTool(UINT nID)
 {
@@ -458,19 +491,51 @@ void CMainFrame::OnToolsTool(UINT nID)
 
     if (tool.bCapture)
     {
+        SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
+
+        HANDLE hRead, hWrite;
+        CreatePipe(&hRead, &hWrite, &sa, 1024);
+
         STARTUPINFO si = { sizeof(STARTUPINFO) };
+        si.dwFlags = STARTF_USESTDHANDLES;
+        si.hStdOutput = hWrite;
+        si.hStdError = hWrite;
         PROCESS_INFORMATION pi = {};
         TCHAR cmdline[MAX_PATH] = _T("");
         StrCpy(cmdline, cmd);
         StrCat(cmdline, _T(" "));
         StrCat(cmdline, param);
-        if (CreateProcess(nullptr, cmdline, nullptr, nullptr, FALSE, 0 /*CREATE_NO_WINDOW*/, nullptr, directory, &si, &pi))
+        if (CreateProcess(nullptr, cmdline, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, directory, &si, &pi))
         {
+            m_wndOutput.ShowPane(TRUE, FALSE, FALSE);
+            // TODO Clear window ?
+            m_wndOutput.AppendText(_T("\n"), -1);
+            m_wndOutput.AppendText(_T("Execute: "), -1);
+            m_wndOutput.AppendText(cmdline, -1);
+            m_wndOutput.AppendText(_T("\n"), -1);
+
+            CloseHandle(hWrite);
             CloseHandle(pi.hThread);
-            CloseHandle(pi.hProcess);
+
+            CaptureOutputData* cd = new CaptureOutputData;
+            cd->hProcess = pi.hProcess;
+            cd->hRead = hRead;
+            cd->pWndOutput = &m_wndOutput;
+            if (CreateThread(nullptr, 0, CaptureOutput, cd, 0, nullptr) == NULL)
+            {
+                CloseHandle(hRead);
+                CloseHandle(pi.hProcess);
+
+                CString msg;
+                msg.Format(_T("Error CreateThread: %d"), GetLastError());
+                AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
+            }
         }
         else
         {
+            CloseHandle(hRead);
+            CloseHandle(hWrite);
+
             CString msg;
             msg.Format(_T("Error CreateProcess: %d"), GetLastError());
             AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
