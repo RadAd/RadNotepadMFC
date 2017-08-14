@@ -58,12 +58,12 @@ IMPLEMENT_DYNCREATE(CRadNotepadView, CScintillaView)
 
 BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
 	// Standard printing commands
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CRadNotepadView::OnFilePrintPreview)
     ON_WM_CREATE()
     ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CRadNotepadView::OnUpdateLine)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CRadNotepadView::OnUpdateInsert)
+    ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CRadNotepadView::OnFilePrintPreview)
     ON_COMMAND_RANGE(ID_VIEW_LINENUMBERS, ID_VIEW_FOLDS, &CRadNotepadView::OnViewMarker)
     ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_LINENUMBERS, ID_VIEW_FOLDS, &CRadNotepadView::OnUpdateViewMarker)
     ON_COMMAND(ID_VIEW_WHITESPACE, &CRadNotepadView::OnViewWhitespace)
@@ -81,11 +81,11 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_UPDATE_COMMAND_UI_RANGE(ID_LINEENDINGS_WINDOWS, ID_LINEENDINGS_UNIX, &CRadNotepadView::OnUpdateLineEndings)
     ON_COMMAND(ID_EDIT_MAKEUPPERCASE, &CRadNotepadView::OnEditMakeUppercase)
     ON_COMMAND(ID_EDIT_MAKELOWERCASE, &CRadNotepadView::OnEditMakeLowercase)
-    ON_MESSAGE(WM_CHECKUPDATE, &CRadNotepadView::OnCheckUpdate)
     ON_COMMAND(ID_EDIT_GOTOLINE, &CRadNotepadView::OnEditGotoLine)
     ON_COMMAND(ID_EDIT_FINDPREVIOUS, &CRadNotepadView::OnEditFindPrevious)
     ON_COMMAND(ID_EDIT_FINDNEXTCURRENTWORD, &CRadNotepadView::OnEditFindNextCurrentWord)
     ON_COMMAND(ID_EDIT_FINDPREVIOUSCURRENTWORD, &CRadNotepadView::OnEditFindPreviousCurrentWord)
+    ON_MESSAGE(WM_CHECKUPDATE, &CRadNotepadView::OnCheckUpdate)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -115,6 +115,31 @@ void CRadNotepadView::OnModified(_Inout_ SCNotification* pSCNotification)
         CRadNotepadDoc* pDoc = GetDocument();
         pDoc->SyncModified();
     }
+}
+
+static bool IsBrace(int c)
+{
+    return strchr("()[]{}<>", c) != nullptr;
+}
+
+void CRadNotepadView::OnUpdateUI(_Inout_ SCNotification* pSCNotification)
+{
+    CScintillaView::OnUpdateUI(pSCNotification);
+
+    CScintillaCtrl& rCtrl = GetCtrl();
+    Sci_Position nPos = rCtrl.GetCurrentPos();
+
+    int c = rCtrl.GetCharAt(nPos);
+    if (IsBrace(c))
+    {
+        Sci_Position nMatch = rCtrl.BraceMatch(nPos, 0);
+        if (nMatch >= 0)
+            rCtrl.BraceHighlight(nPos, nMatch);
+        else
+            rCtrl.BraceBadLight(nPos);
+    }
+    else
+        rCtrl.BraceBadLight(INVALID_POSITION);
 }
 
 // CRadNotepadView drawing
@@ -263,6 +288,9 @@ void CRadNotepadView::OnInitialUpdate()
 
     int mode = GetLineEndingMode(rCtrl, 0, SC_EOL_CRLF); // TODO Default mode setting
     rCtrl.SetEOLMode(mode);
+
+    rCtrl.SetIndentationGuides(SC_IV_REAL);
+    //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
 #if 0
     //Setup auto completion
@@ -484,15 +512,9 @@ void CRadNotepadView::OnActivateView(BOOL bActivate, CView* pActivateView, CView
 
 afx_msg LRESULT CRadNotepadView::OnCheckUpdate(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-    static bool bIn = false;
-    if (!bIn)
-    {
-        bIn = true;
-        CRadNotepadDoc* pDoc = GetDocument();
-        pDoc->CheckUpdated();
-        pDoc->CheckReadOnly();
-        bIn = false;
-    }
+    CRadNotepadDoc* pDoc = GetDocument();
+    pDoc->CheckUpdated();
+    pDoc->CheckReadOnly();
     return 0;
 }
 

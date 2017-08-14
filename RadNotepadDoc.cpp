@@ -108,11 +108,11 @@ void CRadNotepadDoc::CheckUpdated()
         }
         else if (CompareFileTime(&ftWrite, &m_ftWrite) != 0)
         {
+            m_ftWrite = ftWrite;    // The message box causes another activation, causing an infinite loop
             if (/*!IsModified() ||*/ AfxMessageBox(IDS_FILE_REVERT, MB_ICONQUESTION | MB_YESNO) == IDYES)
                 OnFileRevert();
             else
             {
-                m_ftWrite = ftWrite;
                 m_bModified = TRUE;
                 SetTitle(nullptr);
             }

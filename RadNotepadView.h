@@ -26,6 +26,7 @@ public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
     virtual void OnModified(_Inout_ SCNotification* pSCNotification);
+    virtual void OnUpdateUI(_Inout_ SCNotification* pSCNotification);
 protected:
 
 // Implementation

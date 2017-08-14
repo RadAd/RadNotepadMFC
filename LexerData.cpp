@@ -10,6 +10,21 @@ struct Style
     LPCTSTR strTheme;
 };
 
+struct StyleItem
+{
+    int nStyle;
+    ThemeItem strTheme;
+} vStyleStandard[] = {
+    { STYLE_LINENUMBER,  { COLOR_NONE,   COLOR_NONE } },
+    { STYLE_BRACELIGHT,  { COLOR_NONE,   COLOR_NONE } },
+    { STYLE_BRACEBAD,    { COLOR_NONE,   COLOR_NONE } },
+    { STYLE_CONTROLCHAR, { COLOR_NONE,   COLOR_NONE } },    // TODO Looks like only the font is used ?
+    { STYLE_INDENTGUIDE, { COLOR_NONE,   COLOR_NONE } },
+};
+// TODO
+// STYLE_CALLTIP
+// STYLE_FOLDDISPLAYTEXT
+
 struct LexerData
 {
     int nID;
@@ -149,6 +164,8 @@ void ApplyStyle(CScintillaCtrl& rCtrl, const LexerData* pLexerData, const Theme*
 {
     ApplyStyle(rCtrl, vStyleDefault, pTheme);
     rCtrl.StyleClearAll();
+    for (const StyleItem& si : vStyleStandard)
+        ApplyThemeItem(rCtrl, si.nStyle, si.strTheme);
     if (pLexerData != nullptr && pLexerData->vStyle != nullptr)
     {
         // TODO Can I do this just once? Is this state shared across ctrls?
