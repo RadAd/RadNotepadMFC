@@ -488,6 +488,7 @@ void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
                 if (GetCmdMgr()->GetCmdImage(pCmdUI->m_nID - 1, FALSE) < 0)
                 {
                     int i = pImages->AddIcon(tool.hIcon);
+                    // TODO This is faliing (i == -1) on some computers
                     GetCmdMgr()->SetCmdImage(pCmdUI->m_nID - 1, i, FALSE);
                 }
 #endif

@@ -19,6 +19,9 @@
 #define new DEBUG_NEW
 #endif
 
+// TODO
+// Look into replacing scintilla scrollbars with splitter scrollbars (maybe just the vertical one)
+
 #define WM_CHECKUPDATE (WM_USER + 1)
 
 #define RAD_MARKER_BOOKMARK 2
