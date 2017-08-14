@@ -539,21 +539,48 @@ void CRadNotepadView::OnEditFindPrevious()
         TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
 }
 
+static CStringW GetTextRange(CScintillaCtrl& rCtrl, Sci_CharacterRange cr)
+{
+    CStringA ret;
+
+    Sci_TextRange tr = {};
+    tr.chrg = cr;
+    //int nLen = rCtrl.GetTextRange(&tr);
+    int nLen = tr.chrg.cpMax - tr.chrg.cpMin + 1;
+    tr.lpstrText = ret.GetBufferSetLength(nLen);
+    nLen = rCtrl.GetTextRange(&tr);
+    ret.ReleaseBuffer();
+
+    return CScintillaCtrl::UTF82W(ret, -1);
+}
+
+static CStringW GetCurrentWord(CScintillaCtrl& rCtrl)
+{
+    if (rCtrl.GetSelectionEmpty())
+    {
+        Sci_Position nPos = rCtrl.GetCurrentPos();
+        Sci_CharacterRange cr;
+        cr.cpMin = rCtrl.WordStartPosition(nPos, TRUE);
+        cr.cpMax = rCtrl.WordEndPosition(nPos, TRUE);
+        return GetTextRange(rCtrl, cr);
+    }
+    else
+        return rCtrl.GetSelText();
+}
 
 void CRadNotepadView::OnEditFindNextCurrentWord()
 {
     CScintillaCtrl& rCtrl = GetCtrl();
-    g_scintillaEditState.strFind = rCtrl.GetSelText();
+    g_scintillaEditState.strFind = GetCurrentWord(rCtrl);
     g_scintillaEditState.bNext = TRUE;
     if (!FindText(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
 }
 
-
 void CRadNotepadView::OnEditFindPreviousCurrentWord()
 {
     CScintillaCtrl& rCtrl = GetCtrl();
-    g_scintillaEditState.strFind = rCtrl.GetSelText();
+    g_scintillaEditState.strFind = GetCurrentWord(rCtrl);
     g_scintillaEditState.bNext = TRUE;
     if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
