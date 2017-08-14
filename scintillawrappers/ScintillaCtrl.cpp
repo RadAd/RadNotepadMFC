@@ -239,7 +239,8 @@ IMPLEMENT_DYNAMIC(CScintillaCtrl, CWnd)
 
 CScintillaCtrl::CScintillaCtrl() : m_DirectFunction(0),
                                    m_DirectPointer(0),
-                                   m_bCallDirect(TRUE)
+                                   m_bCallDirect(TRUE),
+                                   m_bThreadId(GetCurrentThreadId())
 {
 }
 
@@ -286,7 +287,7 @@ inline LRESULT CScintillaCtrl::Call(_In_ UINT message, _In_ WPARAM wParam, _In_ 
 {
   ASSERT(::IsWindow(m_hWnd)); //Window must be valid
 
-  if (m_bCallDirect)
+  if (m_bCallDirect && m_bThreadId == GetCurrentThreadId())
   {
     ASSERT(m_DirectFunction); //Direct function must be valid
     return (reinterpret_cast<SciFnDirect>(m_DirectFunction))(m_DirectPointer, message, wParam, lParam);

@@ -186,12 +186,13 @@ void COutputList::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 
 void COutputList::OnEditCopy()
 {
-	MessageBox(_T("Copy output"));
+    Copy();
 }
 
 void COutputList::OnEditClear()
 {
-	MessageBox(_T("Clear output"));
+    SelectAll();
+    Clear();
 }
 
 void COutputList::OnViewOutput()

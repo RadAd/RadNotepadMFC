@@ -425,14 +425,22 @@ LRESULT CMainFrame::OnRadNotepad(WPARAM /*wParam*/, LPARAM /*lParam*/)
     return MSG_RADNOTEPAD;
 }
 
+static CString ExpandEnvironmentStrings(LPCTSTR str)
+{
+    CString ret;
+    ExpandEnvironmentStrings(str, ret.GetBufferSetLength(MAX_PATH), MAX_PATH);
+    ret.ReleaseBuffer();
+    return ret;
+}
+
 void CMainFrame::OnToolsTool(UINT nID)
 {
     // TODO What to do if no active file
 
     const Tool& tool = theApp.m_Tools[nID - ID_TOOLS_FIRSTTOOL];
     ToolExecuteData ted;
-    ted.cmd = tool.cmd;
-    ted.param = tool.param;
+    ted.cmd = ExpandEnvironmentStrings(tool.cmd);
+    ted.param = ExpandEnvironmentStrings(tool.param);
     ted.directory = _T("{path}");
     ted.pWndOutput = &m_wndOutput;
 
@@ -442,18 +450,43 @@ void CMainFrame::OnToolsTool(UINT nID)
         CDocument* pDoc = pChildFrame->GetActiveDocument();
         CRadNotepadView* pView = dynamic_cast<CRadNotepadView*>(pChildFrame->GetActiveView());
 
-        CString FileName = pDoc->GetPathName();
+        TCHAR FileName[MAX_PATH] = _T("");
+        StrCpy(FileName, pDoc->GetPathName());
         TCHAR Dir[MAX_PATH] = _T("");
-        StrCpy(Dir, FileName);
+        StrCpy(Dir, pDoc->GetPathName());
         PathRemoveFileSpec(Dir);
 
-        FileName = _T('"') + FileName + _T('"');
-
-        for (CString* s : { &ted.cmd, &ted.param, &ted.directory })
+        for (CString* s : { &ted.cmd, &ted.directory })
         {
-            s->Replace(_T("{path}"), Dir);
             s->Replace(_T("{file}"), FileName);
+            s->Replace(_T("{path}"), Dir);
             s->Replace(_T("{selected}"), pView->GetCtrl().GetSelText());
+        }
+
+        PathQuoteSpaces(FileName);
+        PathQuoteSpaces(Dir);
+
+        for (CString* s : { &ted.param })
+        {
+            s->Replace(_T("{file}"), FileName);
+            s->Replace(_T("{path}"), Dir);
+            s->Replace(_T("{selected}"), pView->GetCtrl().GetSelText());
+        }
+    }
+    else
+    {
+        for (CString* s : { &ted.cmd, &ted.directory })
+        {
+            s->Replace(_T("{file}"), _T(""));
+            s->Replace(_T("{path}"), _T(""));
+            s->Replace(_T("{selected}"), _T(""));
+        }
+
+        for (CString* s : { &ted.param })
+        {
+            s->Replace(_T("{file}"), _T("\"\""));
+            s->Replace(_T("{path}"), _T("\"\""));
+            s->Replace(_T("{selected}"), _T("\"\""));
         }
     }
 

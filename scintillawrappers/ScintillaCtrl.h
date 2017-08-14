@@ -879,6 +879,7 @@ protected:
   BOOL    m_bCallDirect;
   LRESULT m_DirectFunction;
   LRESULT m_DirectPointer;
+  DWORD   m_bThreadId;
 };
 
 

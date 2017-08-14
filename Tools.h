@@ -4,7 +4,7 @@
 
 struct Tool
 {
-    Tool(CString name, CString cmd, CString param, BOOL capture = FALSE)
+    Tool(CString name, CString cmd, CString param = _T(""), BOOL capture = FALSE)
         : name(name)
         , cmd(cmd)
         , param(param)
