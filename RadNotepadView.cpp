@@ -299,7 +299,7 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.SetEOLMode(mode);
 
     if (settings.bShowIndentGuides)
-        rCtrl.SetIndentationGuides(SC_IV_REAL);
+        rCtrl.SetIndentationGuides(SC_IV_LOOKBOTH);
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
     m_bHighlightMatchingBraces = settings.bHighlightMatchingBraces;
