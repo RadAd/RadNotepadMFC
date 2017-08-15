@@ -5,6 +5,7 @@
 #pragma once
 
 class CRadNotepadDoc;
+struct LexerData;
 
 class CRadNotepadView : public CScintillaView
 {
@@ -39,7 +40,8 @@ public:
 
 protected:
     void DefineMarker(int marker, int markerType, COLORREF fore, COLORREF back);
-    BOOL bHighlightMatchingBraces;
+    const LexerData* m_pLexerData;
+    BOOL m_bHighlightMatchingBraces;
 
 // Generated message map functions
 protected:
@@ -78,6 +80,8 @@ public:
     afx_msg void OnEditFindNextCurrentWord();
     afx_msg void OnEditFindPreviousCurrentWord();
     afx_msg void OnEditFindMatchingBrace();
+    afx_msg void OnScheme(UINT nID);
+    afx_msg void OnUpdateScheme(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

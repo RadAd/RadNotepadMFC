@@ -90,12 +90,15 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_EDIT_FINDPREVIOUSCURRENTWORD, &CRadNotepadView::OnEditFindPreviousCurrentWord)
     ON_MESSAGE(WM_CHECKUPDATE, &CRadNotepadView::OnCheckUpdate)
     ON_COMMAND(ID_EDIT_FINDMATCHINGBRACE, &CRadNotepadView::OnEditFindMatchingBrace)
+    ON_COMMAND_RANGE(ID_VIEW_FIRSTSCHEME, ID_VIEW_LASTSCHEME, &CRadNotepadView::OnScheme)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTSCHEME, &CRadNotepadView::OnUpdateScheme)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
 
 CRadNotepadView::CRadNotepadView()
-    : bHighlightMatchingBraces(FALSE)
+    : m_pLexerData(nullptr)
+    , m_bHighlightMatchingBraces(FALSE)
 {
 }
 
@@ -129,7 +132,7 @@ void CRadNotepadView::OnUpdateUI(_Inout_ SCNotification* pSCNotification)
 {
     CScintillaView::OnUpdateUI(pSCNotification);
 
-    if (bHighlightMatchingBraces)
+    if (m_bHighlightMatchingBraces)
     {
         CScintillaCtrl& rCtrl = GetCtrl();
         Sci_Position nPos = rCtrl.GetCurrentPos();
@@ -249,14 +252,14 @@ void CRadNotepadView::OnInitialUpdate()
     CRadNotepadDoc* pDoc = GetDocument();
     CString strFileName = pDoc->GetPathName();
     PCTSTR strExt = PathFindExtension(strFileName);
-    const LexerData* pLexerData = GetLexerData(strExt);
+    m_pLexerData = GetLexerData(strExt);
 
     // TODO Copy some settings from other ctrl (ie split view, new window)
 
     CScintillaCtrl& rCtrl = GetCtrl();
     const EditorSettings& settings = theApp.m_Settings.editor;
 
-    Apply(rCtrl, pLexerData, &settings.rTheme);
+    Apply(rCtrl, m_pLexerData, &settings.rTheme);
 
     //Setup folding
     rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.bShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
@@ -299,7 +302,7 @@ void CRadNotepadView::OnInitialUpdate()
         rCtrl.SetIndentationGuides(SC_IV_REAL);
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
-    bHighlightMatchingBraces = settings.bHighlightMatchingBraces;
+    m_bHighlightMatchingBraces = settings.bHighlightMatchingBraces;
 
     rCtrl.ClearCmdKey('[' | (SCMOD_CTRL << 16));
     rCtrl.ClearCmdKey('[' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));
@@ -612,5 +615,48 @@ void CRadNotepadView::OnEditFindMatchingBrace()
         Sci_Position nMatch = rCtrl.BraceMatch(nPos, 0);
         if (nMatch >= 0)
             rCtrl.GotoPos(nMatch);
+    }
+}
+
+void CRadNotepadView::OnScheme(UINT nID)
+{
+    const LexerData* pLexerData = nullptr;
+    if (nID == ID_VIEW_FIRSTSCHEME)
+    {
+        pLexerData = GetLexerNone();
+    }
+    else
+    {
+        nID -= ID_VIEW_FIRSTSCHEME + 1;
+        while ((pLexerData = GetNextData(pLexerData)) != nullptr && nID > 0)
+            --nID;
+    }
+
+    m_pLexerData = pLexerData;
+    CScintillaCtrl& rCtrl = GetCtrl();
+    const EditorSettings& settings = theApp.m_Settings.editor;
+    Apply(rCtrl, m_pLexerData, &settings.rTheme);
+}
+
+void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
+{
+    if (pCmdUI->m_pSubMenu != nullptr)
+    {
+        for (int i = 1; i < (ID_VIEW_FIRSTSCHEME - ID_VIEW_LASTSCHEME); ++i)
+            pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
+
+        int nSelected = 0;
+        int nIndex = 0;
+        const LexerData* pLexerData = nullptr;
+        while ((pLexerData = GetNextData(pLexerData)) != nullptr)
+        {
+            pCmdUI->m_pSubMenu->InsertMenu(++nIndex, MF_STRING | MF_BYPOSITION, ++pCmdUI->m_nID, GetLexerName(pLexerData));
+            if (pLexerData == m_pLexerData)
+                nSelected = nIndex;
+        }
+
+        pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
+
+        pCmdUI->m_pSubMenu->CheckMenuRadioItem(0, 0 + 100, nSelected, MF_BYPOSITION);
     }
 }

@@ -233,6 +233,10 @@ BEGIN
         END
         MENUITEM "Use Tabs",                    ID_VIEW_USETABS
         MENUITEM SEPARATOR
+        POPUP "Scheme"
+        BEGIN
+            MENUITEM "None",                        ID_VIEW_FIRSTSCHEME
+        END
         MENUITEM "White Space",                 ID_VIEW_WHITESPACE
         MENUITEM "End of Line",                 ID_VIEW_ENDOFLINE
         MENUITEM "Word Wrap",                   ID_VIEW_WORDWRAP

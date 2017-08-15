@@ -149,6 +149,11 @@ const LexerData* GetLexerData(PCTSTR ext)
     return &vLexerData[i];
 }
 
+const PCTSTR GetLexerName(const LexerData* pLexerData)
+{
+    return pLexerData->strName;
+}
+
 void ApplyStyle(CScintillaCtrl& rCtrl, const Style& rStyle, const Theme* pTheme)
 {
     const ThemeItem* pThemeItem = GetThemeItem(rStyle.strTheme, pTheme);
@@ -193,4 +198,22 @@ void Apply(CScintillaCtrl& rCtrl, const LexerData* pLexerData, const Theme* pThe
 
     //Setup styles
     ApplyStyle(rCtrl, pLexerData, pTheme);
+}
+
+const LexerData* GetNextData(const LexerData* pLexerData)
+{
+    if (pLexerData == nullptr)
+        return vLexerData;
+    else if (pLexerData[1].nID == SCLEX_NULL)
+        return nullptr;
+    else
+        return pLexerData + 1;
+}
+
+const LexerData* GetLexerNone()
+{
+    int i = 0;
+    while (vLexerData[i].nID != SCLEX_NULL)
+        ++i;
+    return &vLexerData[i];
 }

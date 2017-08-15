@@ -127,10 +127,10 @@ void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
     else
     {
         HINSTANCE hExeInst = ShellExecute(AfxGetMainWnd()->GetSafeHwnd(), L"open", ted.cmd, ted.param, ted.directory, SW_SHOW);
-        if (reinterpret_cast<int>(hExeInst) <= 32)
+        if (hExeInst <= HINSTANCE(32))
         {
             CString msg;
-            msg.Format(_T("Error ShellExecute: %d"), reinterpret_cast<int>(hExeInst));
+            msg.Format(_T("Error ShellExecute: %d"), reinterpret_cast<INT_PTR>(hExeInst));
             AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
         }
     }
