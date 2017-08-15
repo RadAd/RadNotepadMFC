@@ -10,20 +10,28 @@ enum FoldType
     MT_BOX
 };
 
-struct Settings
+struct EditorSettings
 {
-    bool bEmptyFileOnStartup = TRUE;
-
     bool bUseTabs = FALSE;
     int nTabWidth = 4;
 
-    bool PropShowLineNumbers = FALSE;
-    bool PropShowBookmarks = TRUE;
-    bool PropShowFolds = FALSE;
+    bool bShowIndentGuides = TRUE;
+    bool bHighlightMatchingBraces = TRUE;
+
+    bool bShowLineNumbers = FALSE;
+    bool bShowBookmarks = TRUE;
+    bool bShowFolds = FALSE;
 
     FoldType nFoldType = MT_BOX;
     COLORREF cFoldFG = COLOR_LT_CYAN;
     COLORREF cFoldBG = COLOR_BLACK;
 
     Theme rTheme;
+};
+
+struct Settings
+{
+    bool bEmptyFileOnStartup = TRUE;
+
+    EditorSettings editor;
 };

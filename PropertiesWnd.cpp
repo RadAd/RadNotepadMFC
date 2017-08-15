@@ -459,27 +459,29 @@ void CPropertiesWnd::InitPropList()
     }
 
     {
-        CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("What???"));
-        pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->bUseTabs));
-        pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->nTabWidth));
+        CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
+        pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->editor.bUseTabs));
+        pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth));
+        pGroup->AddSubItem(CreateProperty(_T("Show Indent Guides"), &m_pSettings->editor.bShowIndentGuides));
+        pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
         m_wndPropList.AddProperty(pGroup);
     }
 
     {
         CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
-        pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &m_pSettings->PropShowLineNumbers));
-        pGroup->AddSubItem(CreateProperty(_T("Bookmarks"), &m_pSettings->PropShowBookmarks));
-        pGroup->AddSubItem(CreateProperty(_T("Folds"), &m_pSettings->PropShowFolds));
+        pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &m_pSettings->editor.bShowLineNumbers));
+        pGroup->AddSubItem(CreateProperty(_T("Bookmarks"), &m_pSettings->editor.bShowBookmarks));
+        pGroup->AddSubItem(CreateProperty(_T("Folds"), &m_pSettings->editor.bShowFolds));
         LPCTSTR n[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
-        pGroup->AddSubItem(CreateProperty(_T("Fold Marker"), &m_pSettings->nFoldType, n, ARRAYSIZE(n)));
-        pGroup->AddSubItem(CreateProperty(_T("Fold Background"), &m_pSettings->cFoldBG));
-        pGroup->AddSubItem(CreateProperty(_T("Fold Foreground"), &m_pSettings->cFoldFG));
+        pGroup->AddSubItem(CreateProperty(_T("Fold Marker"), &m_pSettings->editor.nFoldType, n, ARRAYSIZE(n)));
+        pGroup->AddSubItem(CreateProperty(_T("Fold Background"), &m_pSettings->editor.cFoldBG));
+        pGroup->AddSubItem(CreateProperty(_T("Fold Foreground"), &m_pSettings->editor.cFoldFG));
 
         m_wndPropList.AddProperty(pGroup);
     }
 
     {
-        Theme* pTheme = &m_pSettings->rTheme;
+        Theme* pTheme = &m_pSettings->editor.rTheme;
         CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
         pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr));
         for (int i = 0; i < ARRAYSIZE(Theme::vecTheme); ++i)

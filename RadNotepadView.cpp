@@ -95,9 +95,8 @@ END_MESSAGE_MAP()
 // CRadNotepadView construction/destruction
 
 CRadNotepadView::CRadNotepadView()
+    : bHighlightMatchingBraces(FALSE)
 {
-	// TODO: add construction code here
-
 }
 
 CRadNotepadView::~CRadNotepadView()
@@ -130,20 +129,23 @@ void CRadNotepadView::OnUpdateUI(_Inout_ SCNotification* pSCNotification)
 {
     CScintillaView::OnUpdateUI(pSCNotification);
 
-    CScintillaCtrl& rCtrl = GetCtrl();
-    Sci_Position nPos = rCtrl.GetCurrentPos();
-
-    int c = rCtrl.GetCharAt(nPos);
-    if (IsBrace(c))
+    if (bHighlightMatchingBraces)
     {
-        Sci_Position nMatch = rCtrl.BraceMatch(nPos, 0);
-        if (nMatch >= 0)
-            rCtrl.BraceHighlight(nPos, nMatch);
+        CScintillaCtrl& rCtrl = GetCtrl();
+        Sci_Position nPos = rCtrl.GetCurrentPos();
+
+        int c = rCtrl.GetCharAt(nPos);
+        if (IsBrace(c))
+        {
+            Sci_Position nMatch = rCtrl.BraceMatch(nPos, 0);
+            if (nMatch >= 0)
+                rCtrl.BraceHighlight(nPos, nMatch);
+            else
+                rCtrl.BraceBadLight(nPos);
+        }
         else
-            rCtrl.BraceBadLight(nPos);
+            rCtrl.BraceBadLight(INVALID_POSITION);
     }
-    else
-        rCtrl.BraceBadLight(INVALID_POSITION);
 }
 
 // CRadNotepadView drawing
@@ -252,19 +254,19 @@ void CRadNotepadView::OnInitialUpdate()
     // TODO Copy some settings from other ctrl (ie split view, new window)
 
     CScintillaCtrl& rCtrl = GetCtrl();
-    const Settings& settings = theApp.m_Settings;
+    const EditorSettings& settings = theApp.m_Settings.editor;
 
     Apply(rCtrl, pLexerData, &settings.rTheme);
 
     //Setup folding
-    rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.PropShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.bShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
     rCtrl.SetMarginSensitiveN(MARGIN_FOLDS, TRUE);
     rCtrl.SetMarginTypeN(MARGIN_FOLDS, SC_MARGIN_SYMBOL);
     rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
     rCtrl.SetProperty(_T("fold"), _T("1"));
 
-    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.PropShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
-    rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.PropShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.bShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
 
     //Setup markers
     int MTMarker[] = {
@@ -293,8 +295,11 @@ void CRadNotepadView::OnInitialUpdate()
     int mode = GetLineEndingMode(rCtrl, 0, SC_EOL_CRLF); // TODO Default mode setting
     rCtrl.SetEOLMode(mode);
 
-    rCtrl.SetIndentationGuides(SC_IV_REAL);
+    if (settings.bShowIndentGuides)
+        rCtrl.SetIndentationGuides(SC_IV_REAL);
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
+
+    bHighlightMatchingBraces = settings.bHighlightMatchingBraces;
 
     rCtrl.ClearCmdKey('[' | (SCMOD_CTRL << 16));
     rCtrl.ClearCmdKey('[' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));

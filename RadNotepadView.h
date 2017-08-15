@@ -39,6 +39,7 @@ public:
 
 protected:
     void DefineMarker(int marker, int markerType, COLORREF fore, COLORREF back);
+    BOOL bHighlightMatchingBraces;
 
 // Generated message map functions
 protected:

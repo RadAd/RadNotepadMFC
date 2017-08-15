@@ -223,6 +223,7 @@ void COutputList::OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult)
     // TODO Combine with directory of process
     // TODO Open to file and line
     AfxMessageBox(strFile);
+    *pResult = 0;
 }
 
 int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
