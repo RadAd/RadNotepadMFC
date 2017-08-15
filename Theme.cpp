@@ -2,6 +2,11 @@
 #include "Theme.h"
 
 extern LPCTSTR THEME_DEFAULT = _T("Default");
+extern LPCTSTR THEME_LINENUMBER = _T("Line Number");
+extern LPCTSTR THEME_BRACELIGHT = _T("Brace Matching");
+extern LPCTSTR THEME_BRACEBAD = _T("Brace Matching (Error)");
+extern LPCTSTR THEME_CONTROLCHAR = _T("Control Character");
+extern LPCTSTR THEME_INDENTGUIDE = _T("Indent Guide");
 extern LPCTSTR THEME_COMMENT = _T("Comment");
 extern LPCTSTR THEME_NUMBER = _T("Number");
 extern LPCTSTR THEME_WORD = _T("Word");

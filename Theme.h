@@ -11,6 +11,11 @@
 #define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
 
 extern LPCTSTR THEME_DEFAULT;
+extern LPCTSTR THEME_LINENUMBER;
+extern LPCTSTR THEME_BRACELIGHT;
+extern LPCTSTR THEME_BRACEBAD;
+extern LPCTSTR THEME_CONTROLCHAR;
+extern LPCTSTR THEME_INDENTGUIDE;
 extern LPCTSTR THEME_COMMENT;
 extern LPCTSTR THEME_NUMBER;
 extern LPCTSTR THEME_WORD;
@@ -41,8 +46,13 @@ inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
 struct Theme
 {
     ThemeItem tDefault = { COLOR_BLACK,        COLOR_WHITE, Font(-13, _T("Consolas")) };
-    struct { const TCHAR* name; ThemeItem theme; } vecTheme[9] = {
+    struct { const TCHAR* name; ThemeItem theme; } vecTheme[14] = {
         { THEME_COMMENT,      { COLOR_LT_GREEN,     COLOR_NONE } },
+        { THEME_LINENUMBER,   { COLOR_NONE,         COLOR_NONE } },
+        { THEME_BRACELIGHT,   { COLOR_NONE,         COLOR_NONE } },
+        { THEME_BRACEBAD,     { COLOR_NONE,         COLOR_NONE } },
+        { THEME_CONTROLCHAR,  { COLOR_NONE,         COLOR_NONE } },    // TODO Looks like only the font is used ?
+        { THEME_INDENTGUIDE,  { COLOR_NONE,         COLOR_NONE } },
         { THEME_NUMBER,       { COLOR_LT_CYAN,      COLOR_NONE } },
         { THEME_WORD,         { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } },
         { THEME_TYPE,         { COLOR_LT_CYAN,      COLOR_NONE } },

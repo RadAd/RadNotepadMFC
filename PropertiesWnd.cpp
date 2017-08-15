@@ -471,11 +471,16 @@ void CPropertiesWnd::InitPropList()
         CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
         pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &m_pSettings->editor.bShowLineNumbers));
         pGroup->AddSubItem(CreateProperty(_T("Bookmarks"), &m_pSettings->editor.bShowBookmarks));
-        pGroup->AddSubItem(CreateProperty(_T("Folds"), &m_pSettings->editor.bShowFolds));
-        LPCTSTR n[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
-        pGroup->AddSubItem(CreateProperty(_T("Fold Marker"), &m_pSettings->editor.nFoldType, n, ARRAYSIZE(n)));
-        pGroup->AddSubItem(CreateProperty(_T("Fold Background"), &m_pSettings->editor.cFoldBG));
-        pGroup->AddSubItem(CreateProperty(_T("Fold Foreground"), &m_pSettings->editor.cFoldFG));
+        {
+            CMFCPropertyGridProperty* pParent = pGroup;
+            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Fold Marker"), 0, TRUE);
+            pGroup->AddSubItem(CreateProperty(_T("Enabled"), &m_pSettings->editor.bShowFolds));
+            LPCTSTR n[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
+            pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nFoldType, n, ARRAYSIZE(n)));
+            pGroup->AddSubItem(CreateProperty(_T("Fold Background"), &m_pSettings->editor.cFoldBG));
+            pGroup->AddSubItem(CreateProperty(_T("Fold Foreground"), &m_pSettings->editor.cFoldFG));
+            pParent->AddSubItem(pGroup);
+        }
 
         m_wndPropList.AddProperty(pGroup);
     }

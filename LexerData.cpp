@@ -10,16 +10,12 @@ struct Style
     LPCTSTR strTheme;
 };
 
-struct StyleItem
-{
-    int nStyle;
-    ThemeItem strTheme;
-} vStyleStandard[] = {
-    { STYLE_LINENUMBER,  { COLOR_NONE,   COLOR_NONE } },
-    { STYLE_BRACELIGHT,  { COLOR_NONE,   COLOR_NONE } },
-    { STYLE_BRACEBAD,    { COLOR_NONE,   COLOR_NONE } },
-    { STYLE_CONTROLCHAR, { COLOR_NONE,   COLOR_NONE } },    // TODO Looks like only the font is used ?
-    { STYLE_INDENTGUIDE, { COLOR_NONE,   COLOR_NONE } },
+Style vStyleStandard[] = {
+    { STYLE_LINENUMBER,  THEME_LINENUMBER },    // TODO Should this style be placed where Line Number is enabled?
+    { STYLE_BRACELIGHT,  THEME_BRACELIGHT },
+    { STYLE_BRACEBAD,    THEME_BRACEBAD },
+    { STYLE_CONTROLCHAR, THEME_CONTROLCHAR },   // TODO Looks like only the font is used ?
+    { STYLE_INDENTGUIDE, THEME_INDENTGUIDE },
 };
 // TODO
 // STYLE_CALLTIP
@@ -164,8 +160,8 @@ void ApplyStyle(CScintillaCtrl& rCtrl, const LexerData* pLexerData, const Theme*
 {
     ApplyStyle(rCtrl, vStyleDefault, pTheme);
     rCtrl.StyleClearAll();
-    for (const StyleItem& si : vStyleStandard)
-        ApplyThemeItem(rCtrl, si.nStyle, si.strTheme);
+    for (const Style& s : vStyleStandard)
+        ApplyStyle(rCtrl, s, pTheme);
     if (pLexerData != nullptr && pLexerData->vStyle != nullptr)
     {
         // TODO Can I do this just once? Is this state shared across ctrls?
