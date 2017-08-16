@@ -2,11 +2,6 @@
 #include "Theme.h"
 
 extern LPCTSTR THEME_DEFAULT = _T("default");
-extern LPCTSTR THEME_LINENUMBER = _T("linenumbers");
-extern LPCTSTR THEME_BRACELIGHT = _T("bracematch");
-extern LPCTSTR THEME_BRACEBAD = _T("bracemismatch");
-extern LPCTSTR THEME_CONTROLCHAR = _T("controlchars");
-extern LPCTSTR THEME_INDENTGUIDE = _T("Indent Guide");
 extern LPCTSTR THEME_COMMENT = _T("comment");
 extern LPCTSTR THEME_NUMBER = _T("number");
 extern LPCTSTR THEME_WORD = _T("keyword");
@@ -31,7 +26,7 @@ int GetThemeItemIndex(LPCTSTR strItem, const Theme* pTheme)
 {
     if (_wcsicmp(strItem, THEME_DEFAULT) == 0)
         return -2;
-    for (int i = 0; i < pTheme->nCount; ++i)
+    for (int i = 0; i < pTheme->nThemeCount; ++i)
     {
         if (_wcsicmp(strItem, pTheme->vecTheme[i].name) == 0)
             return i;
@@ -43,7 +38,7 @@ const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme)
 {
     if (_wcsicmp(strItem, THEME_DEFAULT) == 0)
         return &pTheme->tDefault;
-    for (int i = 0; i < pTheme->nCount; ++i)
+    for (int i = 0; i < pTheme->nThemeCount; ++i)
     {
         if (_wcsicmp(strItem, pTheme->vecTheme[i].name) == 0)
             return &pTheme->vecTheme[i].theme;
@@ -81,21 +76,27 @@ void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
 void InitTheme(Theme* pTheme)
 {
     pTheme->tDefault = { COLOR_BLACK, COLOR_WHITE, Font(-13, _T("Consolas")) };
-    int& i = pTheme->nCount;
-    pTheme->vecTheme[i++] = { THEME_COMMENT,      _T("#Comment"),            { COLOR_LT_GREEN,     COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_LINENUMBER,   _T("#Line Number"),        { COLOR_NONE,         COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_BRACELIGHT,   _T("#Brace Matching"),     { COLOR_NONE,         COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_BRACEBAD,     _T("#Brace Not Matching"), { COLOR_NONE,         COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_CONTROLCHAR,  _T("#Control Character"),  { COLOR_NONE,         COLOR_NONE } };    // TODO Looks like only the font is used ?
-    pTheme->vecTheme[i++] = { THEME_INDENTGUIDE,  _T("#Indent Guide"),       { COLOR_NONE,         COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_NUMBER,       _T("#Number"),             { COLOR_LT_CYAN,      COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_WORD,         _T("#Word"),               { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } };
-    pTheme->vecTheme[i++] = { THEME_TYPE,         _T("#Type"),               { COLOR_LT_CYAN,      COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_STRING,       _T("#String"),             { COLOR_LT_MAGENTA,   COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_IDENTIFIER,   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_PREPROCESSOR, _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_OPERATOR,     _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } };
-    pTheme->vecTheme[i++] = { THEME_ERROR,        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } };
+    {
+        int& i = pTheme->nThemeCount;
+        pTheme->vecTheme[i++] = { THEME_COMMENT,      _T("#Comment"),            { COLOR_LT_GREEN,     COLOR_NONE } };
+        pTheme->vecTheme[i++] = { THEME_NUMBER,       _T("#Number"),             { COLOR_LT_CYAN,      COLOR_NONE } };
+        pTheme->vecTheme[i++] = { THEME_WORD,         _T("#Word"),               { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } };
+        pTheme->vecTheme[i++] = { THEME_TYPE,         _T("#Type"),               { COLOR_LT_CYAN,      COLOR_NONE } };
+        pTheme->vecTheme[i++] = { THEME_STRING,       _T("#String"),             { COLOR_LT_MAGENTA,   COLOR_NONE } };
+        pTheme->vecTheme[i++] = { THEME_IDENTIFIER,   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } };
+        pTheme->vecTheme[i++] = { THEME_PREPROCESSOR, _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } };
+        pTheme->vecTheme[i++] = { THEME_OPERATOR,     _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } };
+        pTheme->vecTheme[i++] = { THEME_ERROR,        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } };
+    }
+    {
+        int& i = pTheme->nBaseCount;
+        pTheme->vecBase[i++] = { _T("Indent Guide"), STYLE_INDENTGUIDE, _T("indentguide"), { COLOR_NONE,     COLOR_NONE } };  // TODO Should I add to scheme.master
+        // TODO THEME_CONTROLCHAR Looks like only the font is used ?
+        // TODO STYLE_INDENTGUIDE Looks like the font isn't used ?
+        // TODO
+        // STYLE_CALLTIP
+        // STYLE_FOLDDISPLAYTEXT
+    }
 }
 
 #import <MSXML6.dll> exclude("ISequentialStream", "_FILETIME")
@@ -148,7 +149,34 @@ inline bool isnull(LPCWSTR s)
 
 inline COLORREF ToColor(LPCWSTR s)
 {
-    return wcstoul(s, nullptr, 16);
+    unsigned long o = wcstoul(s, nullptr, 16);
+    // TODO Support Alpha?
+    return RGB(GetBValue(o), GetGValue(o), GetRValue(o));
+}
+
+void LoadThemeItem(MSXML2::IXMLDOMNodePtr pXMLChildNode, ThemeItem& rThemeItem)
+{
+    _bstr_t fore = GetAttribute(pXMLChildNode, _T("fore"));
+    _bstr_t back = GetAttribute(pXMLChildNode, _T("back"));
+    _bstr_t face = GetAttribute(pXMLChildNode, _T("face"));
+    _bstr_t size = GetAttribute(pXMLChildNode, _T("size"));
+    _bstr_t bold = GetAttribute(pXMLChildNode, _T("bold"));
+    //_bstr_t eolfilled = GetAttribute(pXMLChildNode, _T("eolfilled"));
+
+    if (!isnull(fore))
+        rThemeItem.fore = ToColor(fore);
+    if (!isnull(back))
+        rThemeItem.back = ToColor(back);
+    if (!isnull(face))
+        wcscpy_s(rThemeItem.font.lfFaceName, face);
+    if (!isnull(size))
+    {
+        HDC hDC = ::GetWindowDC(NULL);
+        rThemeItem.font.lfHeight = -MulDiv(_wtoi(size), GetDeviceCaps(hDC, LOGPIXELSY), 72);
+        ::ReleaseDC(NULL, hDC);
+    }
+    if (!isnull(bold) && bold == L"true")
+        rThemeItem.font.lfWeight = FW_BOLD;
 }
 
 void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
@@ -169,15 +197,12 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                 _bstr_t description = GetAttribute(pXMLChildNode, _T("description"));
                 _bstr_t inherit_style = GetAttribute(pXMLChildNode, _T("inherit-style"));
-                _bstr_t fore = GetAttribute(pXMLChildNode, _T("fore"));
-                _bstr_t back = GetAttribute(pXMLChildNode, _T("back"));
-                _bstr_t face = GetAttribute(pXMLChildNode, _T("face"));
-                _bstr_t size = GetAttribute(pXMLChildNode, _T("size"));
-                _bstr_t bold = GetAttribute(pXMLChildNode, _T("bold"));
-                //_bstr_t eolfilled = GetAttribute(pXMLChildNode, _T("eolfilled"));
+
+                ASSERT(!isnull(name));
+                // TODO Check for no other attributes
 
                 ThemeItem rThemeItem;
-                rThemeItem.font.lfWeight = FW_NORMAL;
+
                 ThemeItem* pThemItemOrig = const_cast<ThemeItem*>(GetThemeItem(name, pTheme));
                 if (pThemItemOrig != nullptr)
                     rThemeItem = *pThemItemOrig;
@@ -187,33 +212,53 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     const ThemeItem* pThemItem = GetThemeItem(inherit_style, pTheme);
                     rThemeItem = *pThemItem;
                 }
-                if (!isnull(fore))
-                    rThemeItem.fore = ToColor(fore);
-                if (!isnull(back))
-                    rThemeItem.back = ToColor(back);
-                if (!isnull(face))
-                    wcscpy_s(rThemeItem.font.lfFaceName, face);
-                if (!isnull(size))
-                {
-                    HDC hDC = ::GetWindowDC(NULL);
-                    rThemeItem.font.lfHeight = -MulDiv(_wtoi(size), GetDeviceCaps(hDC, LOGPIXELSY), 72);
-                    ::ReleaseDC(NULL, hDC);
-                }
-                if (!isnull(bold) && bold == L"true")
-                    rThemeItem.font.lfWeight = FW_BOLD;
+
+                LoadThemeItem(pXMLChildNode, rThemeItem);
 
                 if (pThemItemOrig != nullptr)
                 {
                     if (!isnull(description))
                     {
-                        int i = GetThemeItemIndex(name, pTheme);
-                        if (i >= 0)
-                            pTheme->vecTheme[i].description = (wchar_t*) description;
+                        int n = GetThemeItemIndex(name, pTheme);
+                        if (n >= 0)
+                            pTheme->vecTheme[n].description = (wchar_t*) description;
                     }
                     *pThemItemOrig = rThemeItem;
                 }
                 else
-                    pTheme->vecTheme[pTheme->nCount++] = { name, description, rThemeItem };
+                    pTheme->vecTheme[pTheme->nThemeCount++] = { name, description, rThemeItem };
+            }
+        }
+    }
+}
+
+void ProcessBaseOptions(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"style")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t key = GetAttribute(pXMLChildNode, _T("key"));
+                _bstr_t sclass = GetAttribute(pXMLChildNode, _T("class"));
+
+                ASSERT(!isnull(name));
+                ASSERT(!isnull(key));
+                // TODO Check for no other attributes
+
+                ThemeItem rThemeItem;
+                LoadThemeItem(pXMLChildNode, rThemeItem);
+
+                pTheme->vecBase[pTheme->nBaseCount++] = { name, _wtoi(key), sclass, rThemeItem };
             }
         }
     }
@@ -257,6 +302,10 @@ void LoadTheme(Theme* pTheme)
                 if (bstrName == L"style-classes")
                 {
                     ProcessStyleClasses(pXMLChildNode, pTheme);
+                }
+                else if (bstrName == L"base-options")
+                {
+                    ProcessBaseOptions(pXMLChildNode, pTheme);
                 }
             }
         }

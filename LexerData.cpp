@@ -10,17 +10,6 @@ struct Style
     LPCTSTR strTheme;
 };
 
-Style vStyleStandard[] = {
-    { STYLE_LINENUMBER,  THEME_LINENUMBER },    // TODO Should this style be placed where Line Number is enabled?
-    { STYLE_BRACELIGHT,  THEME_BRACELIGHT },
-    { STYLE_BRACEBAD,    THEME_BRACEBAD },
-    { STYLE_CONTROLCHAR, THEME_CONTROLCHAR },   // TODO Looks like only the font is used ?
-    { STYLE_INDENTGUIDE, THEME_INDENTGUIDE },
-};
-// TODO
-// STYLE_CALLTIP
-// STYLE_FOLDDISPLAYTEXT
-
 struct LexerData
 {
     int nID;
@@ -237,8 +226,14 @@ void ApplyStyle(CScintillaCtrl& rCtrl, const LexerData* pLexerData, const Theme*
 {
     ApplyStyle(rCtrl, vStyleDefault, pTheme);
     rCtrl.StyleClearAll();
-    for (const Style& s : vStyleStandard)
-        ApplyStyle(rCtrl, s, pTheme);
+    for (int i = 0; i < pTheme->nBaseCount; ++i)
+    {
+        const auto& item = pTheme->vecBase[i];
+        const ThemeItem* pThemeItem = GetThemeItem(item.sclass, pTheme);
+        if (pThemeItem != nullptr)
+            ApplyThemeItem(rCtrl, item.id2, *pThemeItem);
+        ApplyThemeItem(rCtrl, item.id2, item.theme);
+    }
     if (pLexerData != nullptr && pLexerData->vStyle != nullptr)
     {
         // TODO Can I do this just once? Is this state shared across ctrls?

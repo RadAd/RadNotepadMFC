@@ -11,11 +11,6 @@
 #define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
 
 extern LPCTSTR THEME_DEFAULT;
-extern LPCTSTR THEME_LINENUMBER;
-extern LPCTSTR THEME_BRACELIGHT;
-extern LPCTSTR THEME_BRACEBAD;
-extern LPCTSTR THEME_CONTROLCHAR;
-extern LPCTSTR THEME_INDENTGUIDE;
 extern LPCTSTR THEME_COMMENT;
 extern LPCTSTR THEME_NUMBER;
 extern LPCTSTR THEME_WORD;
@@ -44,8 +39,10 @@ struct ThemeItem
 struct Theme
 {
     ThemeItem tDefault;
-    int nCount = 0;
+    int nThemeCount = 0;
     struct { CString name; CString description; ThemeItem theme; } vecTheme[100];
+    int nBaseCount = 0;
+    struct { CString name; int id2; CString sclass; ThemeItem theme; } vecBase[100];
 };
 
 void InitTheme(Theme* pSettings);

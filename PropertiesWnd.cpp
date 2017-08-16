@@ -495,7 +495,7 @@ void CPropertiesWnd::InitPropList()
         Theme* pTheme = &m_pSettings->editor.rTheme;
         CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
         pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr));
-        for (int i = 0; i < pTheme->nCount; ++i)
+        for (int i = 0; i < pTheme->nThemeCount; ++i)
             pGroup1->AddSubItem(CreateProperty(pTheme->vecTheme[i].description, &pTheme->vecTheme[i].theme, &pTheme->tDefault));
         m_wndPropList.AddProperty(pGroup1);
     }
