@@ -264,7 +264,7 @@ void ProcessBaseOptions(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
     }
 }
 
-void LoadTheme(Theme* pTheme)
+void LoadScheme(LPCTSTR pFilename, Theme* pTheme)
 {
     MSXML2::IXMLDOMDocumentPtr pDoc(__uuidof(MSXML2::DOMDocument60));
     pDoc->Putasync(VARIANT_FALSE);
@@ -272,18 +272,7 @@ void LoadTheme(Theme* pTheme)
     pDoc->PutresolveExternals(VARIANT_FALSE);
     pDoc->PutpreserveWhiteSpace(VARIANT_TRUE);
 
-    TCHAR path[_MAX_PATH];
-    // TODO Have a list of directories to load from
-#if 0
-    GetModuleFileName(NULL, path, MAX_PATH);
-    PathFindFileName(path)[0] = _T('\0');
-#else
-    GetCurrentDirectory(MAX_PATH, path);
-#endif
-    TCHAR full[_MAX_PATH];
-    PathCombine(full, path, _T("schemes\\scheme.master"));
-
-    VARIANT_BOOL varStatus = pDoc->load(full);
+    VARIANT_BOOL varStatus = pDoc->load(pFilename);
     if (varStatus == VARIANT_TRUE)
     {
         MSXML2::IXMLDOMElementPtr pXMLRoot(pDoc->GetdocumentElement());
@@ -322,4 +311,21 @@ void LoadTheme(Theme* pTheme)
         msg.Format(_T("Error Description = %s\n"), (wchar_t*) bstrErr);  OutputDebugString(msg);
         //throw;
     }
+}
+
+void LoadTheme(Theme* pTheme)
+{
+    TCHAR path[_MAX_PATH];
+    TCHAR full[_MAX_PATH];
+
+    GetModuleFileName(NULL, path, MAX_PATH);
+    PathFindFileName(path)[0] = _T('\0');
+    PathCombine(full, path, _T("schemes\\scheme.master"));
+    if (PathFileExists(full))
+        LoadScheme(full, pTheme);
+
+    GetCurrentDirectory(MAX_PATH, path);
+    PathCombine(full, path, _T("schemes\\scheme.master"));
+    if (PathFileExists(full))
+        LoadScheme(full, pTheme);
 }
