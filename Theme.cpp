@@ -447,6 +447,20 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme, LanguageSet& rBaseLanguage)
     }
 }
 
+
+void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, LanguageSet& rBaseLanguage)
+{
+    TCHAR full[_MAX_PATH];
+
+    PathCombine(full, strDirectory, _T("schemes\\scheme.master"));
+    if (PathFileExists(full))
+        LoadScheme(full, pTheme, rBaseLanguage);
+
+    PathCombine(full, strDirectory, _T("schemes\\cpp.scheme"));
+    if (PathFileExists(full))
+        LoadScheme(full, pTheme, rBaseLanguage);
+}
+
 void LoadTheme(Theme* pTheme)
 {
     LanguageSet* pBaseLanguage = new LanguageSet;
@@ -456,20 +470,10 @@ void LoadTheme(Theme* pTheme)
 
     GetModuleFileName(NULL, path, MAX_PATH);
     PathFindFileName(path)[0] = _T('\0');
-    PathCombine(full, path, _T("schemes\\scheme.master"));
-    if (PathFileExists(full))
-        LoadScheme(full, pTheme, *pBaseLanguage);
-    PathCombine(full, path, _T("schemes\\cpp.scheme"));
-    if (PathFileExists(full))
-        LoadScheme(full, pTheme, *pBaseLanguage);
+    LoadSchemeDirectory(path, pTheme, *pBaseLanguage);
 
     GetCurrentDirectory(MAX_PATH, path);
-    PathCombine(full, path, _T("schemes\\scheme.master"));
-    if (PathFileExists(full))
-        LoadScheme(full, pTheme, *pBaseLanguage);
-    PathCombine(full, path, _T("schemes\\cpp.scheme"));
-    if (PathFileExists(full))
-        LoadScheme(full, pTheme, *pBaseLanguage);
+    LoadSchemeDirectory(path, pTheme, *pBaseLanguage);
 
     delete pBaseLanguage;
 }
