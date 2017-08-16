@@ -162,15 +162,18 @@ public:
             pOldFont = pDC->SelectObject(&m_pWndList->GetBoldFont());
         }
 #else
-        CFont font;
         LOGFONT f = *m_pFont->GetLogFont();
-        if (f.lfFaceName[0] == _T('\0') || wcscmp(f.lfFaceName, _T("Default")) == 0)
-            wcscpy_s(f.lfFaceName, m_pDefaultTheme->font.lfFaceName);
-        if (f.lfHeight == 0)
-            f.lfHeight = m_pDefaultTheme->font.lfHeight;
-        if (f.lfWeight == 0)
-            f.lfWeight = m_pDefaultTheme->font.lfWeight;
+        if (m_pDefaultTheme != nullptr)
+        {
+            if (f.lfFaceName[0] == _T('\0') || wcscmp(f.lfFaceName, _T("Default")) == 0)
+                wcscpy_s(f.lfFaceName, m_pDefaultTheme->font.lfFaceName);
+            if (f.lfHeight == 0)
+                f.lfHeight = m_pDefaultTheme->font.lfHeight;
+            if (f.lfWeight == 0)
+                f.lfWeight = m_pDefaultTheme->font.lfWeight;
+        }
         // TODO What to do with italic and underline
+        CFont font;
         font.CreateFontIndirectW(&f);
         CFont* pOldFont = pDC->SelectObject(&font);
 #endif
@@ -426,6 +429,9 @@ void CPropertiesWnd::OnUpdateSortProperties(CCmdUI* pCmdUI)
 void CPropertiesWnd::OnProperties1()
 {
 	// TODO: Add your command handler code here
+    // TODO Temporary to refresh properties
+    m_wndPropList.RemoveAll();
+    InitPropList();
 }
 
 void CPropertiesWnd::OnUpdateProperties1(CCmdUI* /*pCmdUI*/)
@@ -489,8 +495,8 @@ void CPropertiesWnd::InitPropList()
         Theme* pTheme = &m_pSettings->editor.rTheme;
         CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
         pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr));
-        for (int i = 0; i < ARRAYSIZE(Theme::vecTheme); ++i)
-            pGroup1->AddSubItem(CreateProperty(pTheme->vecTheme[i].name, &pTheme->vecTheme[i].theme, &pTheme->tDefault));
+        for (int i = 0; i < pTheme->nCount; ++i)
+            pGroup1->AddSubItem(CreateProperty(pTheme->vecTheme[i].description, &pTheme->vecTheme[i].theme, &pTheme->tDefault));
         m_wndPropList.AddProperty(pGroup1);
     }
 

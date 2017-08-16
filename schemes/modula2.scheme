@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme>
+	<keyword-classes>
+		<keyword-class name="modula2">
+			<!--keywords from XDS Lexis-->
+			and array begin by case const definition div
+			do else elsif end exit except export finally
+			for forward from if implementation import in loop
+			mod module not of or packedset pointer procedure
+			qualified record rem retry repeat return set then
+			to type until var while with
+			<!--identifiers from XDS Lexis-->
+			abs bitset boolean cardinal cap chr char complex
+			cmplx dec dispose excl false float halt high
+			im inc incl int interruptible integer length lfloat
+			longcomplex longreal max min new nil odd ord
+			proc protection re real size true trunc uninterruptible
+			val
+		</keyword-class>
+	</keyword-classes>
+	<language name="modula2" title="Modula-2" folding="true" foldcomments="true" foldcompact="false">
+		<lexer name="pascal" />
+		<use-keywords>
+			<keyword key="0" name="Keywords" class="modula2"/>
+			<keyword key="2" name="Fold Start Words" class="modula2_foldwords"/>
+		</use-keywords>
+		<use-styles>
+			<style name="Default" key="32" />
+			<style name="Whitespace" key="0" />
+			<style name="Identifier" key="1" />
+			<style name="{} Comment" key="2" class="comment"/>
+			<style name="(**) Comment" key="3" class="commentbox"/>
+			<style name="Line Comment" key="4" class="commentline"/>
+			<style name="Preprocessor" key="5" class="preprocessor"/>
+			<style name="(*$ Preprocessor" key="6" class="preprocessor"/>
+			<style name="Number" key="7" class="number"/>
+			<style name="Hex Number" key="8" class="number"/>
+			<style name="Keyword" key="9" class="keyword"/>
+			<style name="String" key="10" class="string"/>
+			<style name="Unclosed String" key="11" class="unclosedstring"/>
+			<style name="Character" key="12" class="character"/>
+			<style name="Operator" key="13" class="operator"/>
+			<style name="Inline Assembly" key="14" fore="804080"/>
+		</use-styles>
+	</language>
+</Scheme>

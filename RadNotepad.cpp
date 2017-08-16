@@ -143,7 +143,6 @@ BOOL CRadNotepadApp::InitInstance()
 
     CWinAppEx::InitInstance();
 
-
 	// Initialize OLE libraries
 	if (!AfxOleInit())
 	{
@@ -151,7 +150,10 @@ BOOL CRadNotepadApp::InitInstance()
 		return FALSE;
 	}
 
-	AfxEnableControlContainer();
+    InitTheme(&m_Settings.editor.rTheme);
+    LoadTheme(&m_Settings.editor.rTheme);
+
+    AfxEnableControlContainer();
 
 	EnableTaskbarInteraction();
 

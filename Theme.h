@@ -28,41 +28,27 @@ extern LPCTSTR THEME_ERROR;
 
 struct ThemeItem
 {
+    ThemeItem(COLORREF fore = COLOR_NONE, COLORREF back = COLOR_NONE, LOGFONT font = {})
+        : fore(fore)
+        , back(back)
+        , font(font)
+    {
+
+    }
+
     COLORREF fore;
     COLORREF back;
     LOGFONT font;
 };
 
-inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
-{
-    LOGFONT lf = {};
-    lf.lfHeight = size;
-    if (face != nullptr)
-        wcscpy_s(lf.lfFaceName, face);
-    lf.lfWeight = bold ? FW_BOLD : FW_NORMAL;
-    return lf;
-}
-
 struct Theme
 {
-    ThemeItem tDefault = { COLOR_BLACK,        COLOR_WHITE, Font(-13, _T("Consolas")) };
-    struct { const TCHAR* name; ThemeItem theme; } vecTheme[14] = {
-        { THEME_COMMENT,      { COLOR_LT_GREEN,     COLOR_NONE } },
-        { THEME_LINENUMBER,   { COLOR_NONE,         COLOR_NONE } },
-        { THEME_BRACELIGHT,   { COLOR_NONE,         COLOR_NONE } },
-        { THEME_BRACEBAD,     { COLOR_NONE,         COLOR_NONE } },
-        { THEME_CONTROLCHAR,  { COLOR_NONE,         COLOR_NONE } },    // TODO Looks like only the font is used ?
-        { THEME_INDENTGUIDE,  { COLOR_NONE,         COLOR_NONE } },
-        { THEME_NUMBER,       { COLOR_LT_CYAN,      COLOR_NONE } },
-        { THEME_WORD,         { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } },
-        { THEME_TYPE,         { COLOR_LT_CYAN,      COLOR_NONE } },
-        { THEME_STRING,       { COLOR_LT_MAGENTA,   COLOR_NONE } },
-        { THEME_IDENTIFIER,   { COLOR_BLACK,        COLOR_NONE } },
-        { THEME_PREPROCESSOR, { COLOR_LT_RED,       COLOR_NONE } },
-        { THEME_OPERATOR,     { COLOR_LT_YELLOW,    COLOR_NONE } },
-        { THEME_ERROR,        { COLOR_WHITE,        COLOR_LT_RED } },
-    };
+    ThemeItem tDefault;
+    int nCount = 0;
+    struct { CString name; CString description; ThemeItem theme; } vecTheme[100];
 };
 
+void InitTheme(Theme* pSettings);
 const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pSettings);
 void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme);
+void LoadTheme(Theme* pTheme);

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme>
+	<keyword-classes>
+        <keyword-class name="latex"></keyword-class>
+	</keyword-classes>
+	<language name="latex" title="LaTeX" folding="false" >
+		<lexer name="latex" />
+		<comments line="%" />
+		<use-keywords>
+			<keyword key="0" name="Keywords" class="latex"/>
+		</use-keywords>
+		<use-styles>
+			<style name="Default" key="32" />
+			<style name="Whitespace" key="0" />
+			<style name="Command" key="1" fore="aa0000" bold="true" />
+			<style name="Tag" key="2" fore="880088" bold="true" />
+			<style name="Math" key="3" fore="0000ff" />
+			<style name="Comment" key="4" class="comment" />
+		</use-styles>
+	</language>
+</Scheme>
