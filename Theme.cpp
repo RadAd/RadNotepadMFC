@@ -94,14 +94,13 @@ void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
         rCtrl.StyleSetUnderline(nStyle, TRUE);
 }
 
-const Language* GetLanguageForExt(Theme* pTheme, LPCTSTR strExt)
+const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt)
 {
-    if (wcscmp(strExt, _T(".cpp")) == 0 || wcscmp(strExt, _T(".c")) == 0 || wcscmp(strExt, _T(".h")) == 0)
-        return GetLanguage(pTheme->vecLanguage, _T("cpp"));
-    else if (wcscmp(strExt, _T(".java")) == 0)
-        return GetLanguage(pTheme->vecLanguage, _T("java"));
-    else
+    std::map<CString, CString>::const_iterator it = pTheme->mapExt.find(CString(strExt).MakeLower());
+    if (it == pTheme->mapExt.end())
         return nullptr;
+    else
+        return GetLanguage(pTheme->vecLanguage, it->second);
 }
 
 void InitTheme(Theme* pTheme)
@@ -525,6 +524,23 @@ void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Langua
             PathCombine(full, full, fd.cFileName);
             LoadScheme(full, pTheme, vecBaseLanguage);
         } while (FindNextFile(hFind, &fd));
+    }
+
+    PathCombine(full, strDirectory, _T("schemes\\extmap.dat"));
+    if (PathFileExists(full))
+    {
+        TCHAR line[1024];
+        FILE* f = nullptr;
+        if (_wfopen_s(&f, full, L"r") == 0)
+        {
+            while (fgetws(line, ARRAYSIZE(line), f))
+            {
+                const TCHAR* equals = wcschr(line, _T('='));
+                if (equals != nullptr)
+                    pTheme->mapExt[CString(line, equals - line).Trim().MakeLower()] = CString(equals + 1).Trim().MakeLower();
+            }
+            fclose(f);
+        }
     }
 }
 

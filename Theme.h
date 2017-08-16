@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #define COLOR_NONE          ((COLORREF) -1)
 #define COLOR_WHITE         RGB(0xFF, 0xFF, 0xFF)
@@ -52,6 +53,7 @@ struct Language
         if (pBaseLanguage != nullptr)
             *this = *pBaseLanguage;
         this->name = name;
+        this->name.MakeLower();
     }
     CString name;
     CString title;
@@ -79,6 +81,7 @@ struct Theme
     std::vector<StyleClass> vecStyleClass;
     std::vector<StyleNew> vecBase;
     std::vector<KeywordClass> vecKeywordClass;
+    std::map<CString, CString> mapExt;
     std::vector<Language> vecLanguage;
 };
 
@@ -87,4 +90,4 @@ const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pSettings);
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
 void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme);
 void LoadTheme(Theme* pTheme);
-const Language* GetLanguageForExt(Theme* pTheme, LPCTSTR strExt);
+const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt);
