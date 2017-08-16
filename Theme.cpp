@@ -12,6 +12,12 @@ extern LPCTSTR THEME_PREPROCESSOR = _T("preprocessor");
 extern LPCTSTR THEME_OPERATOR = _T("operator");
 extern LPCTSTR THEME_ERROR = _T("error");
 
+struct LanguageSet
+{
+    int nCount = 0;
+    Language vec[100];
+};
+
 inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
 {
     LOGFONT lf = {};
@@ -20,6 +26,16 @@ inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
         wcscpy_s(lf.lfFaceName, face);
     lf.lfWeight = bold ? FW_BOLD : FW_NORMAL;
     return lf;
+}
+
+const Language* GetLanguage(const LanguageSet& rLanguageSet, LPCSTR name)
+{
+    for (int i = 0; i < rLanguageSet.nCount; ++i)
+    {
+        if (rLanguageSet.vec[i].name == name)
+            return &rLanguageSet.vec[i];
+    }
+    return nullptr;
 }
 
 int GetThemeItemIndex(LPCTSTR strItem, const Theme* pTheme)
@@ -232,7 +248,7 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
     }
 }
 
-void ProcessBaseOptions(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
+void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, int& nCount, StyleNew* pVec)
 {
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
     long length = pXMLChildren->Getlength();
@@ -258,13 +274,111 @@ void ProcessBaseOptions(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 ThemeItem rThemeItem;
                 LoadThemeItem(pXMLChildNode, rThemeItem);
 
-                pTheme->vecBase[pTheme->nBaseCount++] = { name, _wtoi(key), sclass, rThemeItem };
+                pVec[nCount++];
             }
         }
     }
 }
 
-void LoadScheme(LPCTSTR pFilename, Theme* pTheme)
+void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"keyword-class")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t keywords = pXMLChildNode->text;
+
+                ASSERT(!isnull(name));
+                ASSERT(!isnull(keywords));
+                // TODO Check for no other attributes
+
+                pTheme->vecKeywords[pTheme->nKeywordCount++] = { name, keywords };
+            }
+        }
+    }
+}
+
+void ProcessKeywords(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"keyword")
+            {
+                _bstr_t key = GetAttribute(pXMLChildNode, _T("key"));
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t sclass = GetAttribute(pXMLChildNode, _T("class"));
+
+                pLanguage->vecKeywords[_wtoi(key)] = { name, sclass };
+            }
+        }
+    }
+}
+
+void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage, const LanguageSet& rBaseLanguage)
+{
+    {
+        _bstr_t base = GetAttribute(pXMLNode, _T("base"));
+        if (!isnull(base))
+        {
+            const Language* pBaseLanguage = GetLanguage(rBaseLanguage, base);
+            *pLanguage = *pBaseLanguage;
+        }
+
+        _bstr_t title = GetAttribute(pXMLNode, _T("title"));
+        if (!isnull(title))
+            pLanguage->title = (wchar_t*) title;
+    }
+
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"lexer")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                pLanguage->lexer = (wchar_t*) name;
+            }
+            else if (bstrName == L"use-styles")
+            {
+                ProcessStyles(pXMLChildNode, pLanguage->nStyleCount, pLanguage->vecStyle);
+            }
+            else if (bstrName == L"use-keywords")
+            {
+                ProcessKeywords(pXMLChildNode, pLanguage);
+            }
+            // else if (bstrName == L"property")
+            // else if (bstrName == L"comments")
+        }
+    }
+}
+
+void LoadScheme(LPCTSTR pFilename, Theme* pTheme, LanguageSet& rBaseLanguage)
 {
     MSXML2::IXMLDOMDocumentPtr pDoc(__uuidof(MSXML2::DOMDocument60));
     pDoc->Putasync(VARIANT_FALSE);
@@ -294,7 +408,27 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme)
                 }
                 else if (bstrName == L"base-options")
                 {
-                    ProcessBaseOptions(pXMLChildNode, pTheme);
+                    ProcessStyles(pXMLChildNode, pTheme->nBaseCount, pTheme->vecBase);
+                }
+                else if (bstrName == L"keyword-classes")
+                {
+                    ProcessKeywordClasses(pXMLChildNode, pTheme);
+                }
+                else if (bstrName == L"base-language")
+                {
+                    _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                    // TODO Look for existing item - shouldn't be one
+                    Language* pLanguage = &rBaseLanguage.vec[rBaseLanguage.nCount++];
+                    pLanguage->name = (wchar_t*) name;
+                    ProcessLanguage(pXMLChildNode, pLanguage, rBaseLanguage);
+                }
+                else if (bstrName == L"language")
+                {
+                    _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                    // TODO Look for existing item - shouldn't be one
+                    Language* pLanguage = &pTheme->vecLanguages[pTheme->nLanguageCount++];
+                    pLanguage->name = (wchar_t*) name;
+                    ProcessLanguage(pXMLChildNode, pLanguage, rBaseLanguage);
                 }
             }
         }
@@ -315,6 +449,8 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme)
 
 void LoadTheme(Theme* pTheme)
 {
+    LanguageSet* pBaseLanguage = new LanguageSet;
+
     TCHAR path[_MAX_PATH];
     TCHAR full[_MAX_PATH];
 
@@ -322,10 +458,18 @@ void LoadTheme(Theme* pTheme)
     PathFindFileName(path)[0] = _T('\0');
     PathCombine(full, path, _T("schemes\\scheme.master"));
     if (PathFileExists(full))
-        LoadScheme(full, pTheme);
+        LoadScheme(full, pTheme, *pBaseLanguage);
+    PathCombine(full, path, _T("schemes\\cpp.scheme"));
+    if (PathFileExists(full))
+        LoadScheme(full, pTheme, *pBaseLanguage);
 
     GetCurrentDirectory(MAX_PATH, path);
     PathCombine(full, path, _T("schemes\\scheme.master"));
     if (PathFileExists(full))
-        LoadScheme(full, pTheme);
+        LoadScheme(full, pTheme, *pBaseLanguage);
+    PathCombine(full, path, _T("schemes\\cpp.scheme"));
+    if (PathFileExists(full))
+        LoadScheme(full, pTheme, *pBaseLanguage);
+
+    delete pBaseLanguage;
 }

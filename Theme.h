@@ -36,13 +36,35 @@ struct ThemeItem
     LOGFONT font;
 };
 
+struct StyleNew
+{
+    CString name;
+    int id;
+    CString sclass;
+    ThemeItem theme;
+};
+
+struct Language
+{
+    CString name;
+    CString title;
+    CString lexer;
+    int nStyleCount = 0;
+    StyleNew vecStyle[100];
+    struct { CString name; CString sclass; } vecKeywords[6];
+};
+
 struct Theme
 {
     ThemeItem tDefault;
     int nThemeCount = 0;
     struct { CString name; CString description; ThemeItem theme; } vecTheme[100];
     int nBaseCount = 0;
-    struct { CString name; int id2; CString sclass; ThemeItem theme; } vecBase[100];
+    StyleNew vecBase[100];
+    int nKeywordCount = 0;
+    struct { CString name; CString keywords; } vecKeywords[100];
+    int nLanguageCount = 0;
+    Language vecLanguages[100];
 };
 
 void InitTheme(Theme* pSettings);

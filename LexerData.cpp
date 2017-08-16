@@ -228,11 +228,11 @@ void ApplyStyle(CScintillaCtrl& rCtrl, const LexerData* pLexerData, const Theme*
     rCtrl.StyleClearAll();
     for (int i = 0; i < pTheme->nBaseCount; ++i)
     {
-        const auto& item = pTheme->vecBase[i];
+        const StyleNew& item = pTheme->vecBase[i];
         const ThemeItem* pThemeItem = GetThemeItem(item.sclass, pTheme);
         if (pThemeItem != nullptr)
-            ApplyThemeItem(rCtrl, item.id2, *pThemeItem);
-        ApplyThemeItem(rCtrl, item.id2, item.theme);
+            ApplyThemeItem(rCtrl, item.id, *pThemeItem);
+        ApplyThemeItem(rCtrl, item.id, item.theme);
     }
     if (pLexerData != nullptr && pLexerData->vStyle != nullptr)
     {
