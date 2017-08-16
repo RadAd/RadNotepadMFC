@@ -325,6 +325,19 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<StyleNew>& vecSt
 
                 vecStyles.push_back({ name, _wtoi(key), sclass, rThemeItem });
             }
+            else if (bstrName == L"group")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t description = GetAttribute(pXMLChildNode, _T("description"));
+                _bstr_t sclass = GetAttribute(pXMLChildNode, _T("class"));
+
+                ASSERT(!isnull(name));
+                //ASSERT(!isnull(description));
+                // TODO Check for no other attributes
+
+                // TODO Handle groups properly
+                ProcessStyles(pXMLChildNode, vecStyles);
+            }
         }
     }
 }
@@ -501,9 +514,18 @@ void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Langua
     if (PathFileExists(full))
         LoadScheme(full, pTheme, vecBaseLanguage);
 
-    PathCombine(full, strDirectory, _T("schemes\\cpp.scheme"));
-    if (PathFileExists(full))
-        LoadScheme(full, pTheme, vecBaseLanguage);
+    PathCombine(full, strDirectory, _T("schemes\\*.scheme"));
+    WIN32_FIND_DATA fd = {};
+    HANDLE hFind;
+    if ((hFind = FindFirstFile(full, &fd)) != INVALID_HANDLE_VALUE)
+    {
+        do
+        {
+            PathCombine(full, strDirectory, _T("schemes"));
+            PathCombine(full, full, fd.cFileName);
+            LoadScheme(full, pTheme, vecBaseLanguage);
+        } while (FindNextFile(hFind, &fd));
+    }
 }
 
 void LoadTheme(Theme* pTheme)

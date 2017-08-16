@@ -48,9 +48,4 @@
 			transient true try typeof var void volatile while with
 		</keyword-class>
 	</keyword-classes>
-	<imports>
-		<set pattern="*.scheme"/>
-		<set pattern="*.schemedef"/>
-		<!--<file name="userSettings.xml"/>-->
-	</imports>
 </Scheme>

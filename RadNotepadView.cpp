@@ -639,6 +639,7 @@ void CRadNotepadView::OnScheme(UINT nID)
 
 void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
 {
+    // TODO Sort
     if (pCmdUI->m_pSubMenu != nullptr)
     {
         for (int i = 1; i < (ID_VIEW_FIRSTSCHEME - ID_VIEW_LASTSCHEME); ++i)
