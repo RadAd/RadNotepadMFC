@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Theme.h"
+#include <SciLexer.h>
 
 extern LPCTSTR THEME_DEFAULT = _T("default");
 extern LPCTSTR THEME_COMMENT = _T("comment");
@@ -22,12 +23,22 @@ inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
     return lf;
 }
 
-const Language* GetLanguage(const std::vector<Language>& vecLanguage, LPCSTR name)
+const Language* GetLanguage(const std::vector<Language>& vecLanguage, LPCTSTR name)
 {
     for (const Language& rLanguage : vecLanguage)
     {
         if (rLanguage.name == name)
             return &rLanguage;
+    }
+    return nullptr;
+}
+
+const KeywordClass* GetKeywordClass(const std::vector<KeywordClass>& vecKeywordClass, LPCTSTR name)
+{
+    for (const KeywordClass& rKeywordClass : vecKeywordClass)
+    {
+        if (rKeywordClass.name == name)
+            return &rKeywordClass;
     }
     return nullptr;
 }
@@ -83,6 +94,16 @@ void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
         rCtrl.StyleSetUnderline(nStyle, TRUE);
 }
 
+const Language* GetLanguageForExt(Theme* pTheme, LPCTSTR strExt)
+{
+    if (wcscmp(strExt, _T(".cpp")) == 0 || wcscmp(strExt, _T(".c")) == 0 || wcscmp(strExt, _T(".h")) == 0)
+        return GetLanguage(pTheme->vecLanguage, _T("cpp"));
+    else if (wcscmp(strExt, _T(".java")) == 0)
+        return GetLanguage(pTheme->vecLanguage, _T("java"));
+    else
+        return nullptr;
+}
+
 void InitTheme(Theme* pTheme)
 {
     pTheme->tDefault = { COLOR_BLACK, COLOR_WHITE, Font(-13, _T("Consolas")) };
@@ -106,6 +127,42 @@ void InitTheme(Theme* pTheme)
         // STYLE_FOLDDISPLAYTEXT
     }
 }
+
+void ApplyStyle(CScintillaCtrl& rCtrl, const StyleNew& style, const Theme* pTheme)
+{
+    const ThemeItem* pThemeItem = GetThemeItem(style.sclass, pTheme);
+    if (pThemeItem != nullptr)
+        ApplyThemeItem(rCtrl, style.id, *pThemeItem);
+    ApplyThemeItem(rCtrl, style.id, style.theme);
+}
+
+void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme)
+{
+    if (pLanguage != nullptr)
+        rCtrl.SetLexerLanguage(pLanguage->lexer);
+    else
+        rCtrl.SetLexer(SCLEX_NULL);
+
+    ApplyThemeItem(rCtrl, STYLE_DEFAULT, pTheme->tDefault);
+    rCtrl.StyleClearAll();
+    for (const StyleNew& style : pTheme->vecBase)
+        ApplyStyle(rCtrl, style, pTheme);
+
+    if (pLanguage != nullptr)
+    {
+        for (int i = 0; i < KEYWORDSET_MAX; ++i)
+        {
+            const CString sclass = pLanguage->vecKeywords[i].sclass;
+            const KeywordClass* pKeywordClass = GetKeywordClass(pTheme->vecKeywordClass, sclass);
+            if (pKeywordClass != nullptr)
+                rCtrl.SetKeyWords(i, pKeywordClass->keywords);
+        }
+
+        for (const StyleNew& style : pLanguage->vecStyle)
+            ApplyStyle(rCtrl, style, pTheme);
+    }
+}
+
 
 #import <MSXML6.dll> exclude("ISequentialStream", "_FILETIME")
 
@@ -325,16 +382,9 @@ void ProcessKeywords(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
     }
 }
 
-void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage, const std::vector<Language>& vecLanguage)
+void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
 {
     {
-        _bstr_t base = GetAttribute(pXMLNode, _T("base"));
-        if (!isnull(base))
-        {
-            const Language* pBaseLanguage = GetLanguage(vecLanguage, base);
-            *pLanguage = *pBaseLanguage;
-        }
-
         _bstr_t title = GetAttribute(pXMLNode, _T("title"));
         if (!isnull(title))
             pLanguage->title = (wchar_t*) title;
@@ -412,15 +462,19 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme, std::vector<Language>& vecBase
                     // TODO Look for existing item - shouldn't be one
                     vecBaseLanguage.push_back(Language(name));
                     Language& rLanguage = vecBaseLanguage.back();
-                    ProcessLanguage(pXMLChildNode, &rLanguage, vecBaseLanguage);
+                    ProcessLanguage(pXMLChildNode, &rLanguage);
                 }
                 else if (bstrName == L"language")
                 {
                     _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                    _bstr_t base = GetAttribute(pXMLChildNode, _T("base"));
+
+                    const Language* pBaseLanguage = isnull(base) ? nullptr : GetLanguage(vecBaseLanguage, base);
+
                     // TODO Look for existing item - shouldn't be one
-                    pTheme->vecLanguage.push_back(Language(name));
+                    pTheme->vecLanguage.push_back(Language(name, pBaseLanguage));
                     Language& rLanguage = pTheme->vecLanguage.back();
-                    ProcessLanguage(pXMLChildNode, &rLanguage, vecBaseLanguage);
+                    ProcessLanguage(pXMLChildNode, &rLanguage);
                 }
             }
         }

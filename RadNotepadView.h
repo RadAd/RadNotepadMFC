@@ -5,7 +5,6 @@
 #pragma once
 
 class CRadNotepadDoc;
-struct LexerData;
 
 class CRadNotepadView : public CScintillaView
 {
@@ -40,7 +39,7 @@ public:
 
 protected:
     void DefineMarker(int marker, int markerType, COLORREF fore, COLORREF back);
-    const LexerData* m_pLexerData;
+    const Language* m_pLanguage;
     BOOL m_bHighlightMatchingBraces;
 
 // Generated message map functions

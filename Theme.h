@@ -47,16 +47,17 @@ struct StyleNew
 
 struct Language
 {
-    Language(LPCSTR name)
-        : name(name)
+    Language(LPCSTR name, const Language* pBaseLanguage = nullptr)
     {
-
+        if (pBaseLanguage != nullptr)
+            *this = *pBaseLanguage;
+        this->name = name;
     }
     CString name;
     CString title;
     CString lexer;
     std::vector<StyleNew> vecStyle;
-    struct { CString name; CString sclass; } vecKeywords[6];
+    struct { CString name; CString sclass; } vecKeywords[KEYWORDSET_MAX];
 };
 
 struct StyleClass
@@ -83,5 +84,7 @@ struct Theme
 
 void InitTheme(Theme* pSettings);
 const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pSettings);
+void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
 void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme);
 void LoadTheme(Theme* pTheme);
+const Language* GetLanguageForExt(Theme* pTheme, LPCTSTR strExt);

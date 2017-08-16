@@ -97,7 +97,7 @@ END_MESSAGE_MAP()
 // CRadNotepadView construction/destruction
 
 CRadNotepadView::CRadNotepadView()
-    : m_pLexerData(nullptr)
+    : m_pLanguage(nullptr)
     , m_bHighlightMatchingBraces(FALSE)
 {
 }
@@ -252,14 +252,15 @@ void CRadNotepadView::OnInitialUpdate()
     CRadNotepadDoc* pDoc = GetDocument();
     CString strFileName = pDoc->GetPathName();
     PCTSTR strExt = PathFindExtension(strFileName);
-    m_pLexerData = GetLexerData(strExt);
+
+    m_pLanguage = GetLanguageForExt(&theApp.m_Settings.editor.rTheme, strExt);
 
     // TODO Copy some settings from other ctrl (ie split view, new window)
 
     CScintillaCtrl& rCtrl = GetCtrl();
     const EditorSettings& settings = theApp.m_Settings.editor;
 
-    Apply(rCtrl, m_pLexerData, &settings.rTheme);
+    Apply(rCtrl, m_pLanguage, &settings.rTheme);
 
     //Setup folding
     rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.bShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
@@ -620,22 +621,22 @@ void CRadNotepadView::OnEditFindMatchingBrace()
 
 void CRadNotepadView::OnScheme(UINT nID)
 {
-    const LexerData* pLexerData = nullptr;
+    const Language* pLanguage = nullptr;
     if (nID == ID_VIEW_FIRSTSCHEME)
     {
-        pLexerData = GetLexerNone();
+        pLanguage = nullptr;
     }
     else
     {
         nID -= ID_VIEW_FIRSTSCHEME + 1;
-        while ((pLexerData = GetNextData(pLexerData)) != nullptr && nID > 0)
-            --nID;
+        const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+        pLanguage = &vecLanguage[nID];
     }
 
-    m_pLexerData = pLexerData;
+    m_pLanguage = pLanguage;
     CScintillaCtrl& rCtrl = GetCtrl();
     const EditorSettings& settings = theApp.m_Settings.editor;
-    Apply(rCtrl, m_pLexerData, &settings.rTheme);
+    Apply(rCtrl, m_pLanguage, &settings.rTheme);
 }
 
 void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
@@ -647,11 +648,11 @@ void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
 
         int nSelected = 0;
         int nIndex = 0;
-        const LexerData* pLexerData = nullptr;
-        while ((pLexerData = GetNextData(pLexerData)) != nullptr)
+        const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+        for (const Language& rLanguage : vecLanguage)
         {
-            pCmdUI->m_pSubMenu->InsertMenu(++nIndex, MF_STRING | MF_BYPOSITION, ++pCmdUI->m_nID, GetLexerName(pLexerData));
-            if (pLexerData == m_pLexerData)
+            pCmdUI->m_pSubMenu->InsertMenu(++nIndex, MF_STRING | MF_BYPOSITION, ++pCmdUI->m_nID, rLanguage.title);
+            if (&rLanguage == m_pLanguage)
                 nSelected = nIndex;
         }
 
