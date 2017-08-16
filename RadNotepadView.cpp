@@ -12,8 +12,6 @@
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
 #include "GoToLineDlg.h"
-#include "LexerData.h"
-#include <SciLexer.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

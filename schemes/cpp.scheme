@@ -2,15 +2,49 @@
 <Scheme>
 	<keyword-classes>
 		<keyword-class name="cpp">
-			asm auto bool break case catch char class const const_cast continue
-			default delete do double dynamic_cast else enum explicit export extern false float for
-			friend goto if inline int long mutable namespace new operator private protected public
-			register reinterpret_cast return short signed sizeof static static_cast struct switch
-			template this throw true try typedef typeid typename union unsigned using
-			virtual void volatile wchar_t while and and_eq bitand bitor compl not not_eq or
-			or_eq xor xor_eq
-		</keyword-class>
-		<keyword-class name="doxygen">
+      alignas alignof and and_eq asm atomic_cancel atomic_commit atomic_noexcept bitand bitor break
+      case catch class compl concept const constexpr
+      const_cast continue decltype
+      default delete do dynamic_cast
+      else enum explicit export extern for friend goto if import inline
+      module mutable namespace new not not_eq
+      operator or or_eq private protected public register reinterpret_cast requries return
+      sizeof static static_assert static_cast struct switch synchronized template
+      thread_local throw try typedef typeid typename union
+      using virtual void volatile whcar_t while xor xor_eq
+      __finally __exception __try __declspec deprecated dllexport dllimport naked uuid noinline noreturn nothrow selectany thread
+    </keyword-class>
+    <keyword-class name="cpptypes">
+      ATOM BOOL BOOLEAN BYTE CHAR COLORREF DWORD DWORDLONG DWORD_PTR
+      DWORD32 DWORD64 FLOAT HACCEL HALF_PTR HANDLE HBITMAP HBRUSH
+      HCOLORSPACE HCONV HCONVLIST HCURSOR HDC HDDEDATA HDESK HDROP HDWP
+      HENHMETAFILE HFILE HFONT HGDIOBJ HGLOBAL HHOOK HICON HINSTANCE HKEY
+      HKL HLOCAL HMENU HMETAFILE HMODULE HMONITOR HPALETTE HPEN HRESULT
+      HRGN HRSRC HSZ HWINSTA HWND INT INT_PTR INT32 INT64 LANGID LCID LCTYPE
+      LGRPID LONG LONGLONG LONG_PTR LONG32 LONG64 LPARAM LPBOOL LPBYTE LPCOLORREF
+      LPCSTR LPCTSTR LPCVOID LPCWSTR LPDWORD LPHANDLE LPINT LPLONG LPSTR LPTSTR
+      LPVOID LPWORD LPWSTR LRESULT PBOOL PBOOLEAN PBYTE PCHAR PCSTR PCTSTR PCWSTR
+      PDWORDLONG PDWORD_PTR PDWORD32 PDWORD64 PFLOAT PHALF_PTR PHANDLE PHKEY PINT
+      PINT_PTR PINT32 PINT64 PLCID PLONG PLONGLONG PLONG_PTR PLONG32 PLONG64 POINTER_32
+      POINTER_64 PSHORT PSIZE_T PSSIZE_T PSTR PTBYTE PTCHAR PTSTR PUCHAR PUHALF_PTR
+      PUINT PUINT_PTR PUINT32 PUINT64 PULONG PULONGLONG PULONG_PTR PULONG32 PULONG64
+      PUSHORT PVOID PWCHAR PWORD PWSTR SC_HANDLE SC_LOCK SERVICE_STATUS_HANDLE SHORT
+      SIZE_T SSIZE_T TBYTE TCHAR UCHAR UHALF_PTR UINT UINT_PTR UINT32 UINT64 ULONG
+      ULONGLONG ULONG_PTR ULONG32 ULONG64 USHORT USN VOID WCHAR WORD WPARAM WPARAM WPARAM
+      auto bool char char16_t char32_t short int __int32 __int64 __int8 __int16 long float double __wchar_t void
+      clock_t _complex _dev_t _diskfree_t div_t ldiv_t _exception exception _EXCEPTION_POINTERS
+      FILE _finddata_t _finddatai64_t _wfinddata_t _wfinddatai64_t __finddata64_t
+      __wfinddata64_t _FPIEEE_RECORD fpos_t _HEAPINFO _HFILE lconv intptr_t _locale_t
+      jmp_buf mbstate_t _off_t _onexit_t _PNH ptrdiff_t _purecall_handler
+      sig_atomic_t size_t _stat __stat64 _stati64 terminate_function
+      time_t __time64_t _timeb __timeb64 tm uintptr_t _utimbuf
+      va_list wchar_t wctrans_t wctype_t wint_t signed unsigned
+      std const_iterator deque iterator list multimap map pair set string stringstream vector wstring wstringstream
+    </keyword-class>
+    <keyword-class name="cppvalues">
+      true false nullptr this TRUE FALSE NULL
+    </keyword-class>
+    <keyword-class name="doxygen">
 			a addindex addtogroup anchor arg attention
 			author b brief bug c class code date def defgroup deprecated dontinclude
 			e em endcode endhtmlonly endif endlatexonly endlink endverbatim enum example exception
@@ -33,14 +67,20 @@
 			unchecked unsafe ushort using virtual void while
 		</keyword-class>
 		<keyword-class name="java">
-			abstract assert boolean break byte case catch char class const
-			continue default do double else extends final finally float for future
-			generic goto if implements import inner instanceof int interface long
-			native new null operator outer package private protected public rest
-			return short static super switch synchronized this throw throws
-			transient try var void volatile while
+			abstract assert break case catch class const
+			continue default do else extends final finally for future
+			generic goto if implements import inner instanceof interface
+			native new operator outer package private protected public rest
+			return static super switch synchronized this throw throws
+			transient try var volatile while
 		</keyword-class>
-		<keyword-class name="idl">
+    <keyword-class name="javatypes">
+      boolean byte char double float int long short void
+    </keyword-class>
+    <keyword-class name="javavalues">
+      true false null
+    </keyword-class>
+    <keyword-class name="idl">
 			aggregatable allocate appobject arrays async async_uuid
 			auto_handle
 			bindable boolean broadcast byte byte_count
@@ -78,7 +118,7 @@
 			undefined
 		</keyword-class>
 	</keyword-classes>
-	
+
 	<!-- base scheme for C++ style languages -->
 	<base-language name="cppbase">
 		<lexer name="cpp" />
@@ -88,26 +128,28 @@
 			<style name="Whitespace" key="0" class="whitespace" />
 			<style name="Comment" key="1" class="commentbox"/>
 			<style name="Comment Line" key="2" class="commentline"/>
-			
+
 			<style name="Number" key="4" class="number"/>
 			<style name="Keyword" key="5" class="keyword"/>
 			<style name="String" key="6" class="string"/>
 			<style name="Character" key="7" class="string"/>
-			
+
 			<style name="Operator" key="10" bold="true"/>
 			<style name="Identifier" key="11" />
 			<style name="End of line string" key="12" fore="000000" back="e0c0e0" eolfilled="true"/>
 		</use-styles>
 	</base-language>
-	
+
 	<language base="cppbase" name="cpp" title="C / C++" folding="true" foldcomments="true" foldelse="true" foldcompact="true" foldpreproc="true">
 		<lexer name="cpp" />
 		<property name="lexer.cpp.track.preprocessor" value="0" />
 		<comments line="//" streamStart="/*" streamEnd="*/" blockStart="/**" blockLine=" *" blockEnd=" */" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="cpp"/>
-			<keyword key="2" name="Doxygen Keywords" class="doxygen"/>
-		</use-keywords>
+      <keyword key="1" name="Types" class="cpptypes"/>
+      <keyword key="2" name="Doxygen Keywords" class="doxygen"/>
+      <keyword key="3" name="Values" class="cppvalues"/>
+    </use-keywords>
 		<use-styles>
 			<style name="Doc Comments" key="3" class="commentdoc"/>
 			<style name="UUID" key="8" fore="804080"/>
@@ -115,12 +157,13 @@
 			<style name="Verbatim" key="13" fore="007f00" back="e0ffe0" eolfilled="true"/>
 			<style name="RegEx" key="14" fore="3f7f3f" back="e0f0ff" eolfilled="true"/>
 			<style name="Comment Line Doc" key="15" class="commentdoc"/>
-			<style name="Keywords 2" key="16" fore="b00040"/>
+      <style name="Types" key="16" class="keyword2"/>
 			<style name="Comment Doc Keyword" key="17" class="commentdoc" fore="3060a0"/>
 			<style name="Unknown Comment Doc Keyword" key="18" class="commentdoc" fore="804020"/>
+      <style name="Values" key="19" class="number"/>
 		</use-styles>
 	</language>
-	
+
 	<language base="cppbase" name="idl" title="IDL" folding="true">
 	    <property name="lexer.cpp.track.preprocessor" value="0" />
 		<use-keywords>
@@ -157,26 +200,29 @@
 			<style name="RegEx" key="14" fore="3f7f3f" back="e0f0ff" eolfilled="true"/>
 			<style name="Comment Line Doc" key="15" class="commentdoc"/>
 			<style name="Keywords 2" key="16" fore="b00040"/>
-			
+
 			<!--<style name="Comment Doc Keyword" key="17" class="commentdoc" fore="3060a0"/>
 			<style name="Unknown Comment Doc Keyword" key="18" class="commentdoc" fore="804020"/>-->
 		</use-styles>
 	</language>
-	
+
 	<language base="cppbase" name="java" title="Java" folding="true" foldcomments="true" foldelse="true" foldcompact="true">
 		<comments line="//" streamStart="/*" streamEnd="*/" blockStart="/**" blockLine=" *" blockEnd=" */" />
 		<property name="lexer.cpp.track.preprocessor" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="java"/>
-		</use-keywords>
+      <keyword key="1" name="Types" class="javatypes"/>
+      <keyword key="3" name="Values" class="javavalues"/>
+    </use-keywords>
 		<use-styles>
 			<style name="Doc Comments" key="3" class="commentdoc"/>
 			<style name="UUID" key="8" fore="804080"/>
 			<style name="Comment Line Doc" key="15" class="commentdoc"/>
-			<style name="Keywords 2" key="16" fore="b00040"/>
+			<style name="Types" key="16" class="keyword2"/>
 			<style name="Comment Doc Keyword" key="17" class="commentdoc" fore="3060a0"/>
 			<style name="Unknown Comment Doc Keyword" key="18" class="commentdoc" fore="804020"/>
-			
+      <style name="Values" key="19" class="number"/>
+
 			<!--<style name="Preprocessor" key="9" class="preprocessor"/>
 			<style name="Verbatim" key="13" fore="007f00" back="e0ffe0" eolfilled="true"/>
 			<style name="RegEx" key="14" fore="3f7f3f" back="e0f0ff" eolfilled="true"/>-->

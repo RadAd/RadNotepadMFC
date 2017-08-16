@@ -191,7 +191,6 @@
     <ClInclude Include="ClassView.h" />
     <ClInclude Include="FileView.h" />
     <ClInclude Include="GoToLineDlg.h" />
-    <ClInclude Include="LexerData.h" />
     <ClInclude Include="RadDocManager.h" />
     <ClInclude Include="RadNotepad.h" />
     <ClInclude Include="RadNotepadDoc.h" />
@@ -215,7 +214,6 @@
     <ClCompile Include="ClassView.cpp" />
     <ClCompile Include="FileView.cpp" />
     <ClCompile Include="GoToLineDlg.cpp" />
-    <ClCompile Include="LexerData.cpp" />
     <ClCompile Include="RadDocManager.cpp" />
     <ClCompile Include="RadNotepad.cpp" />
     <ClCompile Include="RadNotepadDoc.cpp" />
