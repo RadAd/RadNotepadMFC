@@ -537,7 +537,7 @@ void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Langua
             {
                 const TCHAR* equals = wcschr(line, _T('='));
                 if (equals != nullptr)
-                    pTheme->mapExt[CString(line, equals - line).Trim().MakeLower()] = CString(equals + 1).Trim().MakeLower();
+                    pTheme->mapExt[CString(line, (int) (equals - line)).Trim().MakeLower()] = CString(equals + 1).Trim().MakeLower();
             }
             fclose(f);
         }
