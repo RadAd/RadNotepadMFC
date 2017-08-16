@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #define COLOR_NONE          ((COLORREF) -1)
 #define COLOR_WHITE         RGB(0xFF, 0xFF, 0xFF)
 #define COLOR_BLACK         RGB(0x00, 0x00, 0x00)
@@ -28,7 +30,6 @@ struct ThemeItem
         , back(back)
         , font(font)
     {
-
     }
 
     COLORREF fore;
@@ -46,25 +47,38 @@ struct StyleNew
 
 struct Language
 {
+    Language(LPCSTR name)
+        : name(name)
+    {
+
+    }
     CString name;
     CString title;
     CString lexer;
-    int nStyleCount = 0;
-    StyleNew vecStyle[100];
+    std::vector<StyleNew> vecStyle;
     struct { CString name; CString sclass; } vecKeywords[6];
+};
+
+struct StyleClass
+{
+    CString name;
+    CString description;
+    ThemeItem theme;
+};
+
+struct KeywordClass
+{
+    CString name;
+    CString keywords;
 };
 
 struct Theme
 {
     ThemeItem tDefault;
-    int nThemeCount = 0;
-    struct { CString name; CString description; ThemeItem theme; } vecTheme[100];
-    int nBaseCount = 0;
-    StyleNew vecBase[100];
-    int nKeywordCount = 0;
-    struct { CString name; CString keywords; } vecKeywords[100];
-    int nLanguageCount = 0;
-    Language vecLanguages[100];
+    std::vector<StyleClass> vecStyleClass;
+    std::vector<StyleNew> vecBase;
+    std::vector<KeywordClass> vecKeywordClass;
+    std::vector<Language> vecLanguage;
 };
 
 void InitTheme(Theme* pSettings);

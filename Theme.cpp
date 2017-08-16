@@ -12,12 +12,6 @@ extern LPCTSTR THEME_PREPROCESSOR = _T("preprocessor");
 extern LPCTSTR THEME_OPERATOR = _T("operator");
 extern LPCTSTR THEME_ERROR = _T("error");
 
-struct LanguageSet
-{
-    int nCount = 0;
-    Language vec[100];
-};
-
 inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
 {
     LOGFONT lf = {};
@@ -28,12 +22,12 @@ inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
     return lf;
 }
 
-const Language* GetLanguage(const LanguageSet& rLanguageSet, LPCSTR name)
+const Language* GetLanguage(const std::vector<Language>& vecLanguage, LPCSTR name)
 {
-    for (int i = 0; i < rLanguageSet.nCount; ++i)
+    for (const Language& rLanguage : vecLanguage)
     {
-        if (rLanguageSet.vec[i].name == name)
-            return &rLanguageSet.vec[i];
+        if (rLanguage.name == name)
+            return &rLanguage;
     }
     return nullptr;
 }
@@ -42,9 +36,9 @@ int GetThemeItemIndex(LPCTSTR strItem, const Theme* pTheme)
 {
     if (_wcsicmp(strItem, THEME_DEFAULT) == 0)
         return -2;
-    for (int i = 0; i < pTheme->nThemeCount; ++i)
+    for (int i = 0; i < pTheme->vecStyleClass.size(); ++i)
     {
-        if (_wcsicmp(strItem, pTheme->vecTheme[i].name) == 0)
+        if (_wcsicmp(strItem, pTheme->vecStyleClass[i].name) == 0)
             return i;
     }
     return -1;
@@ -54,10 +48,10 @@ const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme)
 {
     if (_wcsicmp(strItem, THEME_DEFAULT) == 0)
         return &pTheme->tDefault;
-    for (int i = 0; i < pTheme->nThemeCount; ++i)
+    for (const StyleClass& sc : pTheme->vecStyleClass)
     {
-        if (_wcsicmp(strItem, pTheme->vecTheme[i].name) == 0)
-            return &pTheme->vecTheme[i].theme;
+        if (_wcsicmp(strItem, sc.name) == 0)
+            return &sc.theme;
     }
     return nullptr;
 };
@@ -93,20 +87,18 @@ void InitTheme(Theme* pTheme)
 {
     pTheme->tDefault = { COLOR_BLACK, COLOR_WHITE, Font(-13, _T("Consolas")) };
     {
-        int& i = pTheme->nThemeCount;
-        pTheme->vecTheme[i++] = { THEME_COMMENT,      _T("#Comment"),            { COLOR_LT_GREEN,     COLOR_NONE } };
-        pTheme->vecTheme[i++] = { THEME_NUMBER,       _T("#Number"),             { COLOR_LT_CYAN,      COLOR_NONE } };
-        pTheme->vecTheme[i++] = { THEME_WORD,         _T("#Word"),               { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } };
-        pTheme->vecTheme[i++] = { THEME_TYPE,         _T("#Type"),               { COLOR_LT_CYAN,      COLOR_NONE } };
-        pTheme->vecTheme[i++] = { THEME_STRING,       _T("#String"),             { COLOR_LT_MAGENTA,   COLOR_NONE } };
-        pTheme->vecTheme[i++] = { THEME_IDENTIFIER,   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } };
-        pTheme->vecTheme[i++] = { THEME_PREPROCESSOR, _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } };
-        pTheme->vecTheme[i++] = { THEME_OPERATOR,     _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } };
-        pTheme->vecTheme[i++] = { THEME_ERROR,        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } };
+        pTheme->vecStyleClass.push_back({ THEME_COMMENT,      _T("#Comment"),            { COLOR_LT_GREEN,     COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ THEME_NUMBER,       _T("#Number"),             { COLOR_LT_CYAN,      COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ THEME_WORD,         _T("#Word"),               { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } });
+        pTheme->vecStyleClass.push_back({ THEME_TYPE,         _T("#Type"),               { COLOR_LT_CYAN,      COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ THEME_STRING,       _T("#String"),             { COLOR_LT_MAGENTA,   COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ THEME_IDENTIFIER,   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ THEME_PREPROCESSOR, _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ THEME_OPERATOR,     _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ THEME_ERROR,        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } });
     }
     {
-        int& i = pTheme->nBaseCount;
-        pTheme->vecBase[i++] = { _T("Indent Guide"), STYLE_INDENTGUIDE, _T("indentguide"), { COLOR_NONE,     COLOR_NONE } };  // TODO Should I add to scheme.master
+        pTheme->vecBase.push_back({ _T("Indent Guide"), STYLE_INDENTGUIDE, _T("indentguide"), { COLOR_NONE,     COLOR_NONE } });  // TODO Should I add to scheme.master
         // TODO THEME_CONTROLCHAR Looks like only the font is used ?
         // TODO STYLE_INDENTGUIDE Looks like the font isn't used ?
         // TODO
@@ -237,18 +229,18 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     {
                         int n = GetThemeItemIndex(name, pTheme);
                         if (n >= 0)
-                            pTheme->vecTheme[n].description = (wchar_t*) description;
+                            pTheme->vecStyleClass[n].description = (wchar_t*) description;
                     }
                     *pThemItemOrig = rThemeItem;
                 }
                 else
-                    pTheme->vecTheme[pTheme->nThemeCount++] = { name, description, rThemeItem };
+                    pTheme->vecStyleClass.push_back({ name, description, rThemeItem });
             }
         }
     }
 }
 
-void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, int& nCount, StyleNew* pVec)
+void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<StyleNew>& vecStyles)
 {
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
     long length = pXMLChildren->Getlength();
@@ -274,7 +266,7 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, int& nCount, StyleNew* pVec)
                 ThemeItem rThemeItem;
                 LoadThemeItem(pXMLChildNode, rThemeItem);
 
-                pVec[nCount++];
+                vecStyles.push_back({ name, _wtoi(key), sclass, rThemeItem });
             }
         }
     }
@@ -302,7 +294,7 @@ void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 ASSERT(!isnull(keywords));
                 // TODO Check for no other attributes
 
-                pTheme->vecKeywords[pTheme->nKeywordCount++] = { name, keywords };
+                pTheme->vecKeywordClass.push_back({ name, keywords });
             }
         }
     }
@@ -333,13 +325,13 @@ void ProcessKeywords(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
     }
 }
 
-void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage, const LanguageSet& rBaseLanguage)
+void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage, const std::vector<Language>& vecLanguage)
 {
     {
         _bstr_t base = GetAttribute(pXMLNode, _T("base"));
         if (!isnull(base))
         {
-            const Language* pBaseLanguage = GetLanguage(rBaseLanguage, base);
+            const Language* pBaseLanguage = GetLanguage(vecLanguage, base);
             *pLanguage = *pBaseLanguage;
         }
 
@@ -366,7 +358,7 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage, const
             }
             else if (bstrName == L"use-styles")
             {
-                ProcessStyles(pXMLChildNode, pLanguage->nStyleCount, pLanguage->vecStyle);
+                ProcessStyles(pXMLChildNode, pLanguage->vecStyle);
             }
             else if (bstrName == L"use-keywords")
             {
@@ -378,7 +370,7 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage, const
     }
 }
 
-void LoadScheme(LPCTSTR pFilename, Theme* pTheme, LanguageSet& rBaseLanguage)
+void LoadScheme(LPCTSTR pFilename, Theme* pTheme, std::vector<Language>& vecBaseLanguage)
 {
     MSXML2::IXMLDOMDocumentPtr pDoc(__uuidof(MSXML2::DOMDocument60));
     pDoc->Putasync(VARIANT_FALSE);
@@ -408,7 +400,7 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme, LanguageSet& rBaseLanguage)
                 }
                 else if (bstrName == L"base-options")
                 {
-                    ProcessStyles(pXMLChildNode, pTheme->nBaseCount, pTheme->vecBase);
+                    ProcessStyles(pXMLChildNode, pTheme->vecBase);
                 }
                 else if (bstrName == L"keyword-classes")
                 {
@@ -418,17 +410,17 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme, LanguageSet& rBaseLanguage)
                 {
                     _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                     // TODO Look for existing item - shouldn't be one
-                    Language* pLanguage = &rBaseLanguage.vec[rBaseLanguage.nCount++];
-                    pLanguage->name = (wchar_t*) name;
-                    ProcessLanguage(pXMLChildNode, pLanguage, rBaseLanguage);
+                    vecBaseLanguage.push_back(Language(name));
+                    Language& rLanguage = vecBaseLanguage.back();
+                    ProcessLanguage(pXMLChildNode, &rLanguage, vecBaseLanguage);
                 }
                 else if (bstrName == L"language")
                 {
                     _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                     // TODO Look for existing item - shouldn't be one
-                    Language* pLanguage = &pTheme->vecLanguages[pTheme->nLanguageCount++];
-                    pLanguage->name = (wchar_t*) name;
-                    ProcessLanguage(pXMLChildNode, pLanguage, rBaseLanguage);
+                    pTheme->vecLanguage.push_back(Language(name));
+                    Language& rLanguage = pTheme->vecLanguage.back();
+                    ProcessLanguage(pXMLChildNode, &rLanguage, vecBaseLanguage);
                 }
             }
         }
@@ -447,33 +439,29 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme, LanguageSet& rBaseLanguage)
     }
 }
 
-
-void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, LanguageSet& rBaseLanguage)
+void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Language>& vecBaseLanguage)
 {
     TCHAR full[_MAX_PATH];
 
     PathCombine(full, strDirectory, _T("schemes\\scheme.master"));
     if (PathFileExists(full))
-        LoadScheme(full, pTheme, rBaseLanguage);
+        LoadScheme(full, pTheme, vecBaseLanguage);
 
     PathCombine(full, strDirectory, _T("schemes\\cpp.scheme"));
     if (PathFileExists(full))
-        LoadScheme(full, pTheme, rBaseLanguage);
+        LoadScheme(full, pTheme, vecBaseLanguage);
 }
 
 void LoadTheme(Theme* pTheme)
 {
-    LanguageSet* pBaseLanguage = new LanguageSet;
+    std::vector<Language> vecBaseLanguage;
 
     TCHAR path[_MAX_PATH];
-    TCHAR full[_MAX_PATH];
 
     GetModuleFileName(NULL, path, MAX_PATH);
     PathFindFileName(path)[0] = _T('\0');
-    LoadSchemeDirectory(path, pTheme, *pBaseLanguage);
+    LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
 
     GetCurrentDirectory(MAX_PATH, path);
-    LoadSchemeDirectory(path, pTheme, *pBaseLanguage);
-
-    delete pBaseLanguage;
+    LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
 }

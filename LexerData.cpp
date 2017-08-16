@@ -226,9 +226,8 @@ void ApplyStyle(CScintillaCtrl& rCtrl, const LexerData* pLexerData, const Theme*
 {
     ApplyStyle(rCtrl, vStyleDefault, pTheme);
     rCtrl.StyleClearAll();
-    for (int i = 0; i < pTheme->nBaseCount; ++i)
+    for (const StyleNew& item : pTheme->vecBase)
     {
-        const StyleNew& item = pTheme->vecBase[i];
         const ThemeItem* pThemeItem = GetThemeItem(item.sclass, pTheme);
         if (pThemeItem != nullptr)
             ApplyThemeItem(rCtrl, item.id, *pThemeItem);
