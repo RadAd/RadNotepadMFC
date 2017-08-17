@@ -9,12 +9,12 @@
 			not return undef yield
 		</keyword-class>
 	</keyword-classes>
-	
+
 	<style-classes>
 		<style-class name="rubyHERE" fore="7f007f" back="ddd0dd" eolfilled="true"/>
 		<style-class name="rubySTDIO" back="ff8080" />
 	</style-classes>
-	
+
 	<language name="ruby" title="Ruby">
 		<lexer name="ruby" />
 		<use-keywords>
@@ -46,7 +46,7 @@
 				<style name="DELIM" key="20" fore="000000" back="DDD0DD"/>
 				<style name="Q" key="21" bold="false"/>
 				<style name="QQ" key="22" bold="true" />
-				<style name="QX" key="23" italics="true"/>
+				<style name="QX" key="23" italic="true"/>
 			</group>
 			<group name="STRING" description="STRING">
 				<style name="Q" key="24" fore="7F007F" bold="false"/>

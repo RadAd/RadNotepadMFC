@@ -207,34 +207,56 @@ inline COLORREF ToColor(LPCWSTR s)
     return RGB(GetBValue(o), GetGValue(o), GetRValue(o));
 }
 
-void LoadThemeItem(MSXML2::IXMLDOMNodePtr pXMLChildNode, ThemeItem& rThemeItem)
+void LoadThemeItem(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeItem& rThemeItem)
 {
-    _bstr_t fore = GetAttribute(pXMLChildNode, _T("fore"));
-    _bstr_t back = GetAttribute(pXMLChildNode, _T("back"));
-    _bstr_t face = GetAttribute(pXMLChildNode, _T("face"));
-    _bstr_t size = GetAttribute(pXMLChildNode, _T("size"));
-    _bstr_t bold = GetAttribute(pXMLChildNode, _T("bold"));
-    _bstr_t hotspot = GetAttribute(pXMLChildNode, _T("hotspot"));
-    _bstr_t eolfilled = GetAttribute(pXMLChildNode, _T("eolfilled"));
-
-    if (!isnull(fore))
-        rThemeItem.fore = ToColor(fore);
-    if (!isnull(back))
-        rThemeItem.back = ToColor(back);
-    if (!isnull(face))
-        wcscpy_s(rThemeItem.font.lfFaceName, face);
-    if (!isnull(size))
+    MSXML2::IXMLDOMNamedNodeMapPtr pXMLAttributes(pXMLNode->Getattributes());
+    long length = pXMLAttributes->Getlength();
+    for (int i = 0; i < length; ++i)
     {
-        HDC hDC = ::GetWindowDC(NULL);
-        rThemeItem.font.lfHeight = -MulDiv(_wtoi(size), GetDeviceCaps(hDC, LOGPIXELSY), 72);
-        ::ReleaseDC(NULL, hDC);
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLAttributes->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ATTRIBUTE)
+        {
+            _bstr_t bstrName = pXMLChildNode->nodeName;
+            if (bstrName == _T("name"))
+                ; // ignore
+            else if (bstrName == _T("inherit-style"))
+                ; // ignore
+            else if (bstrName == _T("description"))
+                ; // ignore
+            else if (bstrName == _T("key"))
+                ; // ignore
+            else if (bstrName == _T("class"))
+                ; // ignore
+            else if (bstrName == _T("fore"))
+                rThemeItem.fore = ToColor(pXMLChildNode->text);
+            else if (bstrName == _T("back"))
+                rThemeItem.back = ToColor(pXMLChildNode->text);
+            else if (bstrName == _T("face"))
+                wcscpy_s(rThemeItem.font.lfFaceName, pXMLChildNode->text);
+            else if (bstrName == _T("size"))
+            {
+                HDC hDC = ::GetWindowDC(NULL);
+                rThemeItem.font.lfHeight = -MulDiv(_wtoi(pXMLChildNode->text), GetDeviceCaps(hDC, LOGPIXELSY), 72);
+                ::ReleaseDC(NULL, hDC);
+            }
+            else if (bstrName == _T("bold"))
+                rThemeItem.font.lfWeight = pXMLChildNode->text == _T("true") ? FW_BOLD : FW_NORMAL;
+            else if (bstrName == _T("italic"))
+                rThemeItem.font.lfItalic = pXMLChildNode->text == _T("true");
+            else if (bstrName == _T("hotspot"))
+                rThemeItem.hotspot = pXMLChildNode->text == _T("true");
+            else if (bstrName == _T("eolfilled"))
+                rThemeItem.eolfilled = pXMLChildNode->text == _T("true");
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown attribute: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
+        }
     }
-    if (!isnull(bold) && bold == L"true")
-        rThemeItem.font.lfWeight = FW_BOLD;
-    if (!isnull(eolfilled) && eolfilled == L"true")
-        rThemeItem.eolfilled = TRUE;
-    if (!isnull(hotspot) && hotspot == L"true")
-        rThemeItem.hotspot = TRUE;
 }
 
 void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
