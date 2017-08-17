@@ -154,28 +154,6 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
 
 #import <MSXML6.dll> exclude("ISequentialStream", "_FILETIME")
 
-inline MSXML2::IXMLDOMDocumentPtr LoadXml(PCWSTR wszFile)
-{
-    MSXML2::IXMLDOMDocumentPtr pXMLDom(__uuidof(MSXML2::DOMDocument60));
-    pXMLDom->Putasync(VARIANT_FALSE);
-    pXMLDom->PutvalidateOnParse(VARIANT_FALSE);
-    pXMLDom->PutresolveExternals(VARIANT_FALSE);
-    pXMLDom->PutpreserveWhiteSpace(VARIANT_TRUE);
-
-    _variant_t varFileName = wszFile;
-    VARIANT_BOOL varStatus = pXMLDom->load(varFileName);
-
-    if (varStatus == VARIANT_TRUE)
-    {
-        return pXMLDom;
-    }
-    else
-    {
-        MSXML2::IXMLDOMParseErrorPtr pXMLErr(pXMLDom->GetparseError());
-        throw pXMLErr;
-    }
-}
-
 inline _bstr_t GetAttribute(MSXML2::IXMLDOMNode* pXMLNode, LPCWSTR name)
 {
     MSXML2::IXMLDOMNamedNodeMapPtr pXMLAttributes(pXMLNode->Getattributes());
@@ -274,12 +252,18 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     {
                         int n = GetThemeItemIndex(name, pTheme);
                         if (n >= 0)
-                            pTheme->vecStyleClass[n].description = (wchar_t*) description;
+                            pTheme->vecStyleClass[n].description = (LPCTSTR) description;
                     }
                     *pThemItemOrig = rThemeItem;
                 }
                 else
                     pTheme->vecStyleClass.push_back({ name, description, rThemeItem });
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
             }
         }
     }
@@ -326,6 +310,12 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                 // TODO Handle groups properly
                 ProcessStyles(pXMLChildNode, vecStyles);
             }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
         }
     }
 }
@@ -354,6 +344,12 @@ void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
 
                 pTheme->vecKeywordClass.push_back({ name, keywords });
             }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
         }
     }
 }
@@ -379,6 +375,12 @@ void ProcessKeywords(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
 
                 pLanguage->vecKeywords[_wtoi(key)] = { name, sclass };
             }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
         }
     }
 }
@@ -388,7 +390,7 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
     {
         _bstr_t title = GetAttribute(pXMLNode, _T("title"));
         if (!isnull(title))
-            pLanguage->title = (wchar_t*) title;
+            pLanguage->title = (LPCTSTR) title;
     }
 
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
@@ -405,7 +407,7 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
             if (bstrName == L"lexer")
             {
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
-                pLanguage->lexer = (wchar_t*) name;
+                pLanguage->lexer = (LPCTSTR) name;
             }
             else if (bstrName == L"use-styles")
             {
@@ -415,8 +417,75 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
             {
                 ProcessKeywords(pXMLChildNode, pLanguage);
             }
-            // else if (bstrName == L"property")
-            // else if (bstrName == L"comments")
+            else if (bstrName == L"property")
+            {
+                // TODO
+            }
+            else if (bstrName == L"comments")
+            {
+                // TODO
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
+        }
+    }
+}
+
+void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<Language>& vecBaseLanguage)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"style-classes")
+            {
+                ProcessStyleClasses(pXMLChildNode, pTheme);
+            }
+            else if (bstrName == L"base-options")
+            {
+                ProcessStyles(pXMLChildNode, pTheme->vecBase);
+            }
+            else if (bstrName == L"keyword-classes")
+            {
+                ProcessKeywordClasses(pXMLChildNode, pTheme);
+            }
+            else if (bstrName == L"base-language")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                // TODO Look for existing item - shouldn't be one
+                vecBaseLanguage.push_back(Language(name));
+                Language& rLanguage = vecBaseLanguage.back();
+                ProcessLanguage(pXMLChildNode, &rLanguage);
+            }
+            else if (bstrName == L"language")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t base = GetAttribute(pXMLChildNode, _T("base"));
+
+                const Language* pBaseLanguage = isnull(base) ? nullptr : GetLanguage(vecBaseLanguage, base);
+
+                // TODO Look for existing item - shouldn't be one
+                pTheme->vecLanguage.push_back(Language(name, pBaseLanguage));
+                Language& rLanguage = pTheme->vecLanguage.back();
+                ProcessLanguage(pXMLChildNode, &rLanguage);
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
         }
     }
 }
@@ -433,64 +502,15 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme, std::vector<Language>& vecBase
     if (varStatus == VARIANT_TRUE)
     {
         MSXML2::IXMLDOMElementPtr pXMLRoot(pDoc->GetdocumentElement());
-        //MSXML2::IXMLDOMNodePtr pNode = pDoc->selectSingleNode("TestDoc");
-        MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLRoot->GetchildNodes());
-        long length = pXMLChildren->Getlength();
-        for (int i = 0; i < length; ++i)
-        {
-            MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
-            MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
-
-            if (type == NODE_ELEMENT)
-            {
-                _bstr_t bstrName = pXMLChildNode->GetbaseName();
-
-                if (bstrName == L"style-classes")
-                {
-                    ProcessStyleClasses(pXMLChildNode, pTheme);
-                }
-                else if (bstrName == L"base-options")
-                {
-                    ProcessStyles(pXMLChildNode, pTheme->vecBase);
-                }
-                else if (bstrName == L"keyword-classes")
-                {
-                    ProcessKeywordClasses(pXMLChildNode, pTheme);
-                }
-                else if (bstrName == L"base-language")
-                {
-                    _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
-                    // TODO Look for existing item - shouldn't be one
-                    vecBaseLanguage.push_back(Language(name));
-                    Language& rLanguage = vecBaseLanguage.back();
-                    ProcessLanguage(pXMLChildNode, &rLanguage);
-                }
-                else if (bstrName == L"language")
-                {
-                    _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
-                    _bstr_t base = GetAttribute(pXMLChildNode, _T("base"));
-
-                    const Language* pBaseLanguage = isnull(base) ? nullptr : GetLanguage(vecBaseLanguage, base);
-
-                    // TODO Look for existing item - shouldn't be one
-                    pTheme->vecLanguage.push_back(Language(name, pBaseLanguage));
-                    Language& rLanguage = pTheme->vecLanguage.back();
-                    ProcessLanguage(pXMLChildNode, &rLanguage);
-                }
-            }
-        }
+        ProcessScheme(pXMLRoot, pTheme, vecBaseLanguage);
     }
     else
     {
         MSXML2::IXMLDOMParseErrorPtr pXMLErr(pDoc->GetparseError());
-        _bstr_t bstrErr(pXMLErr->reason);
 
         CString msg;
-        OutputDebugString(_T("Error:\n"));
-        msg.Format(_T("Code = 0x%x\n"), pXMLErr->errorCode);  OutputDebugString(msg);
-        msg.Format(_T("Source = Line : %ld; Char : %ld\n"), pXMLErr->line, pXMLErr->linepos);  OutputDebugString(msg);
-        msg.Format(_T("Error Description = %s\n"), (wchar_t*) bstrErr);  OutputDebugString(msg);
-        //throw;
+        msg.Format(_T("%s(%ld, %ld): Code: 0x%x - %s\n"), pFilename, pXMLErr->line, pXMLErr->linepos, pXMLErr->errorCode, pXMLErr->reason);
+        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
     }
 }
 
@@ -498,24 +518,23 @@ void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Langua
 {
     TCHAR full[_MAX_PATH];
 
-    PathCombine(full, strDirectory, _T("schemes\\scheme.master"));
+    PathCombine(full, strDirectory, _T("scheme.master"));
     if (PathFileExists(full))
         LoadScheme(full, pTheme, vecBaseLanguage);
 
-    PathCombine(full, strDirectory, _T("schemes\\*.scheme"));
+    PathCombine(full, strDirectory, _T("*.scheme"));
     WIN32_FIND_DATA fd = {};
     HANDLE hFind;
     if ((hFind = FindFirstFile(full, &fd)) != INVALID_HANDLE_VALUE)
     {
         do
         {
-            PathCombine(full, strDirectory, _T("schemes"));
-            PathCombine(full, full, fd.cFileName);
+            PathCombine(full, strDirectory, fd.cFileName);
             LoadScheme(full, pTheme, vecBaseLanguage);
         } while (FindNextFile(hFind, &fd));
     }
 
-    PathCombine(full, strDirectory, _T("schemes\\extmap.dat"));
+    PathCombine(full, strDirectory, _T("extmap.dat"));
     if (PathFileExists(full))
     {
         TCHAR line[1024];
@@ -537,12 +556,22 @@ void LoadTheme(Theme* pTheme)
 {
     std::vector<Language> vecBaseLanguage;
 
-    TCHAR path[_MAX_PATH];
+    TCHAR exepath[_MAX_PATH];
 
-    GetModuleFileName(NULL, path, MAX_PATH);
-    PathFindFileName(path)[0] = _T('\0');
+    GetModuleFileName(NULL, exepath, MAX_PATH);
+    PathFindFileName(exepath)[0] = _T('\0');
+    LoadSchemeDirectory(exepath, pTheme, vecBaseLanguage);
+
+    TCHAR path[_MAX_PATH];
+    PathCombine(path, exepath, _T("schemes"));
     LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
 
     GetCurrentDirectory(MAX_PATH, path);
-    LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
+    if (wcscmp(path, exepath) != 0)
+    {
+        LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
+
+        PathCombine(path, path, _T("schemes"));
+        LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
+    }
 }
