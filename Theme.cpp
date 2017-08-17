@@ -12,22 +12,35 @@ static inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
     return lf;
 }
 
-static inline const Language* GetLanguage(const std::vector<Language>& vecLanguage, LPCTSTR name)
+template<class T>
+static inline typename T::const_pointer Get(const T& vec, LPCTSTR name)
 {
-    for (const Language& rLanguage : vecLanguage)
+    for (T::const_reference v : vec)
     {
-        if (rLanguage.name == name)
-            return &rLanguage;
+        if (v.name == name)
+            return &v;
     }
     return nullptr;
 }
 
-static inline const KeywordClass* GetKeywordClass(const std::vector<KeywordClass>& vecKeywordClass, LPCTSTR name)
+template<class T>
+static inline typename T::pointer Get(T& vec, LPCTSTR name)
 {
-    for (const KeywordClass& rKeywordClass : vecKeywordClass)
+    for (T::reference v : vec)
     {
-        if (rKeywordClass.name == name)
-            return &rKeywordClass;
+        if (v.name == name)
+            return &v;
+    }
+    return nullptr;
+}
+
+template<class T>
+static inline typename T::pointer GetKey(T& vec, int id)
+{
+    for (T::reference v : vec)
+    {
+        if (v.id == id)
+            return &v;
     }
     return nullptr;
 }
@@ -89,7 +102,7 @@ const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt)
     if (it == pTheme->mapExt.end())
         return nullptr;
     else
-        return GetLanguage(pTheme->vecLanguage, it->second);
+        return Get(pTheme->vecLanguage, it->second);
 }
 
 void InitTheme(Theme* pTheme)
@@ -141,7 +154,7 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
         for (int i = 0; i < KEYWORDSET_MAX; ++i)
         {
             const CString sclass = pLanguage->vecKeywords[i].sclass;
-            const KeywordClass* pKeywordClass = GetKeywordClass(pTheme->vecKeywordClass, sclass);
+            const KeywordClass* pKeywordClass = Get(pTheme->vecKeywordClass, sclass);
             if (pKeywordClass != nullptr)
                 rCtrl.SetKeyWords(i, pKeywordClass->keywords);
         }
@@ -229,35 +242,42 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 _bstr_t description = GetAttribute(pXMLChildNode, _T("description"));
                 _bstr_t inherit_style = GetAttribute(pXMLChildNode, _T("inherit-style"));
 
-                ASSERT(!isnull(name));
+                if (isnull(name))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
                 // TODO Check for no other attributes
-
-                ThemeItem rThemeItem;
-
-                ThemeItem* pThemItemOrig = const_cast<ThemeItem*>(GetThemeItem(name, pTheme));
-                if (pThemItemOrig != nullptr)
-                    rThemeItem = *pThemItemOrig;
-
-                if (!isnull(inherit_style))
-                {
-                    const ThemeItem* pThemItem = GetThemeItem(inherit_style, pTheme);
-                    rThemeItem = *pThemItem;
-                }
-
-                LoadThemeItem(pXMLChildNode, rThemeItem);
-
-                if (pThemItemOrig != nullptr)
-                {
-                    if (!isnull(description))
-                    {
-                        int n = GetThemeItemIndex(name, pTheme);
-                        if (n >= 0)
-                            pTheme->vecStyleClass[n].description = (LPCTSTR) description;
-                    }
-                    *pThemItemOrig = rThemeItem;
-                }
                 else
-                    pTheme->vecStyleClass.push_back({ name, description, rThemeItem });
+                {
+                    ThemeItem* pThemItemOrig = const_cast<ThemeItem*>(GetThemeItem(name, pTheme));
+
+                    ThemeItem rThemeItem;
+                    if (pThemItemOrig != nullptr)
+                        rThemeItem = *pThemItemOrig;
+
+                    if (!isnull(inherit_style))
+                    {
+                        const ThemeItem* pThemItem = GetThemeItem(inherit_style, pTheme);
+                        rThemeItem = *pThemItem;
+                    }
+
+                    LoadThemeItem(pXMLChildNode, rThemeItem);
+
+                    if (pThemItemOrig != nullptr)
+                    {
+                        if (!isnull(description))
+                        {
+                            int n = GetThemeItemIndex(name, pTheme);
+                            if (n >= 0)
+                                pTheme->vecStyleClass[n].description = (LPCTSTR) description;
+                        }
+                        *pThemItemOrig = rThemeItem;
+                    }
+                    else
+                        pTheme->vecStyleClass.push_back({ name, description, rThemeItem });
+                }
             }
             else
             {
@@ -288,14 +308,47 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                 _bstr_t key = GetAttribute(pXMLChildNode, _T("key"));
                 _bstr_t sclass = GetAttribute(pXMLChildNode, _T("class"));
 
-                ASSERT(!isnull(name));
-                ASSERT(!isnull(key));
+                if (isnull(name))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else if (isnull(key))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing key: %s"), (LPCTSTR) name);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
                 // TODO Check for no other attributes
+                else
+                {
+                    int nKey = _wtoi(key);
+                    Style* pStyle = GetKey(vecStyles, nKey);
+                    if (pStyle != nullptr && pStyle->id != nKey)
+                    {
+                        CString msg;
+                        msg.Format(_T("Mismatch key: %s"), (LPCTSTR) name);
+                        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                    }
+                    else
+                    {
+                        ThemeItem rThemeItem;
+                        if (pStyle != nullptr)
+                            rThemeItem = pStyle->theme;
+                        LoadThemeItem(pXMLChildNode, rThemeItem);
 
-                ThemeItem rThemeItem;
-                LoadThemeItem(pXMLChildNode, rThemeItem);
-
-                vecStyles.push_back({ name, _wtoi(key), sclass, rThemeItem });
+                        if (pStyle == nullptr)
+                            vecStyles.push_back({ name, nKey, sclass, rThemeItem });
+                        else
+                        {
+                            pStyle->name = (LPCTSTR) name;
+                            if (!isnull(sclass))
+                                pStyle->sclass = (LPCTSTR) sclass;
+                            pStyle->theme = rThemeItem;
+                        }
+                    }
+                }
             }
             else if (bstrName == L"group")
             {
@@ -303,12 +356,15 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                 _bstr_t description = GetAttribute(pXMLChildNode, _T("description"));
                 _bstr_t sclass = GetAttribute(pXMLChildNode, _T("class"));
 
-                ASSERT(!isnull(name));
-                //ASSERT(!isnull(description));
+                if (isnull(name))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
                 // TODO Check for no other attributes
-
-                // TODO Handle groups properly
-                ProcessStyles(pXMLChildNode, vecStyles);
+                else
+                    ProcessStyles(pXMLChildNode, vecStyles);
             }
             else
             {
@@ -338,11 +394,26 @@ void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                 _bstr_t keywords = pXMLChildNode->text;
 
-                ASSERT(!isnull(name));
-                ASSERT(!isnull(keywords));
-                // TODO Check for no other attributes
-
-                pTheme->vecKeywordClass.push_back({ name, keywords });
+                if (isnull(name))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else if (isnull(keywords))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing keywords: %s"), (LPCTSTR) name);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else
+                {
+                    KeywordClass* pKeywordClass = Get(pTheme->vecKeywordClass, name);
+                    if (pKeywordClass == nullptr)
+                        pTheme->vecKeywordClass.push_back({ name, keywords });
+                    else
+                        pKeywordClass->keywords = (LPCTSTR) keywords;
+                }
             }
             else
             {
@@ -373,7 +444,20 @@ void ProcessKeywords(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                 _bstr_t sclass = GetAttribute(pXMLChildNode, _T("class"));
 
-                pLanguage->vecKeywords[_wtoi(key)] = { name, sclass };
+                if (isnull(key))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else if (isnull(name))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing name: %s"), (LPCTSTR) key);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else
+                    pLanguage->vecKeywords[_wtoi(key)] = { name, sclass };
             }
             else
             {
@@ -463,22 +547,29 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
             else if (bstrName == L"base-language")
             {
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
-                // TODO Look for existing item - shouldn't be one
-                vecBaseLanguage.push_back(Language(name));
-                Language& rLanguage = vecBaseLanguage.back();
-                ProcessLanguage(pXMLChildNode, &rLanguage);
+                Language* pLanguage = Get(vecBaseLanguage, name);
+                if (pLanguage == nullptr)
+                {
+                    vecBaseLanguage.push_back(Language(name));
+                    pLanguage = &vecBaseLanguage.back();
+                }
+                ProcessLanguage(pXMLChildNode, pLanguage);
             }
             else if (bstrName == L"language")
             {
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                 _bstr_t base = GetAttribute(pXMLChildNode, _T("base"));
 
-                const Language* pBaseLanguage = isnull(base) ? nullptr : GetLanguage(vecBaseLanguage, base);
+                const Language* pBaseLanguage = isnull(base) ? nullptr : Get(vecBaseLanguage, base);
 
-                // TODO Look for existing item - shouldn't be one
-                pTheme->vecLanguage.push_back(Language(name, pBaseLanguage));
-                Language& rLanguage = pTheme->vecLanguage.back();
-                ProcessLanguage(pXMLChildNode, &rLanguage);
+                Language* pLanguage = Get(pTheme->vecLanguage, name);
+                if (pLanguage == nullptr)
+                {
+                    pTheme->vecLanguage.push_back(Language(name, pBaseLanguage));
+                    pLanguage = &pTheme->vecLanguage.back();
+                }
+                // TODO else if (pBaseLanguage != nullptr) -- How to apply base now?
+                ProcessLanguage(pXMLChildNode, pLanguage);
             }
             else
             {
