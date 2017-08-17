@@ -170,6 +170,11 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
 
         for (const Style& style : pLanguage->vecStyle)
             ApplyStyle(rCtrl, style, pTheme);
+        for (const GroupStyle& groupstyle : pLanguage->vecGroupStyle)
+        {
+            for (const Style& style : groupstyle.vecStyle)
+                ApplyStyle(rCtrl, style, pTheme);
+        }
     }
 }
 
@@ -325,7 +330,7 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
     }
 }
 
-void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyles)
+void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyles, std::vector<GroupStyle>* vecGroupStyles)
 {
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
     long length = pXMLChildren->Getlength();
@@ -399,8 +404,23 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                     AfxMessageBox(msg, MB_ICONERROR | MB_OK);
                 }
                 // TODO Check for no other attributes
+                if (vecGroupStyles == nullptr)
+                {
+                    CString msg;
+                    msg.Format(_T("Subgroup not possible: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
                 else
-                    ProcessStyles(pXMLChildNode, vecStyles);
+                {
+                    GroupStyle* pGroupStyle = Get(*vecGroupStyles, name);
+                    if (pGroupStyle == nullptr)
+                    {
+                        vecGroupStyles->push_back(GroupStyle());
+                        pGroupStyle = &vecGroupStyles->back();
+                        pGroupStyle->name = (LPCTSTR) name;
+                    }
+                    ProcessStyles(pXMLChildNode, pGroupStyle->vecStyle, nullptr);
+                }
             }
             else
             {
@@ -531,7 +551,7 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
             }
             else if (bstrName == L"use-styles")
             {
-                ProcessStyles(pXMLChildNode, pLanguage->vecStyle);
+                ProcessStyles(pXMLChildNode, pLanguage->vecStyle, &pLanguage->vecGroupStyle);
             }
             else if (bstrName == L"use-keywords")
             {
@@ -574,7 +594,7 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
             }
             else if (bstrName == L"base-options")
             {
-                ProcessStyles(pXMLChildNode, pTheme->vecBase);
+                ProcessStyles(pXMLChildNode, pTheme->vecBase, nullptr);
             }
             else if (bstrName == L"keyword-classes")
             {

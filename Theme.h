@@ -39,6 +39,12 @@ struct Style
     ThemeItem theme;
 };
 
+struct GroupStyle
+{
+    CString name;
+    std::vector<Style> vecStyle;
+};
+
 struct Language
 {
     Language(LPCSTR name, const Language* pBaseLanguage = nullptr)
@@ -52,6 +58,7 @@ struct Language
     CString title;
     CString lexer;
     std::vector<Style> vecStyle;
+    std::vector<GroupStyle> vecGroupStyle;
     struct { CString name; CString sclass; } vecKeywords[KEYWORDSET_MAX];
 };
 
