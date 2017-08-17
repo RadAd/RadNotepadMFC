@@ -17,7 +17,7 @@ static inline typename T::const_pointer Get(const T& vec, LPCTSTR name)
 {
     for (T::const_reference v : vec)
     {
-        if (v.name == name)
+        if (_wcsicmp(v.name, name) == 0)
             return &v;
     }
     return nullptr;
@@ -28,7 +28,7 @@ static inline typename T::pointer Get(T& vec, LPCTSTR name)
 {
     for (T::reference v : vec)
     {
-        if (v.name == name)
+        if (_wcsicmp(v.name, name) == 0)
             return &v;
     }
     return nullptr;
@@ -45,28 +45,15 @@ static inline typename T::pointer GetKey(T& vec, int id)
     return nullptr;
 }
 
-static inline int GetThemeItemIndex(LPCTSTR strItem, const Theme* pTheme)
-{
-    if (_wcsicmp(strItem, _T("default")) == 0)
-        return -2;
-    for (int i = 0; i < pTheme->vecStyleClass.size(); ++i)
-    {
-        if (_wcsicmp(strItem, pTheme->vecStyleClass[i].name) == 0)
-            return i;
-    }
-    return -1;
-};
-
 static inline const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme)
 {
     if (_wcsicmp(strItem, _T("default")) == 0)
         return &pTheme->tDefault;
-    for (const StyleClass& sc : pTheme->vecStyleClass)
+    else
     {
-        if (_wcsicmp(strItem, sc.name) == 0)
-            return &sc.theme;
+        const StyleClass* pStyleClass = Get(pTheme->vecStyleClass, strItem);
+        return pStyleClass == nullptr ? nullptr : &pStyleClass->theme;
     }
-    return nullptr;
 };
 
 static inline void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
@@ -123,9 +110,9 @@ void InitTheme(Theme* pTheme)
         pTheme->vecStyleClass.push_back({ _T("keyword"),      _T("#Word"),               { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } });
         pTheme->vecStyleClass.push_back({ _T("keyword2"),     _T("#Type"),               { COLOR_LT_CYAN,      COLOR_NONE } });
         pTheme->vecStyleClass.push_back({ _T("string"),       _T("#String"),             { COLOR_LT_MAGENTA,   COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("Identifier"),   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("identifier"),   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } });
         pTheme->vecStyleClass.push_back({ _T("preprocessor"), _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("preprocessor"), _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("operator"),     _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } });
         pTheme->vecStyleClass.push_back({ _T("error"),        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } });
     }
     {
@@ -285,7 +272,7 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 _bstr_t description = GetAttribute(pXMLChildNode, _T("description"));
                 _bstr_t inherit_style = GetAttribute(pXMLChildNode, _T("inherit-style"));
 
-                if (isnull(name))
+                if (isnull(name) || ((LPCTSTR) name)[0] == '\0')
                 {
                     CString msg;
                     msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
@@ -294,11 +281,13 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 // TODO Check for no other attributes
                 else
                 {
-                    ThemeItem* pThemItemOrig = const_cast<ThemeItem*>(GetThemeItem(name, pTheme));
+                    StyleClass* pStyleClass = Get(pTheme->vecStyleClass, name);
 
                     ThemeItem rThemeItem;
-                    if (pThemItemOrig != nullptr)
-                        rThemeItem = *pThemItemOrig;
+                    if (name == L"default")
+                        rThemeItem = pTheme->tDefault;
+                    else if (pStyleClass != nullptr)
+                        rThemeItem = pStyleClass->theme;
 
                     if (!isnull(inherit_style))
                     {
@@ -308,18 +297,16 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
 
                     LoadThemeItem(pXMLChildNode, rThemeItem);
 
-                    if (pThemItemOrig != nullptr)
+                    if (name == L"default")
+                        pTheme->tDefault = rThemeItem;
+                    else if (pStyleClass == nullptr)
+                        pTheme->vecStyleClass.push_back({ name, description, rThemeItem });
+                    else
                     {
                         if (!isnull(description))
-                        {
-                            int n = GetThemeItemIndex(name, pTheme);
-                            if (n >= 0)
-                                pTheme->vecStyleClass[n].description = (LPCTSTR) description;
-                        }
-                        *pThemItemOrig = rThemeItem;
+                            pStyleClass->description = (LPCTSTR) description;
+                        pStyleClass->theme = rThemeItem;
                     }
-                    else
-                        pTheme->vecStyleClass.push_back({ name, description, rThemeItem });
                 }
             }
             else
@@ -351,7 +338,7 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                 _bstr_t key = GetAttribute(pXMLChildNode, _T("key"));
                 _bstr_t sclass = GetAttribute(pXMLChildNode, _T("class"));
 
-                if (isnull(name))
+                if (isnull(name) || ((LPCTSTR) name)[0] == '\0')
                 {
                     CString msg;
                     msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);

@@ -497,7 +497,10 @@ void CPropertiesWnd::InitPropList()
         CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
         pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr));
         for (StyleClass& sc : pTheme->vecStyleClass)
-            pGroup1->AddSubItem(CreateProperty(sc.description, &sc.theme, &pTheme->tDefault));
+        {
+            if (!sc.description.IsEmpty())
+                pGroup1->AddSubItem(CreateProperty(sc.description, &sc.theme, &pTheme->tDefault));
+        }
         m_wndPropList.AddProperty(pGroup1);
     }
 
