@@ -19,12 +19,16 @@ struct ThemeItem
         : fore(fore)
         , back(back)
         , font(font)
+        , eolfilled(FALSE)
+        , hotspot(FALSE)
     {
     }
 
     COLORREF fore;
     COLORREF back;
     LOGFONT font;
+    BOOL eolfilled;
+    BOOL hotspot;
 };
 
 struct Style
@@ -77,4 +81,5 @@ struct Theme
 void InitTheme(Theme* pSettings);
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
 void LoadTheme(Theme* pTheme);
+const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName);
 const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt);

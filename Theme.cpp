@@ -94,6 +94,15 @@ static inline void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const Theme
         rCtrl.StyleSetItalic(nStyle, TRUE);
     if (rTheme.font.lfUnderline)
         rCtrl.StyleSetUnderline(nStyle, TRUE);
+    if (rTheme.eolfilled)
+        rCtrl.StyleSetEOLFilled(nStyle, TRUE);
+    if (rTheme.hotspot)
+        rCtrl.StyleSetHotSpot(nStyle, TRUE);
+}
+
+const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName)
+{
+    return Get(pTheme->vecLanguage, strName);
 }
 
 const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt)
@@ -102,7 +111,7 @@ const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt)
     if (it == pTheme->mapExt.end())
         return nullptr;
     else
-        return Get(pTheme->vecLanguage, it->second);
+        return GetLanguage(pTheme, it->second);
 }
 
 void InitTheme(Theme* pTheme)
@@ -205,7 +214,8 @@ void LoadThemeItem(MSXML2::IXMLDOMNodePtr pXMLChildNode, ThemeItem& rThemeItem)
     _bstr_t face = GetAttribute(pXMLChildNode, _T("face"));
     _bstr_t size = GetAttribute(pXMLChildNode, _T("size"));
     _bstr_t bold = GetAttribute(pXMLChildNode, _T("bold"));
-    //_bstr_t eolfilled = GetAttribute(pXMLChildNode, _T("eolfilled"));
+    _bstr_t hotspot = GetAttribute(pXMLChildNode, _T("hotspot"));
+    _bstr_t eolfilled = GetAttribute(pXMLChildNode, _T("eolfilled"));
 
     if (!isnull(fore))
         rThemeItem.fore = ToColor(fore);
@@ -221,6 +231,10 @@ void LoadThemeItem(MSXML2::IXMLDOMNodePtr pXMLChildNode, ThemeItem& rThemeItem)
     }
     if (!isnull(bold) && bold == L"true")
         rThemeItem.font.lfWeight = FW_BOLD;
+    if (!isnull(eolfilled) && eolfilled == L"true")
+        rThemeItem.eolfilled = TRUE;
+    if (!isnull(hotspot) && hotspot == L"true")
+        rThemeItem.hotspot = TRUE;
 }
 
 void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)

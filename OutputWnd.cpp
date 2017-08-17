@@ -3,7 +3,8 @@
 
 #include "OutputWnd.h"
 #include "Resource.h"
-#include "MainFrm.h"
+#include "RadNotepad.h"
+#include "Theme.h"
 #include <SciLexer.h>
 
 #ifdef _DEBUG
@@ -135,12 +136,16 @@ void COutputWnd::UpdateFonts()
 
 void COutputWnd::AppendText(LPCSTR pText, int nLen)
 {
+    m_wndOutputBuild.SetReadOnly(FALSE);
     m_wndOutputBuild.AppendText(nLen, pText);
+    m_wndOutputBuild.SetReadOnly(TRUE);
 }
 
 void COutputWnd::AppendText(LPCWSTR pText, int nLen)
 {
+    m_wndOutputBuild.SetReadOnly(FALSE);
     m_wndOutputBuild.AppendText(nLen, pText);
+    m_wndOutputBuild.SetReadOnly(TRUE);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -194,8 +199,10 @@ void COutputList::OnEditCopy()
 
 void COutputList::OnEditClear()
 {
+    SetReadOnly(FALSE);
     SelectAll();
     Clear();
+    SetReadOnly(TRUE);
 }
 
 void COutputList::OnViewOutput()
@@ -232,37 +239,12 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
 
     SetupDirectAccess();    // Should be in CScintillaCtrl::OnCreate
-    SetLexer(SCLEX_ERRORLIST);
-    StyleSetFore(SCE_ERR_MS, RGB(255, 0, 0));
-    StyleSetHotSpot(SCE_ERR_MS, TRUE);
-    SetHotspotActiveUnderline(TRUE);
 
-#if 0   // TODO Set error theme
-#define SCE_ERR_DEFAULT 0
-#define SCE_ERR_PYTHON 1
-#define SCE_ERR_GCC 2
-#define SCE_ERR_MS 3
-#define SCE_ERR_CMD 4
-#define SCE_ERR_BORLAND 5
-#define SCE_ERR_PERL 6
-#define SCE_ERR_NET 7
-#define SCE_ERR_LUA 8
-#define SCE_ERR_CTAG 9
-#define SCE_ERR_DIFF_CHANGED 10
-#define SCE_ERR_DIFF_ADDITION 11
-#define SCE_ERR_DIFF_DELETION 12
-#define SCE_ERR_DIFF_MESSAGE 13
-#define SCE_ERR_PHP 14
-#define SCE_ERR_ELF 15
-#define SCE_ERR_IFC 16
-#define SCE_ERR_IFORT 17
-#define SCE_ERR_ABSF 18
-#define SCE_ERR_TIDY 19
-#define SCE_ERR_JAVA_STACK 20
-#define SCE_ERR_VALUE 21
-#define SCE_ERR_GCC_INCLUDED_FROM 22
-#define SCE_ERR_ESCSEQ 23
-#define SCE_ERR_ESCSEQ_UNKNOWN 24
-#endif
+    Theme* pTheme = &theApp.m_Settings.editor.rTheme;
+    const Language* pLanguage = GetLanguage(pTheme, _T("output"));
+    Apply(*this, pLanguage, pTheme);
+
+    SetReadOnly(TRUE);
+    SetHotspotActiveUnderline(TRUE);
     return 0;
 }
