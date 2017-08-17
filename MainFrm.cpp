@@ -493,6 +493,34 @@ void CMainFrame::OnToolsTool(UINT nID)
     ExecuteTool(tool, ted);
 }
 
+// Copied from CMFCToolBarImages::AddIcon because it is failing if pImages->IsScaled()
+int AddIcon(CMFCToolBarImages* pImages, HICON hIcon)
+{
+    CWindowDC dc(NULL);
+
+    CDC dcMem;
+    dcMem.CreateCompatibleDC(NULL);
+
+    CBitmap bmpMem;
+
+    CSize sizeIcon = pImages->GetImageSize();
+
+    bmpMem.CreateCompatibleBitmap(&dc, sizeIcon.cx, sizeIcon.cy);
+
+    CBitmap* pBmpOriginal = dcMem.SelectObject(&bmpMem);
+
+    dcMem.FillRect(CRect(0, 0, sizeIcon.cx, sizeIcon.cy), &(GetGlobalData()->brBtnFace));
+
+    if (hIcon != NULL)
+    {
+        dcMem.DrawState(CPoint(0, 0), sizeIcon, hIcon, DSS_NORMAL, (CBrush*) NULL);
+    }
+
+    dcMem.SelectObject(pBmpOriginal);
+
+    return pImages->AddImage(bmpMem);
+}
+
 
 void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
 {
@@ -506,6 +534,7 @@ void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
             pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
 
         CMFCToolBarImages* pImages = CMFCToolBar::GetImages();
+        //pImages->SmoothResize(1.25);
 
         for (const Tool& tool : theApp.m_Tools)
         {
@@ -524,6 +553,8 @@ void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
                 if (GetCmdMgr()->GetCmdImage(pCmdUI->m_nID - 1, FALSE) < 0)
                 {
                     int i = pImages->AddIcon(tool.hIcon);
+                    if (i == -1)
+                        i = AddIcon(pImages, tool.hIcon);
                     // TODO This is faliing (i == -1) on some computers
                     GetCmdMgr()->SetCmdImage(pCmdUI->m_nID - 1, i, FALSE);
                 }
