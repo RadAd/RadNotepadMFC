@@ -26,6 +26,12 @@ public:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 };
 
+enum OutputWindowE {
+    OW_OUTPUT,
+    OW_LOG,
+    OW_MAX,
+};
+
 class COutputWnd : public CDockablePane
 {
 // Construction
@@ -33,23 +39,18 @@ public:
 	COutputWnd();
 
 	void UpdateFonts();
-    void AppendText(LPCSTR pText, int nLen);
-    void AppendText(LPCWSTR pText, int nLen);
-    void AppendText(const CString& str) { AppendText(str, str.GetLength()); }
+    void Clear(OutputWindowE ow);
+    void AppendText(OutputWindowE ow, LPCSTR pText, int nLen);
+    void AppendText(OutputWindowE ow, LPCWSTR pText, int nLen);
+    void AppendText(OutputWindowE ow, const CString& str) { AppendText(ow, str, str.GetLength()); }
 
 // Attributes
 protected:
 	CMFCTabCtrl	m_wndTabs;
 
-	COutputList m_wndOutputBuild;
-	COutputList m_wndOutputDebug;
-	COutputList m_wndOutputFind;
+	COutputList m_wndOutput[OW_MAX];
 
 protected:
-	void FillBuildWindow();
-	void FillDebugWindow();
-	void FillFindWindow();
-
 	void AdjustHorzScroll(CListBox& wndListBox);
 
 // Implementation

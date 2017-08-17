@@ -47,34 +47,28 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create output panes:
 	const DWORD dwStyle = LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL;
 
-	if (!m_wndOutputBuild.Create(dwStyle, rectDummy, &m_wndTabs, 2) ||
-		!m_wndOutputDebug.Create(dwStyle, rectDummy, &m_wndTabs, 3) ||
-		!m_wndOutputFind.Create(dwStyle, rectDummy, &m_wndTabs, 4))
-	{
-		TRACE0("Failed to create output windows\n");
-		return -1;      // fail to create
-	}
+    OutputWindowE vecOutputWindowE[] = { OW_OUTPUT, OW_LOG };
+    int vecOWName[] = { IDS_BUILD_TAB, IDS_DEBUG_TAB, IDS_FIND_TAB };
 
-	UpdateFonts();
+    for (OutputWindowE ow : vecOutputWindowE)
+    {
+        if (!m_wndOutput[ow].Create(dwStyle, rectDummy, &m_wndTabs, 2 + ow))
+        {
+            TRACE0("Failed to create output windows\n");
+            return -1;      // fail to create
+        }
+    }
 
-	CString strTabName;
-	BOOL bNameValid;
+	//UpdateFonts();
 
 	// Attach list windows to tab:
-	bNameValid = strTabName.LoadString(IDS_BUILD_TAB);
-	ASSERT(bNameValid);
-	m_wndTabs.AddTab(&m_wndOutputBuild, strTabName, (UINT)0);
-	bNameValid = strTabName.LoadString(IDS_DEBUG_TAB);
-	ASSERT(bNameValid);
-	m_wndTabs.AddTab(&m_wndOutputDebug, strTabName, (UINT)1);
-	bNameValid = strTabName.LoadString(IDS_FIND_TAB);
-	ASSERT(bNameValid);
-	m_wndTabs.AddTab(&m_wndOutputFind, strTabName, (UINT)2);
-
-	// Fill output tabs with some dummy text (nothing magic here)
-	//FillBuildWindow();
-	FillDebugWindow();
-	FillFindWindow();
+    for (OutputWindowE ow : vecOutputWindowE)
+    {
+        CString strTabName;
+        BOOL bNameValid = strTabName.LoadString(vecOWName[ow]);
+        ASSERT(bNameValid);
+        m_wndTabs.AddTab(&m_wndOutput[ow], strTabName, (UINT) 0);
+    }
 
 	return 0;
 }
@@ -106,46 +100,36 @@ void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
 	dc.SelectObject(pOldFont);
 }
 
-void COutputWnd::FillBuildWindow()
-{
-	m_wndOutputBuild.AppendText(-1, _T("Build output is being displayed here.\n"));
-	m_wndOutputBuild.AppendText(-1, _T("The output is being displayed in rows of a list view\n"));
-	m_wndOutputBuild.AppendText(-1, _T("but you can change the way it is displayed as you wish...\n"));
-}
-
-void COutputWnd::FillDebugWindow()
-{
-	m_wndOutputDebug.AppendText(-1, _T("Debug output is being displayed here.\n"));
-	m_wndOutputDebug.AppendText(-1, _T("The output is being displayed in rows of a list view\n"));
-	m_wndOutputDebug.AppendText(-1, _T("but you can change the way it is displayed as you wish...\n"));
-}
-
-void COutputWnd::FillFindWindow()
-{
-	m_wndOutputFind.AppendText(-1, _T("Find output is being displayed here.\n"));
-	m_wndOutputFind.AppendText(-1, _T("The output is being displayed in rows of a list view\n"));
-	m_wndOutputFind.AppendText(-1, _T("but you can change the way it is displayed as you wish...\n"));
-}
-
 void COutputWnd::UpdateFonts()
 {
-	m_wndOutputBuild.SetFont(&afxGlobalData.fontRegular);
-	m_wndOutputDebug.SetFont(&afxGlobalData.fontRegular);
-	m_wndOutputFind.SetFont(&afxGlobalData.fontRegular);
+    OutputWindowE vecOutputWindowE[] = { OW_OUTPUT, OW_LOG };
+    for (OutputWindowE ow : vecOutputWindowE)
+        m_wndOutput[ow].SetFont(&afxGlobalData.fontRegular);
 }
 
-void COutputWnd::AppendText(LPCSTR pText, int nLen)
+void COutputWnd::Clear(OutputWindowE ow)
 {
-    m_wndOutputBuild.SetReadOnly(FALSE);
-    m_wndOutputBuild.AppendText(nLen, pText);
-    m_wndOutputBuild.SetReadOnly(TRUE);
+    COutputList& wndOutput = m_wndOutput[ow];
+    wndOutput.SetReadOnly(FALSE);
+    wndOutput.SelectAll();
+    wndOutput.Clear();
+    wndOutput.SetReadOnly(TRUE);
 }
 
-void COutputWnd::AppendText(LPCWSTR pText, int nLen)
+void COutputWnd::AppendText(OutputWindowE ow, LPCSTR pText, int nLen)
 {
-    m_wndOutputBuild.SetReadOnly(FALSE);
-    m_wndOutputBuild.AppendText(nLen, pText);
-    m_wndOutputBuild.SetReadOnly(TRUE);
+    COutputList& wndOutput = m_wndOutput[ow];
+    wndOutput.SetReadOnly(FALSE);
+    wndOutput.AppendText(nLen, pText);
+    wndOutput.SetReadOnly(TRUE);
+}
+
+void COutputWnd::AppendText(OutputWindowE ow, LPCWSTR pText, int nLen)
+{
+    COutputList& wndOutput = m_wndOutput[ow];
+    wndOutput.SetReadOnly(FALSE);
+    wndOutput.AppendText(nLen, pText);
+    wndOutput.SetReadOnly(TRUE);
 }
 
 /////////////////////////////////////////////////////////////////////////////

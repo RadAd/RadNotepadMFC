@@ -53,7 +53,7 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
     DWORD dwRead = 0;
     while (ReadFile(pData->hRead, Buffer, ARRAYSIZE(Buffer), &dwRead, nullptr))
     {
-        pData->pWndOutput->AppendText(Buffer, dwRead);
+        pData->pWndOutput->AppendText(OW_OUTPUT, Buffer, dwRead);
         // TODO Scroll ?
     }
     CloseHandle(pData->hRead);
@@ -62,7 +62,7 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
     GetExitCodeProcess(pData->hProcess, &dwExitCode);
     CString msg;
     msg.Format(_T("Exit code: %d\n"), dwExitCode);
-    pData->pWndOutput->AppendText(msg);
+    pData->pWndOutput->AppendText(OW_OUTPUT, msg);
 
     CloseHandle(pData->hProcess);
 
@@ -92,10 +92,10 @@ void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
         if (CreateProcess(nullptr, cmdline, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, ted.directory, &si, &pi))
         {
             ted.pWndOutput->ShowPane(TRUE, FALSE, FALSE);
-            // TODO Clear window ?
-            ted.pWndOutput->AppendText(_T("Execute: "), -1);
-            ted.pWndOutput->AppendText(cmdline, -1);
-            ted.pWndOutput->AppendText(_T("\n"), -1);
+            ted.pWndOutput->Clear(OW_OUTPUT);
+            ted.pWndOutput->AppendText(OW_OUTPUT, _T("Execute: "), -1);
+            ted.pWndOutput->AppendText(OW_OUTPUT, cmdline, -1);
+            ted.pWndOutput->AppendText(OW_OUTPUT, _T("\n"), -1);
 
             CloseHandle(hWrite);
             CloseHandle(pi.hThread);
