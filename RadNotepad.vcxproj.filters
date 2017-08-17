@@ -16,6 +16,10 @@
     <Filter Include="ScintillaWrapper">
       <UniqueIdentifier>{5dfbf1c1-ade1-4452-881a-821c619449a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Schemes">
+      <UniqueIdentifier>{0857a35f-9208-4abf-ace6-d20cf80ff968}</UniqueIdentifier>
+      <Extensions>scheme</Extensions>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RadNotepad.h">

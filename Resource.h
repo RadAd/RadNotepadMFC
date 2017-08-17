@@ -70,6 +70,8 @@
 #define IDS_EXPLORER                    305
 #define IDS_EDIT_MENU                   306
 #define IDD_GOTOLINE                    310
+#define IDR_SCHEME_MASTER               312
+#define IDR_EXTMAP                      314
 #define IDC_LINE                        1000
 #define ID_EDIT_FINDNEXT                32779
 #define ID_FILE_REVERT                  32784
@@ -110,10 +112,10 @@
 #define ID_VIEW_LASTSCHEME              33199
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        312
+#define _APS_NEXT_RESOURCE_VALUE        315
 #define _APS_NEXT_COMMAND_VALUE         32837
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310

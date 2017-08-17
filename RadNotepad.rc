@@ -663,6 +663,76 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// SCHEME
+//
+
+IDR_SCHEME_MASTER       SCHEME                  "schemes\\master.scheme"
+
+IDR_SCHEME_ADA          SCHEME                  "schemes\\ada.scheme"
+
+IDR_SCHEME_ASM          SCHEME                  "schemes\\asm.scheme"
+
+IDR_SCHEME_AU3          SCHEME                  "schemes\\au3.scheme"
+
+IDR_SCHEME_BASH         SCHEME                  "schemes\\bash.scheme"
+
+IDR_SCHEME_CPP          SCHEME                  "schemes\\cpp.scheme"
+
+IDR_SCHEME_D            SCHEME                  "schemes\\d.scheme"
+
+IDR_SCHEME_DOCBOOK      SCHEME                  "schemes\\docbook.scheme"
+
+IDR_SCHEME_FORTRAN      SCHEME                  "schemes\\fortran.scheme"
+
+IDR_SCHEME_LATEX        SCHEME                  "schemes\\latex.scheme"
+
+IDR_SCHEME_LISP         SCHEME                  "schemes\\lisp.scheme"
+
+IDR_SCHEME_LUA          SCHEME                  "schemes\\lua.scheme"
+
+IDR_SCHEME_MATLAB       SCHEME                  "schemes\\matlab.scheme"
+
+IDR_SCHEME_MISC         SCHEME                  "schemes\\misc.scheme"
+
+IDR_SCHEME_MODULA2      SCHEME                  "schemes\\modula2.scheme"
+
+IDR_SCHEME_NSIS2        SCHEME                  "schemes\\nsis2.scheme"
+
+IDR_SCHEME_PASCAL       SCHEME                  "schemes\\pascal.scheme"
+
+IDR_SCHEME_PERL         SCHEME                  "schemes\\perl.scheme"
+
+IDR_SCHEME_PHPSCRIPT    SCHEME                  "schemes\\phpscript.scheme"
+
+IDR_SCHEME_POWERSHELL   SCHEME                  "schemes\\powershell.scheme"
+
+IDR_SCHEME_PYTHON       SCHEME                  "schemes\\python.scheme"
+
+IDR_SCHEME_RUBY         SCHEME                  "schemes\\ruby.scheme"
+
+IDR_SCHEME_SPECMAN      SCHEME                  "schemes\\specman.scheme"
+
+IDR_SCHEME_SQL          SCHEME                  "schemes\\sql.scheme"
+
+IDR_SCHEME_TCL          SCHEME                  "schemes\\tcl.scheme"
+
+IDR_SCHEME_VB           SCHEME                  "schemes\\vb.scheme"
+
+IDR_SCHEME_VERILOG      SCHEME                  "schemes\\verilog.scheme"
+
+IDR_SCHEME_VHDL         SCHEME                  "schemes\\vhdl.scheme"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// EXTMAP
+//
+
+IDR_EXTMAP              EXTMAP                  "schemes\\extmap.dat"
+
 #endif    // English (Australia) resources
 /////////////////////////////////////////////////////////////////////////////
 

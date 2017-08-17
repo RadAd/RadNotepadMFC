@@ -617,6 +617,7 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
                 _bstr_t base = GetAttribute(pXMLChildNode, _T("base"));
 
                 const Language* pBaseLanguage = isnull(base) ? nullptr : Get(vecBaseLanguage, base);
+                // TODO Error if can't find base
 
                 Language* pLanguage = Get(pTheme->vecLanguage, name);
                 if (pLanguage == nullptr)
@@ -656,7 +657,7 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme, std::vector<Language>& vecBase
         MSXML2::IXMLDOMParseErrorPtr pXMLErr(pDoc->GetparseError());
 
         CString msg;
-        msg.Format(_T("%s(%ld, %ld): Code: 0x%x - %s\n"), pFilename, pXMLErr->line, pXMLErr->linepos, pXMLErr->errorCode, pXMLErr->reason);
+        msg.Format(_T("%s(%ld, %ld): Code: 0x%x - %s\n"), pFilename, pXMLErr->line, pXMLErr->linepos, pXMLErr->errorCode, (LPCTSTR) pXMLErr->reason);
         AfxMessageBox(msg, MB_ICONERROR | MB_OK);
     }
 }
@@ -699,13 +700,108 @@ void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Langua
     }
 }
 
+struct EnumResData
+{
+    Theme* pTheme;
+    std::vector<Language>* pvecBaseLanguage;
+};
+
+BOOL CALLBACK EnumResSchemeProc(
+    HMODULE  hModule,
+    LPCTSTR  lpszType,
+    LPTSTR   lpszName,
+    LONG_PTR lParam
+)
+{
+    EnumResData* pData = (EnumResData*) lParam;
+
+    HRSRC hResInfo = FindResource(hModule, lpszName, lpszType);
+    HGLOBAL hGlobal = LoadResource(hModule, hResInfo);
+    const char* str = (const char*) LockResource(hGlobal);
+    if (str)
+    {
+        DWORD nSize = SizeofResource(hModule, hResInfo);
+        if (strncmp(str, "\xEF\xBB\xBF", 3) == 0)
+        {   // UTF8 bom
+            str += 3;
+            nSize -= 3;
+        }
+        std::string xml(str, nSize); // Needed so it is null-terminated
+
+        MSXML2::IXMLDOMDocumentPtr pDoc(__uuidof(MSXML2::DOMDocument60));
+        pDoc->Putasync(VARIANT_FALSE);
+        pDoc->PutvalidateOnParse(VARIANT_FALSE);
+        pDoc->PutresolveExternals(VARIANT_FALSE);
+        pDoc->PutpreserveWhiteSpace(VARIANT_TRUE);
+
+        VARIANT_BOOL varStatus = pDoc->loadXML(xml.c_str());
+        if (varStatus == VARIANT_TRUE)
+        {
+            MSXML2::IXMLDOMElementPtr pXMLRoot(pDoc->GetdocumentElement());
+            ProcessScheme(pXMLRoot, pData->pTheme, *pData->pvecBaseLanguage);
+        }
+        else
+        {
+            MSXML2::IXMLDOMParseErrorPtr pXMLErr(pDoc->GetparseError());
+
+            CString msg;
+            msg.Format(_T("RES(%ld, %ld): Code: 0x%x - %s\n"), pXMLErr->line, pXMLErr->linepos, pXMLErr->errorCode, (LPCTSTR) pXMLErr->reason);
+            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+        }
+    }
+    FreeResource(hGlobal);
+    return TRUE;
+}
+
+BOOL CALLBACK EnumResExtMapProc(
+    HMODULE  hModule,
+    LPCTSTR  lpszType,
+    LPTSTR   lpszName,
+    LONG_PTR lParam
+)
+{
+    EnumResData* pData = (EnumResData*) lParam;
+
+    HRSRC hResInfo = FindResource(hModule, lpszName, lpszType);
+    HGLOBAL hGlobal = LoadResource(hModule, hResInfo);
+    const char* str = (const char*) LockResource(hGlobal);
+    if (str)
+    {
+        DWORD nSize = SizeofResource(hModule, hResInfo);
+
+        while (nSize > 0)
+        {
+            const char* begin = str;
+            const char* equals = strchr(begin, _T('='));
+            const char* end = strchr(equals != nullptr ? equals : begin, _T('\n'));
+
+            if (equals != nullptr)
+                pData->pTheme->mapExt[CString(begin, (int) (equals - begin)).Trim().MakeLower()] = CString(equals + 1, end - equals - 1).Trim().MakeLower();
+
+            nSize -= end - str + 1;
+            str = end + 1;
+        }
+    }
+    FreeResource(hGlobal);
+    return TRUE;
+}
+
+#include "Resource.h"
+
 void LoadTheme(Theme* pTheme)
 {
     std::vector<Language> vecBaseLanguage;
 
+    EnumResData data;
+    data.pTheme = pTheme;
+    data.pvecBaseLanguage = &vecBaseLanguage;
+    HMODULE hModule = NULL;
+    EnumResourceNames(hModule, _T("SCHEME"), EnumResSchemeProc, (LONG_PTR) &data);
+    EnumResourceNames(hModule, _T("EXTMAP"), EnumResExtMapProc, (LONG_PTR) &data);
+
     TCHAR exepath[_MAX_PATH];
 
-    GetModuleFileName(NULL, exepath, MAX_PATH);
+    GetModuleFileName(hModule, exepath, MAX_PATH);
     PathFindFileName(exepath)[0] = _T('\0');
     LoadSchemeDirectory(exepath, pTheme, vecBaseLanguage);
 
@@ -713,6 +809,7 @@ void LoadTheme(Theme* pTheme)
     PathCombine(path, exepath, _T("schemes"));
     LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
 
+#if 0
     GetCurrentDirectory(MAX_PATH, path);
     if (wcscmp(path, exepath) != 0)
     {
@@ -721,4 +818,5 @@ void LoadTheme(Theme* pTheme)
         PathCombine(path, path, _T("schemes"));
         LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
     }
+#endif
 }
