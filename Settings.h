@@ -17,6 +17,7 @@ struct EditorSettings
 
     bool bShowIndentGuides = TRUE;
     bool bHighlightMatchingBraces = TRUE;
+    bool bAutoIndent = TRUE;
 
     bool bShowLineNumbers = FALSE;
     bool bShowBookmarks = TRUE;

@@ -776,9 +776,9 @@ BOOL CALLBACK EnumResExtMapProc(
             const char* end = strchr(equals != nullptr ? equals : begin, _T('\n'));
 
             if (equals != nullptr)
-                pData->pTheme->mapExt[CString(begin, (int) (equals - begin)).Trim().MakeLower()] = CString(equals + 1, end - equals - 1).Trim().MakeLower();
+                pData->pTheme->mapExt[CString(begin, (int) (equals - begin)).Trim().MakeLower()] = CString(equals + 1, (int) (end - equals - 1)).Trim().MakeLower();
 
-            nSize -= end - str + 1;
+            nSize -= (int) (end - str + 1);
             str = end + 1;
         }
     }

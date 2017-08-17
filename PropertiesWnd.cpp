@@ -470,6 +470,7 @@ void CPropertiesWnd::InitPropList()
         pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth));
         pGroup->AddSubItem(CreateProperty(_T("Show Indent Guides"), &m_pSettings->editor.bShowIndentGuides));
         pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
+        pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &m_pSettings->editor.bAutoIndent));
         m_wndPropList.AddProperty(pGroup);
     }
 

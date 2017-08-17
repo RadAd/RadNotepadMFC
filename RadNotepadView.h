@@ -25,6 +25,7 @@ public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 
+    virtual void OnCharAdded(_Inout_ SCNotification* pSCNotification);
     virtual void OnModified(_Inout_ SCNotification* pSCNotification);
     virtual void OnUpdateUI(_Inout_ SCNotification* pSCNotification);
 protected:
@@ -41,6 +42,7 @@ protected:
     void DefineMarker(int marker, int markerType, COLORREF fore, COLORREF back);
     const Language* m_pLanguage;
     BOOL m_bHighlightMatchingBraces;
+    BOOL m_bAutoIndent;
 
 // Generated message map functions
 protected:

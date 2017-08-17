@@ -97,6 +97,7 @@ END_MESSAGE_MAP()
 CRadNotepadView::CRadNotepadView()
     : m_pLanguage(nullptr)
     , m_bHighlightMatchingBraces(FALSE)
+    , m_bAutoIndent(FALSE)
 {
 }
 
@@ -109,6 +110,36 @@ BOOL CRadNotepadView::PreCreateWindow(CREATESTRUCT& cs)
 	// TODO: Modify the Window class or styles here by modifying
 	//  the CREATESTRUCT cs
 	return CScintillaView::PreCreateWindow(cs);
+}
+
+void CRadNotepadView::OnCharAdded(_Inout_ SCNotification* pSCNotification)
+{
+    CScintillaView::OnCharAdded(pSCNotification);
+    CScintillaCtrl& rCtrl = GetCtrl();
+    if (m_bAutoIndent)
+    {
+        if ((rCtrl.GetEOLMode() == SC_EOL_CR &&  pSCNotification->ch == '\r')
+            || (rCtrl.GetEOLMode() == SC_EOL_LF &&  pSCNotification->ch == '\n')
+            || (rCtrl.GetEOLMode() == SC_EOL_CRLF &&  pSCNotification->ch == '\n'))
+        {
+            Sci_Position nPos = rCtrl.GetCurrentPos();
+            int nLine = rCtrl.LineFromPosition(nPos);
+            if (nLine > 0)
+            {
+                CString srtLine = rCtrl.GetLine(nLine - 1);
+                for (int pos = 0; pos < srtLine.GetLength(); pos++)
+                {
+                    if (srtLine[pos] != ' ' && srtLine[pos] != '\t')
+                    {
+                        srtLine = srtLine.Left(pos);
+                        break;
+                    }
+                }
+                if (!srtLine.IsEmpty())
+                    rCtrl.ReplaceSel(srtLine);
+            }
+        }
+    }
 }
 
 void CRadNotepadView::OnModified(_Inout_ SCNotification* pSCNotification)
@@ -302,6 +333,7 @@ void CRadNotepadView::OnInitialUpdate()
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
     m_bHighlightMatchingBraces = settings.bHighlightMatchingBraces;
+    m_bAutoIndent = settings.bAutoIndent;
 
     rCtrl.ClearCmdKey('[' | (SCMOD_CTRL << 16));
     rCtrl.ClearCmdKey('[' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));
