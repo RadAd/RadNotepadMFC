@@ -57,6 +57,7 @@ struct Language
     CString name;
     CString title;
     CString lexer;
+    std::map<CString, CString> mapProperties;
     std::vector<Style> vecStyle;
     std::vector<GroupStyle> vecGroupStyle;
     struct { CString name; CString sclass; } vecKeywords[KEYWORDSET_MAX];

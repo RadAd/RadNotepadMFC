@@ -168,6 +168,8 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
                 rCtrl.SetKeyWords(i, pKeywordClass->keywords);
         }
 
+        for (const auto& prop : pLanguage->mapProperties)
+            rCtrl.SetProperty(prop.first, prop.second);
         for (const Style& style : pLanguage->vecStyle)
             ApplyStyle(rCtrl, style, pTheme);
         for (const GroupStyle& groupstyle : pLanguage->vecGroupStyle)
@@ -559,7 +561,9 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
             }
             else if (bstrName == L"property")
             {
-                // TODO
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t value = GetAttribute(pXMLChildNode, _T("value"));
+                pLanguage->mapProperties[(LPCTSTR) name] = (LPCTSTR) value;
             }
             else if (bstrName == L"comments")
             {
