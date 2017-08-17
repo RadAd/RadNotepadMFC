@@ -13,17 +13,6 @@
 #define COLOR_LT_MAGENTA    RGB(0x80, 0x00, 0x80)
 #define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
 
-extern LPCTSTR THEME_DEFAULT;
-extern LPCTSTR THEME_COMMENT;
-extern LPCTSTR THEME_NUMBER;
-extern LPCTSTR THEME_WORD;
-extern LPCTSTR THEME_TYPE;
-extern LPCTSTR THEME_STRING;
-extern LPCTSTR THEME_IDENTIFIER;
-extern LPCTSTR THEME_PREPROCESSOR;
-extern LPCTSTR THEME_OPERATOR;
-extern LPCTSTR THEME_ERROR;
-
 struct ThemeItem
 {
     ThemeItem(COLORREF fore = COLOR_NONE, COLORREF back = COLOR_NONE, LOGFONT font = {})
@@ -38,7 +27,7 @@ struct ThemeItem
     LOGFONT font;
 };
 
-struct StyleNew
+struct Style
 {
     CString name;
     int id;
@@ -58,7 +47,7 @@ struct Language
     CString name;
     CString title;
     CString lexer;
-    std::vector<StyleNew> vecStyle;
+    std::vector<Style> vecStyle;
     struct { CString name; CString sclass; } vecKeywords[KEYWORDSET_MAX];
 };
 
@@ -79,15 +68,13 @@ struct Theme
 {
     ThemeItem tDefault;
     std::vector<StyleClass> vecStyleClass;
-    std::vector<StyleNew> vecBase;
+    std::vector<Style> vecBase;
     std::vector<KeywordClass> vecKeywordClass;
     std::map<CString, CString> mapExt;
     std::vector<Language> vecLanguage;
 };
 
 void InitTheme(Theme* pSettings);
-const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pSettings);
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
-void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme);
 void LoadTheme(Theme* pTheme);
 const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt);

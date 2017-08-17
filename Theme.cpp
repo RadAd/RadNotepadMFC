@@ -2,18 +2,7 @@
 #include "Theme.h"
 #include <SciLexer.h>
 
-extern LPCTSTR THEME_DEFAULT = _T("default");
-extern LPCTSTR THEME_COMMENT = _T("comment");
-extern LPCTSTR THEME_NUMBER = _T("number");
-extern LPCTSTR THEME_WORD = _T("keyword");
-extern LPCTSTR THEME_TYPE = _T("keyword2");
-extern LPCTSTR THEME_STRING = _T("string");
-extern LPCTSTR THEME_IDENTIFIER = _T("Identifier");
-extern LPCTSTR THEME_PREPROCESSOR = _T("preprocessor");
-extern LPCTSTR THEME_OPERATOR = _T("operator");
-extern LPCTSTR THEME_ERROR = _T("error");
-
-inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
+static inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
 {
     LOGFONT lf = {};
     lf.lfHeight = size;
@@ -23,7 +12,7 @@ inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
     return lf;
 }
 
-const Language* GetLanguage(const std::vector<Language>& vecLanguage, LPCTSTR name)
+static inline const Language* GetLanguage(const std::vector<Language>& vecLanguage, LPCTSTR name)
 {
     for (const Language& rLanguage : vecLanguage)
     {
@@ -33,7 +22,7 @@ const Language* GetLanguage(const std::vector<Language>& vecLanguage, LPCTSTR na
     return nullptr;
 }
 
-const KeywordClass* GetKeywordClass(const std::vector<KeywordClass>& vecKeywordClass, LPCTSTR name)
+static inline const KeywordClass* GetKeywordClass(const std::vector<KeywordClass>& vecKeywordClass, LPCTSTR name)
 {
     for (const KeywordClass& rKeywordClass : vecKeywordClass)
     {
@@ -43,9 +32,9 @@ const KeywordClass* GetKeywordClass(const std::vector<KeywordClass>& vecKeywordC
     return nullptr;
 }
 
-int GetThemeItemIndex(LPCTSTR strItem, const Theme* pTheme)
+static inline int GetThemeItemIndex(LPCTSTR strItem, const Theme* pTheme)
 {
-    if (_wcsicmp(strItem, THEME_DEFAULT) == 0)
+    if (_wcsicmp(strItem, _T("default")) == 0)
         return -2;
     for (int i = 0; i < pTheme->vecStyleClass.size(); ++i)
     {
@@ -55,9 +44,9 @@ int GetThemeItemIndex(LPCTSTR strItem, const Theme* pTheme)
     return -1;
 };
 
-const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme)
+static inline const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme)
 {
-    if (_wcsicmp(strItem, THEME_DEFAULT) == 0)
+    if (_wcsicmp(strItem, _T("default")) == 0)
         return &pTheme->tDefault;
     for (const StyleClass& sc : pTheme->vecStyleClass)
     {
@@ -67,7 +56,7 @@ const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme)
     return nullptr;
 };
 
-void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
+static inline void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
 {
     if (rTheme.fore != COLOR_NONE)
         rCtrl.StyleSetFore(nStyle, rTheme.fore);
@@ -107,15 +96,15 @@ void InitTheme(Theme* pTheme)
 {
     pTheme->tDefault = { COLOR_BLACK, COLOR_WHITE, Font(-13, _T("Consolas")) };
     {
-        pTheme->vecStyleClass.push_back({ THEME_COMMENT,      _T("#Comment"),            { COLOR_LT_GREEN,     COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ THEME_NUMBER,       _T("#Number"),             { COLOR_LT_CYAN,      COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ THEME_WORD,         _T("#Word"),               { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } });
-        pTheme->vecStyleClass.push_back({ THEME_TYPE,         _T("#Type"),               { COLOR_LT_CYAN,      COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ THEME_STRING,       _T("#String"),             { COLOR_LT_MAGENTA,   COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ THEME_IDENTIFIER,   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ THEME_PREPROCESSOR, _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ THEME_OPERATOR,     _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ THEME_ERROR,        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } });
+        pTheme->vecStyleClass.push_back({ _T("comment"),      _T("#Comment"),            { COLOR_LT_GREEN,     COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("number"),       _T("#Number"),             { COLOR_LT_CYAN,      COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("keyword"),      _T("#Word"),               { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } });
+        pTheme->vecStyleClass.push_back({ _T("keyword2"),     _T("#Type"),               { COLOR_LT_CYAN,      COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("string"),       _T("#String"),             { COLOR_LT_MAGENTA,   COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("Identifier"),   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("preprocessor"), _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("preprocessor"), _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } });
+        pTheme->vecStyleClass.push_back({ _T("error"),        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } });
     }
     {
         pTheme->vecBase.push_back({ _T("Indent Guide"), STYLE_INDENTGUIDE, _T("indentguide"), { COLOR_NONE,     COLOR_NONE } });  // TODO Should I add to scheme.master
@@ -127,7 +116,7 @@ void InitTheme(Theme* pTheme)
     }
 }
 
-void ApplyStyle(CScintillaCtrl& rCtrl, const StyleNew& style, const Theme* pTheme)
+static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const Theme* pTheme)
 {
     const ThemeItem* pThemeItem = GetThemeItem(style.sclass, pTheme);
     if (pThemeItem != nullptr)
@@ -144,7 +133,7 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
 
     ApplyThemeItem(rCtrl, STYLE_DEFAULT, pTheme->tDefault);
     rCtrl.StyleClearAll();
-    for (const StyleNew& style : pTheme->vecBase)
+    for (const Style& style : pTheme->vecBase)
         ApplyStyle(rCtrl, style, pTheme);
 
     if (pLanguage != nullptr)
@@ -157,7 +146,7 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
                 rCtrl.SetKeyWords(i, pKeywordClass->keywords);
         }
 
-        for (const StyleNew& style : pLanguage->vecStyle)
+        for (const Style& style : pLanguage->vecStyle)
             ApplyStyle(rCtrl, style, pTheme);
     }
 }
@@ -296,7 +285,7 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
     }
 }
 
-void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<StyleNew>& vecStyles)
+void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyles)
 {
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
     long length = pXMLChildren->Getlength();
