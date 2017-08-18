@@ -662,7 +662,12 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
                 _bstr_t base = GetAttribute(pXMLChildNode, _T("base"));
 
                 const Language* pBaseLanguage = isnull(base) ? nullptr : Get(vecBaseLanguage, base);
-                // TODO Error if can't find base
+                if (!isnull(base) && pBaseLanguage == nullptr)
+                {
+                    CString msg;
+                    msg.Format(_T("Cannot find base language: %s"), (LPCTSTR) base);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
 
                 Language* pLanguage = Get(pTheme->vecLanguage, name);
                 if (pLanguage == nullptr)
@@ -670,7 +675,12 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
                     pTheme->vecLanguage.push_back(Language(name, pBaseLanguage));
                     pLanguage = &pTheme->vecLanguage.back();
                 }
-                // TODO else if (pBaseLanguage != nullptr) -- How to apply base now?
+                else if (pBaseLanguage != nullptr)
+                {
+                    CString msg;
+                    msg.Format(_T("Cannot use base language: %s"), (LPCTSTR) base);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
                 ProcessLanguage(pXMLChildNode, pLanguage);
             }
             else
