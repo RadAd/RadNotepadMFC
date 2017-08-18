@@ -81,6 +81,8 @@ public:
     afx_msg void OnEditFindNextCurrentWord();
     afx_msg void OnEditFindPreviousCurrentWord();
     afx_msg void OnEditFindMatchingBrace();
+    afx_msg void OnSchemeNone();
+    afx_msg void OnUpdateSchemeNone(CCmdUI *pCmdUI);
     afx_msg void OnScheme(UINT nID);
     afx_msg void OnUpdateScheme(CCmdUI *pCmdUI);
 };

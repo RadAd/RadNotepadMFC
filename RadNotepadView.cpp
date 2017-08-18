@@ -12,6 +12,7 @@
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
 #include "GoToLineDlg.h"
+#include <algorithm>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -23,6 +24,9 @@
 #define WM_CHECKUPDATE (WM_USER + 1)
 
 #define RAD_MARKER_BOOKMARK 2
+
+#define ID_VIEW_FIRSTSCHEME             33100
+#define ID_VIEW_LASTSCHEME              33199
 
 enum Margin
 {
@@ -88,8 +92,10 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_EDIT_FINDPREVIOUSCURRENTWORD, &CRadNotepadView::OnEditFindPreviousCurrentWord)
     ON_MESSAGE(WM_CHECKUPDATE, &CRadNotepadView::OnCheckUpdate)
     ON_COMMAND(ID_EDIT_FINDMATCHINGBRACE, &CRadNotepadView::OnEditFindMatchingBrace)
+    ON_COMMAND(ID_VIEW_SCHEMENONE, &CRadNotepadView::OnSchemeNone)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_SCHEMENONE, &CRadNotepadView::OnUpdateSchemeNone)
     ON_COMMAND_RANGE(ID_VIEW_FIRSTSCHEME, ID_VIEW_LASTSCHEME, &CRadNotepadView::OnScheme)
-    ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTSCHEME, &CRadNotepadView::OnUpdateScheme)
+    ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_FIRSTSCHEME, ID_VIEW_LASTSCHEME, &CRadNotepadView::OnUpdateScheme)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -649,19 +655,62 @@ void CRadNotepadView::OnEditFindMatchingBrace()
     }
 }
 
-void CRadNotepadView::OnScheme(UINT nID)
+void CRadNotepadView::OnSchemeNone()
 {
     const Language* pLanguage = nullptr;
-    if (nID == ID_VIEW_FIRSTSCHEME)
+
+    m_pLanguage = pLanguage;
+    CScintillaCtrl& rCtrl = GetCtrl();
+    const EditorSettings& settings = theApp.m_Settings.editor;
+    Apply(rCtrl, m_pLanguage, &settings.rTheme);
+}
+
+void CRadNotepadView::OnUpdateSchemeNone(CCmdUI *pCmdUI)
+{
+    // TODO Sort
+    if (pCmdUI->m_pSubMenu != nullptr)
     {
-        pLanguage = nullptr;
-    }
-    else
-    {
-        nID -= ID_VIEW_FIRSTSCHEME + 1;
+        for (int i = ID_VIEW_FIRSTSCHEME; i < ID_VIEW_LASTSCHEME; ++i)
+            pCmdUI->m_pSubMenu->DeleteMenu(i, MF_BYCOMMAND);
+
         const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
-        pLanguage = &vecLanguage[nID];
+
+        int nID = ID_VIEW_FIRSTSCHEME;
+        struct LanguageMenuItem
+        {
+            const Language* pLanguage;
+            int nID;
+            bool operator<(const LanguageMenuItem& other) const
+            {
+                return pLanguage->title < other.pLanguage->title;
+            }
+        };
+        std::vector<LanguageMenuItem> vecSortLanguage;
+        for (const Language& rLanguage : vecLanguage)
+        {
+            vecSortLanguage.push_back(LanguageMenuItem());
+            LanguageMenuItem& lmi = vecSortLanguage.back();
+            lmi.pLanguage = &rLanguage;
+            lmi.nID = nID++;
+        }
+
+        std::sort(vecSortLanguage.begin(), vecSortLanguage.end());
+
+        int nIndex = pCmdUI->m_pSubMenu->GetMenuItemCount();
+        for (const LanguageMenuItem& rLanguage : vecSortLanguage)
+            pCmdUI->m_pSubMenu->InsertMenu(nIndex++, MF_STRING | MF_BYPOSITION, rLanguage.nID, rLanguage.pLanguage->title);
+
+        pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
+        pCmdUI->m_nIndexMax = pCmdUI->m_pSubMenu->GetMenuItemCount();
     }
+
+    pCmdUI->SetRadio(m_pLanguage == nullptr);
+}
+
+void CRadNotepadView::OnScheme(UINT nID)
+{
+    const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+    const Language* pLanguage = &vecLanguage[nID - ID_VIEW_FIRSTSCHEME];
 
     m_pLanguage = pLanguage;
     CScintillaCtrl& rCtrl = GetCtrl();
@@ -671,24 +720,6 @@ void CRadNotepadView::OnScheme(UINT nID)
 
 void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
 {
-    // TODO Sort
-    if (pCmdUI->m_pSubMenu != nullptr)
-    {
-        for (int i = 1; i < (ID_VIEW_FIRSTSCHEME - ID_VIEW_LASTSCHEME); ++i)
-            pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
-
-        int nSelected = 0;
-        int nIndex = 0;
-        const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
-        for (const Language& rLanguage : vecLanguage)
-        {
-            pCmdUI->m_pSubMenu->InsertMenu(++nIndex, MF_STRING | MF_BYPOSITION, ++pCmdUI->m_nID, rLanguage.title);
-            if (&rLanguage == m_pLanguage)
-                nSelected = nIndex;
-        }
-
-        pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
-
-        pCmdUI->m_pSubMenu->CheckMenuRadioItem(0, 0 + 100, nSelected, MF_BYPOSITION);
-    }
+    const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+    pCmdUI->SetRadio(m_pLanguage == &vecLanguage[pCmdUI->m_nID - ID_VIEW_FIRSTSCHEME]);
 }

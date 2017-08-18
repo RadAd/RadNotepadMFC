@@ -106,17 +106,16 @@
 #define ID_EDIT_FINDPREVIOUSCURRENTWORD 32826
 #define ID_EDIT_FINDNEXTMATCHINGBRACE   32829
 #define ID_EDIT_FINDMATCHINGBRACE       32831
+#define ID_VIEW_SCHEMENONE              32837
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
-#define ID_VIEW_FIRSTSCHEME             33100
-#define ID_VIEW_LASTSCHEME              33199
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        315
-#define _APS_NEXT_COMMAND_VALUE         32837
+#define _APS_NEXT_COMMAND_VALUE         32838
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

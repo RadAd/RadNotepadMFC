@@ -235,7 +235,7 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Scheme"
         BEGIN
-            MENUITEM "None",                        ID_VIEW_FIRSTSCHEME
+            MENUITEM "None",                        ID_VIEW_SCHEMENONE
         END
         MENUITEM "White Space",                 ID_VIEW_WHITESPACE
         MENUITEM "End of Line",                 ID_VIEW_ENDOFLINE
