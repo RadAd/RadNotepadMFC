@@ -18,6 +18,7 @@ enum PropType
 {
     PROP_BOOL,
     PROP_INT,
+    PROP_UINT,
     PROP_COLOR,
     PROP_FONT,
     PROP_INDEX,
@@ -34,6 +35,12 @@ struct Property
     Property(INT* i)
         : nType(PROP_INT)
         , valInt(i)
+    {
+    }
+
+    Property(UINT* i)
+        : nType(PROP_UINT)
+        , valUInt(i)
     {
     }
 
@@ -63,6 +70,7 @@ struct Property
     {
         bool* valBool;
         INT* valInt;
+        UINT* valUInt;
         COLORREF* valColor;
         LOGFONT* valFont;
     };
@@ -78,10 +86,17 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, bool* pBool)
     return new CMFCPropertyGridProperty(strName, (_variant_t) *pBool, nullptr, (DWORD_PTR) new Property(pBool));
 }
 
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, int* pInt)
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, INT* pInt, INT nMin, INT nMax)
 {
     CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *pInt, nullptr, (DWORD_PTR) new Property(pInt));
-    p->EnableSpinControl(TRUE, 1, 100);
+    p->EnableSpinControl(TRUE, nMin, nMax);
+    return p;
+}
+
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, UINT* pInt, UINT nMin, UINT nMax)
+{
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *pInt, nullptr, (DWORD_PTR) new Property(pInt));
+    p->EnableSpinControl(TRUE, nMin, nMax);
     return p;
 }
 
@@ -263,6 +278,11 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
     case PROP_INT:
         ASSERT(pProp->GetValue().vt == VT_INT);
         *prop->valInt = pProp->GetValue().intVal;
+        break;
+
+    case PROP_UINT:
+        ASSERT(pProp->GetValue().vt == VT_INT);
+        *prop->valUInt = pProp->GetValue().intVal;
         break;
 
     case PROP_INDEX:
@@ -463,13 +483,14 @@ void CPropertiesWnd::InitPropList()
     {
         CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
         pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
+        pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
         m_wndPropList.AddProperty(pGroup);
     }
 
     {
         CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
         pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->editor.bUseTabs));
-        pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth));
+        pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth, 1, 100));
         pGroup->AddSubItem(CreateProperty(_T("Show Indent Guides"), &m_pSettings->editor.bShowIndentGuides));
         pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
         pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &m_pSettings->editor.bAutoIndent));

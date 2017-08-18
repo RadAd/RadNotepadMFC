@@ -168,7 +168,7 @@ BOOL CRadNotepadApp::InitInstance()
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
-	LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
+	LoadStdProfileSettings(m_Settings.nMaxMRU);  // Load standard INI file options (including MRU)
 
 
 	InitContextMenuManager();

@@ -33,6 +33,7 @@ struct EditorSettings
 struct Settings
 {
     bool bEmptyFileOnStartup = TRUE;
+    UINT nMaxMRU = 10;
 
     EditorSettings editor;
 };
