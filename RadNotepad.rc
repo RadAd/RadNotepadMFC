@@ -260,9 +260,14 @@ IDR_POPUP_EDIT MENU
 BEGIN
     POPUP "Edit"
     BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM "Redo\tCtrl+Y",                ID_EDIT_REDO
+        MENUITEM SEPARATOR
         MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
     END
 END
 

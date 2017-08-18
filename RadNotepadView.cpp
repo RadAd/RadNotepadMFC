@@ -346,6 +346,8 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.ClearCmdKey(']' | (SCMOD_CTRL << 16));
     rCtrl.ClearCmdKey(']' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));
 
+    rCtrl.UsePopUp(SC_POPUP_NEVER);
+
 #if 0
     //Setup auto completion
     rCtrl.AutoCSetSeparator(10); //Use a separator of line feed
