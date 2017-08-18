@@ -4,6 +4,7 @@
 #include "OutputWnd.h"
 #include "Resource.h"
 #include "RadNotepad.h"
+#include "RadNotepadDoc.h"
 #include "Theme.h"
 #include <SciLexer.h>
 
@@ -107,31 +108,6 @@ void COutputWnd::UpdateFonts()
         m_wndOutput[ow].SetFont(&afxGlobalData.fontRegular);
 }
 
-void COutputWnd::Clear(OutputWindowE ow)
-{
-    COutputList& wndOutput = m_wndOutput[ow];
-    wndOutput.SetReadOnly(FALSE);
-    wndOutput.SelectAll();
-    wndOutput.Clear();
-    wndOutput.SetReadOnly(TRUE);
-}
-
-void COutputWnd::AppendText(OutputWindowE ow, LPCSTR pText, int nLen)
-{
-    COutputList& wndOutput = m_wndOutput[ow];
-    wndOutput.SetReadOnly(FALSE);
-    wndOutput.AppendText(nLen, pText);
-    wndOutput.SetReadOnly(TRUE);
-}
-
-void COutputWnd::AppendText(OutputWindowE ow, LPCWSTR pText, int nLen)
-{
-    COutputList& wndOutput = m_wndOutput[ow];
-    wndOutput.SetReadOnly(FALSE);
-    wndOutput.AppendText(nLen, pText);
-    wndOutput.SetReadOnly(TRUE);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // COutputList1
 
@@ -141,6 +117,34 @@ COutputList::COutputList()
 
 COutputList::~COutputList()
 {
+}
+
+void COutputList::Clear()
+{
+    SetReadOnly(FALSE);
+    SelectAll();
+    CScintillaCtrl::Clear();
+    SetReadOnly(TRUE);
+}
+
+void COutputList::AppendText(LPCSTR pText, int nLen)
+{
+    SetReadOnly(FALSE);
+    bool bAtEnd = GetCurrentPos() == GetLength();
+    CScintillaCtrl::AppendText(nLen, pText);
+    if (bAtEnd)
+        GotoPos(GetLength());
+    SetReadOnly(TRUE);
+}
+
+void COutputList::AppendText(LPCWSTR pText, int nLen)
+{
+    SetReadOnly(FALSE);
+    bool bAtEnd = GetCurrentPos() == GetLength();
+    CScintillaCtrl::AppendText(nLen, pText);
+    if (bAtEnd)
+        GotoPos(GetLength());
+    SetReadOnly(TRUE);
 }
 
 BEGIN_MESSAGE_MAP(COutputList, CListBox)
@@ -183,10 +187,7 @@ void COutputList::OnEditCopy()
 
 void COutputList::OnEditClear()
 {
-    SetReadOnly(FALSE);
-    SelectAll();
     Clear();
-    SetReadOnly(TRUE);
 }
 
 void COutputList::OnViewOutput()
@@ -208,12 +209,43 @@ void COutputList::OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult)
     SCNotification* pSCNotification = reinterpret_cast<SCNotification*>(pHdr);
     int nLine = LineFromPosition(pSCNotification->position);
     CString strLine = GetLine(nLine);
-    // TODO Extract file name and line number
-    CString strFile = strLine.Left(strLine.Find(L"("));
-    strFile.Trim();
-    // TODO Combine with directory of process
-    // TODO Open to file and line
-    AfxMessageBox(strFile);
+    strLine.Trim();
+
+    // TODO Better file, line number extraction
+    // Look for format: {file}({line})
+    int nFileEnd = strLine.Mid(2).FindOneOf(L"(:");
+    if (nFileEnd >= 0)
+    {
+        nFileEnd += 2;
+
+        CString strFile = strLine.Left(nFileEnd);
+        strFile.Trim();
+
+        TCHAR path[_MAX_PATH];
+        PathCombine(path, m_strDirectory, strFile);
+
+        int nFileLine = 0;
+        CString strEnd = strLine[nFileEnd] == _T('(') ? _T(")") : _T(":");
+        int nNumberEnd = strLine.Find(strEnd, nFileEnd + 1);
+        if (nNumberEnd >= 0)
+        {
+            CString strLineNumber = strLine.Mid(nFileEnd + 1, nNumberEnd - nFileEnd - 1);
+            nFileLine = _ttoi(strLineNumber);
+        }
+
+        Cancel();
+        CRadNotepadDoc* pDoc = DYNAMIC_DOWNCAST(CRadNotepadDoc, theApp.OpenDocumentFile(path));
+        if (pDoc != nullptr && nFileLine > 0)
+        {
+            CScintillaView* pScintillaView = pDoc->GetView();
+            if (pScintillaView != nullptr)
+            {
+                pScintillaView->SetFocus();
+                pScintillaView->GetCtrl().GotoLine(nFileLine - 1);
+            }
+        }
+    }
+
     *pResult = 0;
 }
 

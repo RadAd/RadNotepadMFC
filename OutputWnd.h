@@ -10,9 +10,19 @@ class COutputList : public CScintillaCtrl
 public:
 	COutputList();
 
+public:
+    void Clear();
+    void SetDirectory(LPCTSTR pText) { m_strDirectory = pText; }
+    void AppendText(LPCSTR pText, int nLen);
+    void AppendText(LPCWSTR pText, int nLen);
+    void AppendText(const CString& str) { AppendText(str, str.GetLength()); }
+
 // Implementation
 public:
 	virtual ~COutputList();
+
+private:
+    CString m_strDirectory;
 
 protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
@@ -39,10 +49,7 @@ public:
 	COutputWnd();
 
 	void UpdateFonts();
-    void Clear(OutputWindowE ow);
-    void AppendText(OutputWindowE ow, LPCSTR pText, int nLen);
-    void AppendText(OutputWindowE ow, LPCWSTR pText, int nLen);
-    void AppendText(OutputWindowE ow, const CString& str) { AppendText(ow, str, str.GetLength()); }
+    COutputList* Get(OutputWindowE ow) { return &m_wndOutput[ow]; }
 
 // Attributes
 protected:

@@ -5,6 +5,7 @@
 // TODO
 // Load from registry
 // Save before execute
+// Stop too many outputting to the same window at the same time
 
 void InitTools(std::vector<Tool>& rTools)
 {
@@ -13,6 +14,7 @@ void InitTools(std::vector<Tool>& rTools)
     rTools.push_back(Tool(_T("CMD"), _T("cmd.exe")));
     rTools.push_back(Tool(_T("Explorer"), _T("explorer.exe"), _T("/select,\"{file}\"")));
     rTools.push_back(Tool(_T("Google"), _T("https://www.google.com.au/search?q={selected}")));
+    rTools.push_back(Tool(_T("FindStr"), _T("findstr.exe"), _T("/L /S /N \"{selected}\" *.txt *.cpp *.h *.java"), TRUE));
     rTools.push_back(Tool(_T("VCMake"), _T("%HOMEDRIVE%%HOMEPATH%\\Dropbox\\Utils\\CommandLine\\bin\\vcmake.bat"), _T(""), TRUE));
     rTools.push_back(Tool(_T("Output"), _T("cmd.exe"), _T("/C type {file}"), TRUE));
 
@@ -53,8 +55,9 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
     DWORD dwRead = 0;
     while (ReadFile(pData->hRead, Buffer, ARRAYSIZE(Buffer), &dwRead, nullptr))
     {
-        pData->pWndOutput->AppendText(OW_OUTPUT, Buffer, dwRead);
-        // TODO Scroll ?
+        COutputList* pOutputList = pData->pWndOutput->Get(OW_OUTPUT);
+        if (pOutputList)
+            pOutputList->AppendText(Buffer, dwRead);
     }
     CloseHandle(pData->hRead);
 
@@ -62,7 +65,9 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
     GetExitCodeProcess(pData->hProcess, &dwExitCode);
     CString msg;
     msg.Format(_T("Exit code: %d\n"), dwExitCode);
-    pData->pWndOutput->AppendText(OW_OUTPUT, msg);
+    COutputList* pOutputList = pData->pWndOutput->Get(OW_OUTPUT);
+    if (pOutputList)
+        pOutputList->AppendText(msg);
 
     CloseHandle(pData->hProcess);
 
@@ -92,10 +97,15 @@ void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
         if (CreateProcess(nullptr, cmdline, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, ted.directory, &si, &pi))
         {
             ted.pWndOutput->ShowPane(TRUE, FALSE, FALSE);
-            ted.pWndOutput->Clear(OW_OUTPUT);
-            ted.pWndOutput->AppendText(OW_OUTPUT, _T("Execute: "), -1);
-            ted.pWndOutput->AppendText(OW_OUTPUT, cmdline, -1);
-            ted.pWndOutput->AppendText(OW_OUTPUT, _T("\n"), -1);
+            COutputList* pOutputList = ted.pWndOutput->Get(OW_OUTPUT);
+            if (pOutputList)
+            {
+                pOutputList->SetDirectory(ted.directory);
+                pOutputList->Clear();
+                pOutputList->AppendText(_T("Execute: "), -1);
+                pOutputList->AppendText(cmdline, -1);
+                pOutputList->AppendText(_T("\n"), -1);
+            }
 
             CloseHandle(hWrite);
             CloseHandle(pi.hThread);
