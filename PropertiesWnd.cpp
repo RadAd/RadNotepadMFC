@@ -256,10 +256,12 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
     switch (prop->nType)
     {
     case PROP_BOOL:
-        *prop->valBool = pProp->GetValue() != VARIANT_FALSE;
+        ASSERT(pProp->GetValue().vt == VT_BOOL);
+        *prop->valBool = pProp->GetValue().boolVal != VARIANT_FALSE;;
         break;
 
     case PROP_INT:
+        ASSERT(pProp->GetValue().vt == VT_INT);
         *prop->valInt = pProp->GetValue().intVal;
         break;
 
