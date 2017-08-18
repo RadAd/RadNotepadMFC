@@ -421,6 +421,55 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
     }
 }
 
+void ProcessKeywordClassesInclude(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, KeywordClass* pKeywordClass)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"include-class")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+
+                if (isnull(name))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else
+                {
+                    KeywordClass* pIncludeKeywordClass = Get(pTheme->vecKeywordClass, name);
+                    if (pIncludeKeywordClass != nullptr)
+                    {
+                        pKeywordClass->keywords += _T(" ");
+                        pKeywordClass->keywords += pIncludeKeywordClass->keywords;
+                    }
+                    else
+                    {
+                        CString msg;
+                        msg.Format(_T("Cannot find include-class: %s"), (LPCTSTR) name);
+                        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                    }
+                }
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
+        }
+    }
+}
+
 void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
 {
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
@@ -455,9 +504,14 @@ void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 {
                     KeywordClass* pKeywordClass = Get(pTheme->vecKeywordClass, name);
                     if (pKeywordClass == nullptr)
+                    {
                         pTheme->vecKeywordClass.push_back({ name, keywords });
+                        pKeywordClass = &pTheme->vecKeywordClass.back();
+                    }
                     else
                         pKeywordClass->keywords = (LPCTSTR) keywords;
+
+                    ProcessKeywordClassesInclude(pXMLChildNode, pTheme, pKeywordClass);
                 }
             }
             else

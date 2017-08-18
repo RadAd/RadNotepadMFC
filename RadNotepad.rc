@@ -725,6 +725,9 @@ IDR_SCHEME_VERILOG      SCHEME                  "schemes\\verilog.scheme"
 
 IDR_SCHEME_VHDL         SCHEME                  "schemes\\vhdl.scheme"
 
+IDR_SCHEME_WEB          SCHEME                  "schemes\\WebFiles.scheme"
+
+IDR_SCHEME_XML          SCHEME                  "schemes\\xml.scheme"
 
 /////////////////////////////////////////////////////////////////////////////
 //
