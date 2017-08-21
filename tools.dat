@@ -8,17 +8,17 @@
     </tool>
     <tool name="Explorer">
         <cmd>explorer.exe</cmd>
-        <param>/select,\"{file}\"</param>
+        <param>/select,"{file}"</param>
     </tool>
     <tool name="Google">
         <cmd>https://www.google.com.au/search?q={selected}</cmd>
     </tool>
     <tool name="FindStr" capture="true">
         <cmd>findstr.exe</cmd>
-        <param>/L /S /N \"{selected}\" *.txt *.cpp *.h *.java</param>
+        <param>/L /S /N "{selected}" *.txt *.cpp *.h *.java</param>
     </tool>
     <tool name="VCMake" capture="true">
-        <cmd>%HOMEDRIVE%%HOMEPATH%\\Dropbox\\Utils\\CommandLine\\bin\\vcmake.bat</cmd>
+        <cmd>%HOMEDRIVE%%HOMEPATH%\Dropbox\Utils\CommandLine\bin\vcmake.bat</cmd>
     </tool>
     <tool name="Output" capture="true">
         <cmd>cmd.exe</cmd>

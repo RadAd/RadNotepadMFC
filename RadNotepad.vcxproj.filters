@@ -2126,5 +2126,6 @@
     <None Include="schemes\vhdl.scheme" />
     <None Include="schemes\WebFiles.scheme" />
     <None Include="schemes\xml.scheme" />
+    <None Include="tools.dat" />
   </ItemGroup>
 </Project>

@@ -270,6 +270,7 @@
     <None Include="schemes\*.scheme" />
     <None Include="schemes\extmap.dat" />
     <None Include="scintillawrappers\ScintillaDocView.rc2" />
+    <None Include="tools.dat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
