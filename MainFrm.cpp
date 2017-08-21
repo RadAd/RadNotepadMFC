@@ -29,14 +29,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_WM_SETTINGCHANGE()
     ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
 	ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
-	ON_COMMAND(ID_VIEW_FILEVIEW, &CMainFrame::OnViewFileView)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_FILEVIEW, &CMainFrame::OnUpdateViewFileView)
-	ON_COMMAND(ID_VIEW_CLASSVIEW, &CMainFrame::OnViewClassView)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_CLASSVIEW, &CMainFrame::OnUpdateViewClassView)
-	ON_COMMAND(ID_VIEW_OUTPUTWND, &CMainFrame::OnViewOutputWindow)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_OUTPUTWND, &CMainFrame::OnUpdateViewOutputWindow)
-	ON_COMMAND(ID_VIEW_PROPERTIESWND, &CMainFrame::OnViewPropertiesWindow)
-	ON_UPDATE_COMMAND_UI(ID_VIEW_PROPERTIESWND, &CMainFrame::OnUpdateViewPropertiesWindow)
+	ON_COMMAND_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnViewPane)
+    ON_COMMAND_RANGE(ID_VIEW_OUTPUTWND, ID_VIEW_PROPERTIESWND, &CMainFrame::OnViewPane)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CMainFrame::OnUpdateClear)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CMainFrame::OnUpdateClear)
     ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
@@ -320,58 +314,17 @@ LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp,LPARAM lp)
 	return lres;
 }
 
-void CMainFrame::OnViewFileView()
+void CMainFrame::OnViewPane(UINT nID)
 {
-	// Show or activate the pane, depending on current state.  The
-	// pane can only be closed via the [x] button on the pane frame.
-	m_wndFileView.ShowPane(TRUE, FALSE, TRUE);
-	m_wndFileView.SetFocus();
+    CBasePane* pBasePane = GetPane(nID);
+    if (pBasePane->IsVisible())
+        pBasePane->ShowPane(FALSE, FALSE, FALSE);
+    else
+    {
+        pBasePane->ShowPane(TRUE, FALSE, TRUE);
+        pBasePane->SetFocus();
+    }
 }
-
-void CMainFrame::OnUpdateViewFileView(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(TRUE);
-}
-
-void CMainFrame::OnViewClassView()
-{
-	// Show or activate the pane, depending on current state.  The
-	// pane can only be closed via the [x] button on the pane frame.
-	m_wndClassView.ShowPane(TRUE, FALSE, TRUE);
-	m_wndClassView.SetFocus();
-}
-
-void CMainFrame::OnUpdateViewClassView(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(TRUE);
-}
-
-void CMainFrame::OnViewOutputWindow()
-{
-	// Show or activate the pane, depending on current state.  The
-	// pane can only be closed via the [x] button on the pane frame.
-	m_wndOutput.ShowPane(TRUE, FALSE, TRUE);
-	m_wndOutput.SetFocus();
-}
-
-void CMainFrame::OnUpdateViewOutputWindow(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(TRUE);
-}
-
-void CMainFrame::OnViewPropertiesWindow()
-{
-	// Show or activate the pane, depending on current state.  The
-	// pane can only be closed via the [x] button on the pane frame.
-	m_wndProperties.ShowPane(TRUE, FALSE, TRUE);
-	m_wndProperties.SetFocus();
-}
-
-void CMainFrame::OnUpdateViewPropertiesWindow(CCmdUI* pCmdUI)
-{
-	pCmdUI->Enable(TRUE);
-}
-
 
 BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle, CWnd* pParentWnd, CCreateContext* pContext)
 {

@@ -53,14 +53,7 @@ protected:
 	afx_msg void OnWindowManager();
 	afx_msg void OnViewCustomize();
 	afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
-	afx_msg void OnViewFileView();
-	afx_msg void OnUpdateViewFileView(CCmdUI* pCmdUI);
-	afx_msg void OnViewClassView();
-	afx_msg void OnUpdateViewClassView(CCmdUI* pCmdUI);
-	afx_msg void OnViewOutputWindow();
-	afx_msg void OnUpdateViewOutputWindow(CCmdUI* pCmdUI);
-	afx_msg void OnViewPropertiesWindow();
-	afx_msg void OnUpdateViewPropertiesWindow(CCmdUI* pCmdUI);
+	afx_msg void OnViewPane(UINT nID);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnUpdateClear(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
