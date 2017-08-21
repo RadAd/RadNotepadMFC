@@ -9,6 +9,11 @@ public:
 
     static CDocument* GetActiveDocument();
 
+    int GetModifiedDocumentCount() const;
+
     virtual BOOL DoPromptFileName(CString& fileName, UINT nIDSTitle,
-        DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate);
+        DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* pTemplate) override;
+
+    virtual BOOL SaveAllModified() override;
+    void SaveAll();
 };
