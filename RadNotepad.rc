@@ -215,9 +215,13 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
-        POPUP "&Toolbars and Docking Windows"
+        POPUP "&Toolbars"
         BEGIN
             MENUITEM "<placeholder>",               ID_VIEW_TOOLBAR
+        END
+        POPUP "Docking Windows"
+        BEGIN
+            MENUITEM "<placeholder>",               ID_DOCKINGWINDOWS
         END
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
@@ -733,6 +737,7 @@ IDR_SCHEME_VHDL         SCHEME                  "schemes\\vhdl.scheme"
 IDR_SCHEME_WEB          SCHEME                  "schemes\\WebFiles.scheme"
 
 IDR_SCHEME_XML          SCHEME                  "schemes\\xml.scheme"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

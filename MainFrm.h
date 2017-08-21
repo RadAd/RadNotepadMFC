@@ -72,6 +72,7 @@ protected:
 public:
     afx_msg void OnToolsTool(UINT nID);
     afx_msg void OnUpdateToolsTool(CCmdUI *pCmdUI);
+    afx_msg void OnUpdateDockingWindows(CCmdUI *pCmdUI);
 };
 
 

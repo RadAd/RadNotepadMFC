@@ -8,6 +8,7 @@
 #include "MainFrm.h"
 #include "ChildFrm.h"
 #include "RadNotepadView.h"
+#include "RadWindowsManagerDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -43,6 +44,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_REGISTERED_MESSAGE(WM_RADNOTEPAD, &CMainFrame::OnRadNotepad)
     ON_COMMAND_RANGE(ID_TOOLS_FIRSTTOOL, ID_TOOLS_LASTTOOL, &CMainFrame::OnToolsTool)
     ON_UPDATE_COMMAND_UI(ID_TOOLS_FIRSTTOOL, &CMainFrame::OnUpdateToolsTool)
+    ON_UPDATE_COMMAND_UI(ID_DOCKINGWINDOWS, &CMainFrame::OnUpdateDockingWindows)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -162,7 +164,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	EnableWindowsDialog(ID_WINDOW_MANAGER, ID_WINDOW_MANAGER, TRUE);
 
 	// Enable toolbar and docking window menu replacement
-	EnablePaneMenu(TRUE, ID_VIEW_CUSTOMIZE, strCustomize, ID_VIEW_TOOLBAR);
+	EnablePaneMenu(TRUE, ID_VIEW_CUSTOMIZE, strCustomize, ID_VIEW_TOOLBAR, FALSE, TRUE);
 
 	// enable quick (Alt+drag) toolbar customization
 	CMFCToolBar::EnableQuickCustomization();
@@ -188,7 +190,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 INT_PTR CMainFrame::DoWindowsDialog()
 {
     // Same as ShowWindowsDialog() but returns result
-    CMFCWindowsManagerDialog dlg(this, m_bShowWindowsDlgHelpButton);
+    CRadWindowsManagerDialog dlg(this, m_bShowWindowsDlgHelpButton);
     return dlg.DoModal() == IDOK;
 }
 
@@ -286,7 +288,9 @@ void CMainFrame::Dump(CDumpContext& dc) const
 
 void CMainFrame::OnWindowManager()
 {
-	ShowWindowsDialog();
+	//ShowWindowsDialog();
+    CRadWindowsManagerDialog dlg(this, m_bShowWindowsDlgHelpButton);
+    dlg.DoModal();
 }
 
 void CMainFrame::OnViewCustomize()
@@ -566,5 +570,27 @@ void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
         pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
 
         pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
+    }
+}
+
+void CMainFrame::OnUpdateDockingWindows(CCmdUI *pCmdUI)
+{
+    if (pCmdUI->m_pSubMenu != nullptr)
+    {
+        pCmdUI->m_pMenu->DeleteMenu(ID_DOCKINGWINDOWS, MF_BYCOMMAND);
+
+        CObList lstBars;
+        GetDockingManager()->GetPaneList(lstBars, TRUE, RUNTIME_CLASS(CDockablePane), TRUE);
+        for (POSITION pos = lstBars.GetHeadPosition(); pos != NULL;)
+        {
+            CDockablePane* pPane = DYNAMIC_DOWNCAST(CDockablePane, lstBars.GetNext(pos));
+            if (pPane != NULL)
+            {
+                CString title;
+                pPane->GetPaneName(title);
+                pCmdUI->m_pSubMenu->AppendMenu(MF_STRING, pPane->GetDlgCtrlID(), title);
+                pCmdUI->m_pSubMenu->CheckMenuItem(pPane->GetDlgCtrlID(), (pPane->IsVisible() ? MF_CHECKED : MF_UNCHECKED) |  MF_BYCOMMAND);
+            }
+        }
     }
 }
