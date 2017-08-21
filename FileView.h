@@ -56,6 +56,7 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
     afx_msg void OnItemExpanding(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnDeleteItem(NMHDR* pHdr, LRESULT* pResult);
+    afx_msg void OnDblClick(NMHDR* pHdr, LRESULT* pResult);
 
 	DECLARE_MESSAGE_MAP()
 };

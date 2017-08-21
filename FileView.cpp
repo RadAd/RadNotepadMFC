@@ -39,6 +39,31 @@ static inline CString GetCLSIDName(const wchar_t* path)
     return value;
 }
 
+static inline CComPtr<IShellFolder> GetParentFolder(LPITEMIDLIST pidl)
+{
+    HRESULT    hr = NOERROR;
+
+    CComPtr<IShellFolder>    Desktop;
+    hr = SHGetDesktopFolder(&Desktop);
+
+    CComPtr<IShellFolder>    Parent;
+
+    LPITEMIDLIST parent_pidl = ILClone(pidl);
+    ILRemoveLastID(parent_pidl);
+    if (parent_pidl && parent_pidl->mkid.cb)
+    {
+        Desktop->BindToObject(parent_pidl, 0, IID_IShellFolder, (LPVOID *) &Parent);
+    }
+    else
+    {
+        Parent = Desktop;
+    }
+    if (parent_pidl)
+        ILFree(parent_pidl);
+
+    return Parent;
+}
+
 static inline HRESULT GetAttributesOf(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST ItemId, SFGAOF *Flags)
 {
     HRESULT    hr = NOERROR;
@@ -56,6 +81,7 @@ static inline bool IsFolder(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST I
 
 static inline CString GetStr(const CComPtr<IMalloc>& Malloc, LPCITEMIDLIST pidl, STRRET Str)
 {
+    // TODO Use StrRetToBuf
     CString ret;
     switch (Str.uType)
     {
@@ -147,6 +173,7 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
 	ON_WM_SETFOCUS()
     ON_NOTIFY(TVN_ITEMEXPANDING, ID_FILE_VIEW_TREE, OnItemExpanding)
     ON_NOTIFY(TVN_DELETEITEM, ID_FILE_VIEW_TREE, OnDeleteItem)
+    ON_NOTIFY(NM_DBLCLK, ID_FILE_VIEW_TREE, OnDblClick)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -237,11 +264,21 @@ void CFileView::FillFileView()
     TreeItem* ti = new TreeItem;
     ti->ItemId = nullptr;
 
+#if 0
     HRESULT    hr = NOERROR;
     hr = SHGetDesktopFolder(&ti->Parent);
     CString name = GetCLSIDName(TEXT("{00021400-0000-0000-C000-000000000046}"));
     if (name.IsEmpty())
         name = _T("Desktop");
+#else
+    HRESULT    hr = NOERROR;
+    LPITEMIDLIST    pIdl = nullptr;
+    hr = SHGetSpecialFolderLocation(GetSafeHwnd(), CSIDL_DRIVES, &pIdl);
+    ti->Parent = GetParentFolder(pIdl);
+    ti->ItemId = ILClone(ILFindLastID(pIdl));
+    CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
+    ILFree(pIdl);
+#endif
 
     TVINSERTSTRUCT tvis = {};
     tvis.hParent = TVI_ROOT;
@@ -467,5 +504,23 @@ void CFileView::OnDeleteItem(NMHDR* pHdr, LRESULT* pResult)
     if (ti->ItemId != nullptr)
         ILFree(ti->ItemId);
     delete ti;
+    *pResult = 0;
+}
+
+void CFileView::OnDblClick(NMHDR* /*pHdr*/, LRESULT* pResult)
+{
+    DWORD msgpos = GetMessagePos();
+    POINT pt;
+    POINTSTOPOINT(pt, msgpos);
+    m_wndFileView.ScreenToClient(&pt);
+
+    UINT nFlags = 0;
+    HTREEITEM hItem = m_wndFileView.HitTest(pt, &nFlags);
+    if (hItem != NULL && nFlags & TVHT_ONITEM)
+    {
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+        CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc, SHGDN_FORPARSING);
+        theApp.OpenDocumentFile(name);
+    }
     *pResult = 0;
 }
