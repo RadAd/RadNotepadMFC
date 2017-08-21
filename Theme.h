@@ -83,6 +83,7 @@ struct Theme
     std::vector<Style> vecBase;
     std::vector<KeywordClass> vecKeywordClass;
     std::map<CString, CString> mapExt;
+    std::map<CString, CString> mapExtFilter;
     std::vector<Language> vecLanguage;
 };
 

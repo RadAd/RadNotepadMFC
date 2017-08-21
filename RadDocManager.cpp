@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "RadDocManager.h"
+#include "RadNotepad.h"
+#include "MainFrm.h"
 
 
 CRadDocManager::CRadDocManager()
@@ -21,6 +23,27 @@ CDocument* CRadDocManager::GetActiveDocument()
         return pChild->GetActiveDocument();
     else
         return nullptr;
+}
+
+int CRadDocManager::GetModifiedDocumentCount() const
+{
+    int nModified = 0;
+    POSITION posTemplate = GetFirstDocTemplatePosition();
+    while (posTemplate != NULL)
+    {
+        CDocTemplate* pTemplate = (CDocTemplate*) GetNextDocTemplate(posTemplate);
+        ASSERT_KINDOF(CDocTemplate, pTemplate);
+        {
+            POSITION pos = pTemplate->GetFirstDocPosition();
+            while (pos != NULL)
+            {
+                CDocument* pDoc = pTemplate->GetNextDoc(pos);
+                if (pDoc->IsModified())
+                    ++nModified;
+            }
+        }
+    }
+    return nModified;
 }
 
 BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* /*pTemplate*/)
@@ -51,8 +74,13 @@ BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
         }
     }
 #endif
-    // TODO Set filters
-    strFilter += _T("CPP files|*.cpp;*.c;*.cc;*.h|");
+    const Theme* pTheme = &theApp.m_Settings.editor.rTheme;
+    for (auto el : pTheme->mapExtFilter)
+    {
+        const Language* pLanguage = GetLanguage(pTheme, el.first);
+        if (pLanguage != nullptr)
+            strFilter +=  pLanguage->title + _T('|') + el.second + _T("|");
+    }
 
     // append the "*.*" all files filter
     CString allFilter;
@@ -92,4 +120,42 @@ BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
     INT_PTR nResult = dlgFile.DoModal();
     fileName.ReleaseBuffer();
     return nResult == IDOK;
+}
+
+BOOL CRadDocManager::SaveAllModified()
+{
+    //return CDocManager::SaveAllModified();
+    int nModified = GetModifiedDocumentCount();
+
+    if (nModified == 1)
+        return CDocManager::SaveAllModified();
+    else if (nModified > 0)
+    {
+        // TODO Need a better dialog
+        CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+        return pMainWnd->DoWindowsDialog() == IDOK;
+    }
+    else
+        return TRUE;
+}
+
+void CRadDocManager::SaveAll()
+{
+    // Like CDocManager::SaveAllModified() but saves instead of querying user to save
+
+    POSITION posTemplate = GetFirstDocTemplatePosition();
+    while (posTemplate != NULL)
+    {
+        CDocTemplate* pTemplate = (CDocTemplate*) GetNextDocTemplate(posTemplate);
+        ASSERT_KINDOF(CDocTemplate, pTemplate);
+        {
+            POSITION pos = pTemplate->GetFirstDocPosition();
+            while (pos != NULL)
+            {
+                CDocument* pDoc = pTemplate->GetNextDoc(pos);
+                if (pDoc->IsModified())
+                    pDoc->DoFileSave();
+            }
+        }
+    }
 }

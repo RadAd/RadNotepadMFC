@@ -234,27 +234,6 @@ int CRadNotepadApp::ExitInstance()
 	return CWinAppEx::ExitInstance();
 }
 
-int CRadNotepadApp::GetModifiedDocumentCount() const
-{
-    int nModified = 0;
-    POSITION posTemplate = m_pDocManager->GetFirstDocTemplatePosition();
-    while (posTemplate != NULL)
-    {
-        CDocTemplate* pTemplate = (CDocTemplate*) m_pDocManager->GetNextDocTemplate(posTemplate);
-        ASSERT_KINDOF(CDocTemplate, pTemplate);
-        {
-            POSITION pos = pTemplate->GetFirstDocPosition();
-            while (pos != NULL)
-            {
-                CDocument* pDoc = pTemplate->GetNextDoc(pos);
-                if (pDoc->IsModified())
-                    ++nModified;
-            }
-        }
-    }
-    return nModified;
-}
-
 // CRadNotepadApp message handlers
 
 
@@ -283,24 +262,6 @@ void CRadNotepadApp::SaveCustomState()
 
 // CRadNotepadApp message handlers
 
-BOOL CRadNotepadApp::SaveAllModified()
-{
-    //return CWinAppEx::SaveAllModified();
-    int nModified = GetModifiedDocumentCount();
-
-    if (nModified == 1)
-        return CWinAppEx::SaveAllModified();
-    else if (nModified > 0)
-    {
-        // TODO Need a better dialog
-        CMainFrame* pMainWnd = (CMainFrame*) m_pMainWnd;
-        return pMainWnd->DoWindowsDialog() == IDOK;
-    }
-    else
-        return TRUE;
-}
-
-
 void CRadNotepadApp::OnFileCloseAll()
 {
     CloseAllDocuments(FALSE);
@@ -313,24 +274,12 @@ void CRadNotepadApp::OnUpdateFileCloseAll(CCmdUI *pCmdUI)
 
 void CRadNotepadApp::OnFileSaveAll()
 {
-    POSITION posTemplate = m_pDocManager->GetFirstDocTemplatePosition();
-    while (posTemplate != NULL)
-    {
-        CDocTemplate* pTemplate = (CDocTemplate*) m_pDocManager->GetNextDocTemplate(posTemplate);
-        ASSERT_KINDOF(CDocTemplate, pTemplate);
-        {
-            POSITION pos = pTemplate->GetFirstDocPosition();
-            while (pos != NULL)
-            {
-                CDocument* pDoc = pTemplate->GetNextDoc(pos);
-                if (pDoc->IsModified())
-                    pDoc->DoFileSave();
-            }
-        }
-    }
+    CRadDocManager* pDocManager = DYNAMIC_DOWNCAST(CRadDocManager, m_pDocManager);
+    pDocManager->SaveAll();
 }
 
 void CRadNotepadApp::OnUpdateFileSaveAll(CCmdUI *pCmdUI)
 {
-    pCmdUI->Enable(GetModifiedDocumentCount() > 0);
+    CRadDocManager* pDocManager = DYNAMIC_DOWNCAST(CRadDocManager, m_pDocManager);
+    pCmdUI->Enable(pDocManager->GetModifiedDocumentCount() > 0);
 }

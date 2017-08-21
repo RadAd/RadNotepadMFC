@@ -196,7 +196,7 @@ BEGIN
         MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
         MENUITEM SEPARATOR
         MENUITEM "Select &All\tCtrl+A",         ID_EDIT_SELECT_ALL
-        MENUITEM "&Goto Line\tCtrl+G",          ID_EDIT_GOTOLINE
+        MENUITEM "&Goto Line...\tCtrl+G",       ID_EDIT_GOTOLINE
         MENUITEM SEPARATOR
         MENUITEM "&Find...\tCtrl+F",            ID_EDIT_FIND
         MENUITEM "Find Next\tF3",               ID_EDIT_REPEAT

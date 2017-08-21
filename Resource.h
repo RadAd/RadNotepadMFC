@@ -73,7 +73,6 @@
 #define IDR_SCHEME_MASTER               312
 #define IDR_EXTMAP                      314
 #define IDC_LINE                        1000
-#define ID_EDIT_FINDNEXT                32779
 #define ID_FILE_REVERT                  32784
 #define ID_VIEW_LINENUMBERS             32785
 #define ID_VIEW_BOOKMARKS               32786

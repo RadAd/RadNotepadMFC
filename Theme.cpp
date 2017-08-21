@@ -101,6 +101,16 @@ const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt)
         return GetLanguage(pTheme, it->second);
 }
 
+void AddExt(Theme* pTheme, const CString& ext, const CString& lexer)
+{
+    pTheme->mapExt[ext] = lexer;
+
+    CString& filter = pTheme->mapExtFilter[lexer];
+    if (!filter.IsEmpty())
+        filter += _T(';');
+    filter += ext;
+}
+
 void InitTheme(Theme* pTheme)
 {
     pTheme->tDefault = { COLOR_BLACK, COLOR_WHITE, Font(-13, _T("Consolas")) };
@@ -748,7 +758,7 @@ void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Langua
             {
                 const TCHAR* equals = wcschr(line, _T('='));
                 if (equals != nullptr)
-                    pTheme->mapExt[CString(line, (int) (equals - line)).Trim().MakeLower()] = CString(equals + 1).Trim().MakeLower();
+                    AddExt(pTheme, CString(line, (int) (equals - line)).Trim().MakeLower(), CString(equals + 1).Trim().MakeLower());
             }
             fclose(f);
         }
@@ -831,7 +841,7 @@ BOOL CALLBACK EnumResExtMapProc(
             const char* end = strchr(equals != nullptr ? equals : begin, _T('\n'));
 
             if (equals != nullptr)
-                pData->pTheme->mapExt[CString(begin, (int) (equals - begin)).Trim().MakeLower()] = CString(equals + 1, (int) (end - equals - 1)).Trim().MakeLower();
+                AddExt(pData->pTheme, CString(begin, (int) (equals - begin)).Trim().MakeLower(), CString(equals + 1, (int) (end - equals - 1)).Trim().MakeLower());
 
             nSize -= (int) (end - str + 1);
             str = end + 1;
