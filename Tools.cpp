@@ -1,15 +1,146 @@
 #include "stdafx.h"
 #include "Tools.h"
 #include "OutputWnd.h"
+#import <MSXML6.dll> exclude("ISequentialStream", "_FILETIME")
 
 // TODO
-// Load from registry
 // Save before execute
 // Stop too many outputting to the same window at the same time
 
+inline bool operator==(const _bstr_t& s1, LPCWSTR s2)
+{
+    return wcscmp(s1, s2) == 0;
+}
+
+inline bool isnull(LPCWSTR s)
+{
+    return s == nullptr;
+}
+
+inline _bstr_t GetAttribute(MSXML2::IXMLDOMNode* pXMLNode, LPCWSTR name)
+{
+    MSXML2::IXMLDOMNamedNodeMapPtr pXMLAttributes(pXMLNode->Getattributes());
+
+    MSXML2::IXMLDOMNodePtr pXMLAttr(pXMLAttributes->getNamedItem(const_cast<LPWSTR>(name)));
+
+    _bstr_t bstrAttrValue;
+    if (pXMLAttr)
+        bstrAttrValue = pXMLAttr->Gettext();
+    //pXMLAttr->GetnodeValue();   // TODO Use this instead???
+
+    return bstrAttrValue;
+}
+
+inline _bstr_t GetElementText(MSXML2::IXMLDOMNode* pXMLNode, LPCWSTR name)
+{
+    MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLNode->selectSingleNode(name));
+
+    _bstr_t bstrText;
+
+    if (pXMLChildNode != nullptr)
+        bstrText = pXMLChildNode->Gettext();
+
+    return bstrText;
+}
+
+void ProcessTools(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Tool>& rTools)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"tool")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t cmd = GetElementText(pXMLChildNode, _T("cmd"));
+                _bstr_t icon = GetElementText(pXMLChildNode, _T("icon"));
+                _bstr_t param = GetElementText(pXMLChildNode, _T("param"));
+                _bstr_t capture = GetAttribute(pXMLChildNode, _T("capture"));
+
+                if (isnull(name))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else if (isnull(cmd))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing cmd: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else
+                {
+                    rTools.push_back(Tool((LPCTSTR) name, (LPCTSTR) cmd, (LPCTSTR) param));
+                    Tool& tool(rTools.back());
+
+                    TCHAR strIcon[MAX_PATH];
+                    int nIcon = 1;
+                    if (!isnull(icon))
+                    {
+                        wcscpy_s(strIcon, icon);
+                        nIcon = PathParseIconLocation(strIcon);
+                    }
+                    else
+                        wcscpy_s(strIcon, tool.cmd);
+                    ExtractIconEx(strIcon, 0, nullptr, &tool.hIcon, nIcon);
+                    if (!isnull(capture) && capture == L"true")
+                        tool.bCapture = TRUE;
+                }
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
+        }
+    }
+}
+
+void LoadTools(LPCTSTR strToolFile, std::vector<Tool>& rTools)
+{
+    MSXML2::IXMLDOMDocumentPtr pDoc(__uuidof(MSXML2::DOMDocument60));
+    pDoc->Putasync(VARIANT_FALSE);
+    pDoc->PutvalidateOnParse(VARIANT_FALSE);
+    pDoc->PutresolveExternals(VARIANT_FALSE);
+    pDoc->PutpreserveWhiteSpace(VARIANT_TRUE);
+
+    VARIANT_BOOL varStatus = pDoc->load((LPCTSTR) strToolFile);
+    if (varStatus == VARIANT_TRUE)
+    {
+        MSXML2::IXMLDOMElementPtr pXMLRoot(pDoc->GetdocumentElement());
+        ProcessTools(pXMLRoot, rTools);
+    }
+    else
+    {
+        MSXML2::IXMLDOMParseErrorPtr pXMLErr(pDoc->GetparseError());
+
+        CString msg;
+        msg.Format(_T("%s(%ld, %ld): Code: 0x%x - %s\n"), strToolFile, pXMLErr->line, pXMLErr->linepos, pXMLErr->errorCode, (LPCTSTR) pXMLErr->reason);
+        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+    }
+}
+
+void LoadToolDirectory(LPCTSTR strDirectory, std::vector<Tool>& rTools)
+{
+    TCHAR full[_MAX_PATH];
+
+    PathCombine(full, strDirectory, _T("tools.dat"));
+    if (PathFileExists(full))
+        LoadTools(full, rTools);
+}
+
 void InitTools(std::vector<Tool>& rTools)
 {
-    // TODO Load form registry
+#if 0
     rTools.push_back(Tool(_T("Run"), _T("{file}")));
     rTools.push_back(Tool(_T("CMD"), _T("cmd.exe")));
     rTools.push_back(Tool(_T("Explorer"), _T("explorer.exe"), _T("/select,\"{file}\"")));
@@ -37,9 +168,22 @@ void InitTools(std::vector<Tool>& rTools)
             SHGetFileInfo(exe, 0, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
             t.hIcon = fi.hIcon;
         }
-#endif
     }
+#endif
+#else
+    HMODULE hModule = NULL;
+    TCHAR exepath[_MAX_PATH];
+
+    GetModuleFileName(hModule, exepath, MAX_PATH);
+    PathFindFileName(exepath)[0] = _T('\0');
+    LoadToolDirectory(exepath, rTools);
+#if 0
+    PathCombine(exepath, exepath, _T("..\\.."));
+    LoadToolDirectory(exepath, rTools);
+#endif
+#endif
 }
+
 struct CaptureOutputData
 {
     HANDLE hProcess;
