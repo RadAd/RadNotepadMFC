@@ -54,8 +54,6 @@
 #define IDB_SORT_24                     172
 #define IDR_POPUP_SORT                  173
 #define IDR_POPUP_EXPLORER              174
-#define IDB_FILE_VIEW                   175
-#define IDB_FILE_VIEW_24                176
 #define IDB_CLASS_VIEW                  177
 #define IDB_CLASS_VIEW_24               178
 #define IDR_MENU_IMAGES                 179

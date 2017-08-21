@@ -64,10 +64,6 @@ IDR_SORT                BITMAP                  "res\\sort.bmp"
 
 IDB_SORT_24             BITMAP                  "res\\sort_hc.bmp"
 
-IDB_FILE_VIEW           BITMAP                  "res\\fileview.bmp"
-
-IDB_FILE_VIEW_24        BITMAP                  "res\\fileview_hc.bmp"
-
 IDB_CLASS_VIEW          BITMAP                  "res\\classview.bmp"
 
 IDB_CLASS_VIEW_24       BITMAP                  "res\\classview_hc.bmp"

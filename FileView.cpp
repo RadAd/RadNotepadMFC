@@ -11,15 +11,125 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+#define ID_FILE_VIEW_TREE 4
+
+struct TreeItem
+{
+    CComPtr<IShellFolder>     Parent;
+    LPITEMIDLIST    ItemId;
+};
+
+static inline CString GetCLSIDName(const wchar_t* path)
+{
+    CRegKey reg, object;
+    reg.Open(HKEY_CLASSES_ROOT, TEXT("CLSID"), KEY_READ);
+#if UNICODE
+    object.Open(reg, path, KEY_READ);
+#else
+    object.Open(reg, ToTString(path).c_str(), KEY_READ);
+#endif
+    CString value;
+    if (object.m_hKey != NULL)
+    {
+        ULONG nLength = 0;
+        object.QueryStringValue((TCHAR*) nullptr, nullptr, &nLength);
+        object.QueryStringValue((TCHAR*) nullptr, value.GetBufferSetLength(nLength), &nLength);
+        value.ReleaseBuffer();
+    }
+    return value;
+}
+
+static inline HRESULT GetAttributesOf(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST ItemId, SFGAOF *Flags)
+{
+    HRESULT    hr = NOERROR;
+    LPCITEMIDLIST    IdList[1] = { ItemId };
+    hr = Parent->GetAttributesOf(1, IdList, Flags);
+    return hr;
+}
+
+static inline bool IsFolder(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST ItemId)
+{
+    SFGAOF Flags = SHCIDS_BITMASK;
+    GetAttributesOf(Parent, ItemId, &Flags);
+    return ((Flags & SFGAO_FOLDER) || (Flags & SFGAO_HASSUBFOLDER));
+}
+
+static inline CString GetStr(const CComPtr<IMalloc>& Malloc, LPCITEMIDLIST pidl, STRRET Str)
+{
+    CString ret;
+    switch (Str.uType)
+    {
+    case STRRET_CSTR:
+        //ret = ToTString(Str.cStr);
+        ret = Str.cStr;
+        break;
+
+    case STRRET_OFFSET:
+        //ret = ToTString((char *) pidl + Str.uOffset);
+        ret = (char *) pidl + Str.uOffset;
+        break;
+
+    case STRRET_WSTR:
+        {
+            //ret = ToTString(Str.pOleStr);
+            ret = Str.pOleStr;
+            Malloc->Free(Str.pOleStr);
+        }
+        break;
+
+    default:
+        break;
+    }
+    return ret;
+}
+
+static inline CString GetDisplayNameOf(const CComPtr<IShellFolder>& Folder, LPCITEMIDLIST ItemId, const CComPtr<IMalloc>& Malloc, SHGDNF Flags = SHGDN_NORMAL)
+{
+    STRRET    Name = {};
+    HRESULT hr = Folder->GetDisplayNameOf(ItemId, Flags, &Name);
+    if (SUCCEEDED(hr))
+        return GetStr(Malloc, ItemId, Name);
+    else
+        return CString();
+}
+
+static inline int Compare(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST ItemId1, LPCITEMIDLIST ItemId2, const CComPtr<IMalloc>& Malloc)
+{
+    bool isFolder1 = IsFolder(Parent, ItemId1);
+    bool isFolder2 = IsFolder(Parent, ItemId2);
+
+#ifdef _DEBUG
+    CString lName = GetDisplayNameOf(Parent, ItemId1, Malloc);
+    CString rName = GetDisplayNameOf(Parent, ItemId2, Malloc);
+#endif
+
+    int res = 0;
+    if (isFolder1 == isFolder2)
+    {
+        HRESULT hr = Parent->CompareIDs(0, ItemId1, ItemId2);
+        res = (short) HRESULT_CODE(hr);
+        //res = _tcsicmp(lName.c_str(), rName.c_str());
+    }
+    else
+        res = isFolder2 - isFolder1;
+    return res;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CFileView
 
 CFileView::CFileView()
 {
+    HRESULT    hr = NOERROR;
+    hr = SHGetMalloc(&m_Malloc);
+    HIMAGELIST ImlLarge, ImlSmall;
+    Shell_GetImageLists(&ImlLarge, &ImlSmall);
+    m_FileViewImages.Attach(ImlSmall);
 }
 
 CFileView::~CFileView()
 {
+    m_FileViewImages.Detach();
 }
 
 BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
@@ -35,6 +145,8 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
 	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
 	ON_WM_PAINT()
 	ON_WM_SETFOCUS()
+    ON_NOTIFY(TVN_ITEMEXPANDING, ID_FILE_VIEW_TREE, OnItemExpanding)
+    ON_NOTIFY(TVN_DELETEITEM, ID_FILE_VIEW_TREE, OnDeleteItem)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -51,15 +163,14 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Create view:
 	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS;
 
-	if (!m_wndFileView.Create(dwViewStyle, rectDummy, this, 4))
+	if (!m_wndFileView.Create(dwViewStyle, rectDummy, this, ID_FILE_VIEW_TREE))
 	{
 		TRACE0("Failed to create file view\n");
 		return -1;      // fail to create
 	}
 
 	// Load view images:
-	m_FileViewImages.Create(IDB_FILE_VIEW, 16, 0, RGB(255, 0, 255));
-	m_wndFileView.SetImageList(&m_FileViewImages, TVSIL_NORMAL);
+    m_wndFileView.SetImageList(&m_FileViewImages, TVSIL_NORMAL);
 
 	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_EXPLORER);
 	m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);
@@ -90,6 +201,7 @@ void CFileView::OnSize(UINT nType, int cx, int cy)
 
 void CFileView::FillFileView()
 {
+#if 0
 	HTREEITEM hRoot = m_wndFileView.InsertItem(_T("FakeApp files"), 0, 0);
 	m_wndFileView.SetItemState(hRoot, TVIS_BOLD, TVIS_BOLD);
 
@@ -121,6 +233,103 @@ void CFileView::FillFileView()
 	m_wndFileView.Expand(hRoot, TVE_EXPAND);
 	m_wndFileView.Expand(hSrc, TVE_EXPAND);
 	m_wndFileView.Expand(hInc, TVE_EXPAND);
+#else
+    TreeItem* ti = new TreeItem;
+    ti->ItemId = nullptr;
+
+    HRESULT    hr = NOERROR;
+    hr = SHGetDesktopFolder(&ti->Parent);
+    CString name = GetCLSIDName(TEXT("{00021400-0000-0000-C000-000000000046}"));
+    if (name.IsEmpty())
+        name = _T("Desktop");
+
+    TVINSERTSTRUCT tvis = {};
+    tvis.hParent = TVI_ROOT;
+    tvis.hInsertAfter = TVI_LAST;
+    tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_CHILDREN | TVIF_PARAM;
+    tvis.item.pszText = (LPTSTR) (LPCTSTR) name;
+    tvis.item.iImage = SHMapPIDLToSystemImageListIndex(ti->Parent, ti->ItemId, &tvis.item.iSelectedImage);
+    //tvis.item.iSelectedImage = tvis.item.iImage;
+    tvis.item.cChildren = IsFolder(ti->Parent, ti->ItemId) ? 1 : 0;
+    tvis.item.lParam = (LPARAM) ti;
+
+    HTREEITEM hRoot = m_wndFileView.InsertItem(&tvis);
+    m_wndFileView.Expand(hRoot, TVE_EXPAND);
+#endif
+}
+
+void CFileView::InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent)
+{
+    CWaitCursor wc;
+
+    bool children = false;
+    CComPtr<IEnumIDList>    EnumIDList;
+    HRESULT hr = Folder->EnumObjects(NULL, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &EnumIDList);
+
+    if (!!EnumIDList)
+    {
+        while (SUCCEEDED(hr) && (hr != S_FALSE))
+        {
+            LPITEMIDLIST    ItemId = NULL;
+            hr = EnumIDList->Next(1, &ItemId, NULL);
+            if (ItemId)
+            {
+                children = true;
+#ifdef _DEBUG
+                CString name = GetDisplayNameOf(Folder, ItemId, m_Malloc);
+#endif
+                InsertChild(hParent, Folder, ItemId);
+            }
+        }
+    }
+
+    if (!children)
+    {
+        TVITEM item = {};
+        item.hItem = hParent;
+        item.mask = TVIF_CHILDREN;
+        m_wndFileView.SetItem(&item);
+    }
+}
+
+HTREEITEM CFileView::InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, LPITEMIDLIST ItemId)
+{
+    TreeItem* ti = new TreeItem;
+    ti->Parent = folder;
+    ti->ItemId = ItemId;
+
+    CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
+
+    TVINSERTSTRUCT tvis = {};
+    tvis.hParent = hParent;
+    tvis.hInsertAfter = FindSortedPos(hParent, ti);
+    //tvis.hInsertAfter = TVI_LAST;
+    tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_CHILDREN | TVIF_PARAM;
+    tvis.item.pszText = (LPTSTR) (LPCTSTR) name;
+    tvis.item.iImage = SHMapPIDLToSystemImageListIndex(ti->Parent, ti->ItemId, &tvis.item.iSelectedImage);
+    //tvis.item.iSelectedImage = tvis.item.iImage;
+    tvis.item.cChildren = IsFolder(ti->Parent, ti->ItemId) ? 1 : 0;
+    tvis.item.lParam = (LPARAM) ti;
+
+    return m_wndFileView.InsertItem(&tvis);
+}
+
+HTREEITEM CFileView::FindSortedPos(HTREEITEM hParent, const TreeItem* tir)
+{
+    HTREEITEM hLastChild = TVI_FIRST;
+    HTREEITEM hChild = m_wndFileView.GetChildItem(hParent);
+    while (hChild != NULL)
+    {
+        const TreeItem* til = (TreeItem*)  m_wndFileView.GetItemData(hChild);
+        //ASSERT(til->Parent == tir->Parent);
+
+        if (Compare(til->Parent, til->ItemId, tir->ItemId, m_Malloc) > 0)
+            return hLastChild;
+
+        hLastChild = hChild;
+        hChild = m_wndFileView.GetNextSiblingItem(hChild);
+    }
+    return TVI_LAST;
 }
 
 void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
@@ -227,30 +436,36 @@ void CFileView::OnChangeVisualStyle()
 {
 	m_wndToolBar.CleanUpLockedImages();
 	m_wndToolBar.LoadBitmap(theApp.m_bHiColorIcons ? IDB_EXPLORER_24 : IDR_EXPLORER, 0, 0, TRUE /* Locked */);
-
-	m_FileViewImages.DeleteImageList();
-
-	UINT uiBmpId = theApp.m_bHiColorIcons ? IDB_FILE_VIEW_24 : IDB_FILE_VIEW;
-
-	CBitmap bmp;
-	if (!bmp.LoadBitmap(uiBmpId))
-	{
-		TRACE(_T("Can't load bitmap: %x\n"), uiBmpId);
-		ASSERT(FALSE);
-		return;
-	}
-
-	BITMAP bmpObj;
-	bmp.GetBitmap(&bmpObj);
-
-	UINT nFlags = ILC_MASK;
-
-	nFlags |= (theApp.m_bHiColorIcons) ? ILC_COLOR24 : ILC_COLOR4;
-
-	m_FileViewImages.Create(16, bmpObj.bmHeight, nFlags, 0, 0);
-	m_FileViewImages.Add(&bmp, RGB(255, 0, 255));
-
-	m_wndFileView.SetImageList(&m_FileViewImages, TVSIL_NORMAL);
 }
 
+void CFileView::OnItemExpanding(NMHDR* pHdr, LRESULT* pResult)
+{
+    LPNMTREEVIEW ntv = (LPNMTREEVIEW) pHdr;
 
+    if (m_wndFileView.GetChildItem(ntv->itemNew.hItem) == NULL)
+    {
+        CComPtr<IShellFolder>    Folder;
+        {
+            TreeItem* ti = (TreeItem*) ntv->itemNew.lParam;
+            if (ti->ItemId == nullptr)
+                Folder = ti->Parent;
+            else
+                ti->Parent->BindToObject(ti->ItemId, 0, IID_IShellFolder, (LPVOID *) &Folder);
+        }
+
+        if (!!Folder)
+            InsertChildren(Folder, ntv->itemNew.hItem);
+    }
+
+    *pResult = 0;
+}
+
+void CFileView::OnDeleteItem(NMHDR* pHdr, LRESULT* pResult)
+{
+    LPNMTREEVIEW ntv = (LPNMTREEVIEW) pHdr;
+    TreeItem* ti = (TreeItem*) ntv->itemOld.lParam;
+    if (ti->ItemId != nullptr)
+        ILFree(ti->ItemId);
+    delete ti;
+    *pResult = 0;
+}

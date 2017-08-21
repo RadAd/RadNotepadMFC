@@ -3,6 +3,8 @@
 
 #include "ViewTree.h"
 
+struct TreeItem;
+
 class CFileViewToolBar : public CMFCToolBar
 {
 	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
@@ -24,13 +26,16 @@ public:
 
 // Attributes
 protected:
-
+    CComPtr<IMalloc> m_Malloc;
 	CViewTree m_wndFileView;
 	CImageList m_FileViewImages;
 	CFileViewToolBar m_wndToolBar;
 
 protected:
 	void FillFileView();
+    void InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent);
+    HTREEITEM InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, LPITEMIDLIST ItemId);
+    HTREEITEM FindSortedPos(HTREEITEM hParent, const TreeItem* tir);
 
 // Implementation
 public:
@@ -49,6 +54,8 @@ protected:
 	afx_msg void OnEditClear();
 	afx_msg void OnPaint();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
+    afx_msg void OnItemExpanding(NMHDR* pHdr, LRESULT* pResult);
+    afx_msg void OnDeleteItem(NMHDR* pHdr, LRESULT* pResult);
 
 	DECLARE_MESSAGE_MAP()
 };
