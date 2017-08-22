@@ -33,6 +33,7 @@ protected:
 
 protected:
 	void FillFileView();
+    void InsertChildren(HTREEITEM hNode, TreeItem* ti);
     void InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent);
     HTREEITEM InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, LPITEMIDLIST ItemId);
     HTREEITEM FindSortedPos(HTREEITEM hParent, const TreeItem* tir);
@@ -46,6 +47,7 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnProperties();
+    afx_msg void OnSync();
 	afx_msg void OnFileOpen();
 	afx_msg void OnFileOpenWith();
 	afx_msg void OnDummyCompile();

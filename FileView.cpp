@@ -4,6 +4,7 @@
 #include "FileView.h"
 #include "Resource.h"
 #include "RadNotepad.h"
+#include "RadDocManager.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -163,7 +164,8 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
 	ON_WM_SIZE()
 	ON_WM_CONTEXTMENU()
 	ON_COMMAND(ID_PROPERTIES, OnProperties)
-	ON_COMMAND(ID_OPEN, OnFileOpen)
+    ON_COMMAND(ID_SYNC, OnSync)
+    ON_COMMAND(ID_OPEN, OnFileOpen)
 	ON_COMMAND(ID_OPEN_WITH, OnFileOpenWith)
 	ON_COMMAND(ID_DUMMY_COMPILE, OnDummyCompile)
 	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
@@ -295,6 +297,21 @@ void CFileView::FillFileView()
 #endif
 }
 
+void CFileView::InsertChildren(HTREEITEM hNode, TreeItem* ti)
+{
+    if (m_wndFileView.GetChildItem(hNode) == NULL)
+    {
+        CComPtr<IShellFolder>    Folder;
+        if (ti->ItemId == nullptr)
+            Folder = ti->Parent;
+        else
+            ti->Parent->BindToObject(ti->ItemId, 0, IID_IShellFolder, (LPVOID *) &Folder);
+
+        if (!!Folder)
+            InsertChildren(Folder, hNode);
+    }
+}
+
 void CFileView::InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent)
 {
     CWaitCursor wc;
@@ -416,8 +433,53 @@ void CFileView::AdjustLayout()
 
 void CFileView::OnProperties()
 {
-	AfxMessageBox(_T("Properties...."));
+    AfxMessageBox(_T("Properties...."));
+}
 
+void CFileView::OnSync()
+{
+    CDocument* pDoc = CRadDocManager::GetActiveDocument();
+    if (pDoc != nullptr)
+    {
+        const CString& path = pDoc->GetPathName();
+        LPITEMIDLIST pidl = nullptr;
+        HRESULT hr = SHParseDisplayName(path, NULL, &pidl, 0, 0);
+
+        HTREEITEM hNode = m_wndFileView.GetRootItem();
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hNode);
+        if (ILIsParent(ti->ItemId, pidl, FALSE))
+        {
+            LPITEMIDLIST parentpidl = ILClone(ti->ItemId);
+            HTREEITEM hChild = m_wndFileView.GetChildItem(hNode);
+            while (hChild != NULL)
+            {
+                /*TreeItem**/ ti = (TreeItem*) m_wndFileView.GetItemData(hChild);
+                LPITEMIDLIST childpidl = ILCombine(parentpidl, ti->ItemId);
+                if (ILIsParent(childpidl, pidl, FALSE))
+                {
+                    m_wndFileView.Expand(hChild, TVE_EXPAND);
+                    //InsertChildren(hNode, ti);
+                    hNode = hChild;
+                    hChild = m_wndFileView.GetChildItem(hNode);
+                    parentpidl = childpidl;
+
+                    if (hChild == NULL && ILIsEqual(parentpidl, pidl))
+                    {
+                        m_wndFileView.Select(hNode, TVGN_CARET);
+                    }
+                }
+                else
+                {
+                    ILFree(childpidl);
+
+                    hChild = m_wndFileView.GetNextSiblingItem(hChild);
+                }
+            }
+            ILFree(parentpidl);
+        }
+
+        ILFree(pidl);
+    }
 }
 
 void CFileView::OnFileOpen()
@@ -478,22 +540,7 @@ void CFileView::OnChangeVisualStyle()
 void CFileView::OnItemExpanding(NMHDR* pHdr, LRESULT* pResult)
 {
     LPNMTREEVIEW ntv = (LPNMTREEVIEW) pHdr;
-
-    if (m_wndFileView.GetChildItem(ntv->itemNew.hItem) == NULL)
-    {
-        CComPtr<IShellFolder>    Folder;
-        {
-            TreeItem* ti = (TreeItem*) ntv->itemNew.lParam;
-            if (ti->ItemId == nullptr)
-                Folder = ti->Parent;
-            else
-                ti->Parent->BindToObject(ti->ItemId, 0, IID_IShellFolder, (LPVOID *) &Folder);
-        }
-
-        if (!!Folder)
-            InsertChildren(Folder, ntv->itemNew.hItem);
-    }
-
+    InsertChildren(ntv->itemNew.hItem, (TreeItem*) ntv->itemNew.lParam);
     *pResult = 0;
 }
 

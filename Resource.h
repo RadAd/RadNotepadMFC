@@ -106,6 +106,7 @@
 #define ID_VIEW_SCHEMENONE              32837
 #define ID_VIEW_DOCKINGWINDOWS          32838
 #define ID_DOCKINGWINDOWS               32839
+#define ID_SYNC                         32846
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -114,7 +115,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        315
-#define _APS_NEXT_COMMAND_VALUE         32840
+#define _APS_NEXT_COMMAND_VALUE         32848
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
