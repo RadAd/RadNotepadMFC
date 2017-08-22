@@ -26,7 +26,6 @@ public:
 	virtual int ExitInstance();
 
 // Implementation
-	BOOL  m_bHiColorIcons;
     HMODULE m_hSciDLL;
     Settings m_Settings;
     std::vector<Tool> m_Tools;

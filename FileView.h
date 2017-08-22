@@ -22,7 +22,6 @@ public:
 	CFileView();
 
 	void AdjustLayout();
-	void OnChangeVisualStyle();
 
 // Attributes
 protected:

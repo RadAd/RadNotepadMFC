@@ -59,7 +59,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 	BOOL CreateDockingWindows();
-	void SetDockingWindowIcons(BOOL bHiColorIcons);
+	void SetDockingWindowIcons();
     afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
 public:

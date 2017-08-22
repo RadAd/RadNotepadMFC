@@ -64,7 +64,6 @@ END_MESSAGE_MAP()
 
 CRadNotepadApp::CRadNotepadApp()
 {
-	m_bHiColorIcons = TRUE;
     m_hSciDLL = NULL;
 
 	// support Restart Manager

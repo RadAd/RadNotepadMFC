@@ -84,7 +84,7 @@ int CClassView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_SORT);
 	m_wndToolBar.LoadToolBar(IDR_SORT, 0, 0, TRUE /* Is locked */);
 
-	OnChangeVisualStyle();
+    LoadClassViewImages();
 
 	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
 	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
@@ -291,11 +291,11 @@ void CClassView::OnSetFocus(CWnd* pOldWnd)
 	m_wndClassView.SetFocus();
 }
 
-void CClassView::OnChangeVisualStyle()
+void CClassView::LoadClassViewImages()
 {
 	m_ClassViewImages.DeleteImageList();
 
-	UINT uiBmpId = theApp.m_bHiColorIcons ? IDB_CLASS_VIEW_24 : IDB_CLASS_VIEW;
+	UINT uiBmpId = IDB_CLASS_VIEW;
 
 	CBitmap bmp;
 	if (!bmp.LoadBitmap(uiBmpId))
@@ -308,15 +308,8 @@ void CClassView::OnChangeVisualStyle()
 	BITMAP bmpObj;
 	bmp.GetBitmap(&bmpObj);
 
-	UINT nFlags = ILC_MASK;
-
-	nFlags |= (theApp.m_bHiColorIcons) ? ILC_COLOR24 : ILC_COLOR4;
-
-	m_ClassViewImages.Create(16, bmpObj.bmHeight, nFlags, 0, 0);
+	m_ClassViewImages.Create(16, bmpObj.bmHeight, ILC_MASK | ILC_COLOR24, 0, 0);
 	m_ClassViewImages.Add(&bmp, RGB(255, 0, 0));
 
 	m_wndClassView.SetImageList(&m_ClassViewImages, TVSIL_NORMAL);
-
-	m_wndToolBar.CleanUpLockedImages();
-	m_wndToolBar.LoadBitmap(theApp.m_bHiColorIcons ? IDB_SORT_24 : IDR_SORT, 0, 0, TRUE /* Locked */);
 }

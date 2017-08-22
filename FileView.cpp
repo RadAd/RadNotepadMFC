@@ -204,12 +204,8 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_EXPLORER);
 	m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);
 
-	OnChangeVisualStyle();
-
 	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-
 	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
-
 	m_wndToolBar.SetOwner(this);
 
 	// All commands will be routed via this control , not via the parent frame:
@@ -529,12 +525,6 @@ void CFileView::OnSetFocus(CWnd* pOldWnd)
 	CDockablePane::OnSetFocus(pOldWnd);
 
 	m_wndFileView.SetFocus();
-}
-
-void CFileView::OnChangeVisualStyle()
-{
-	m_wndToolBar.CleanUpLockedImages();
-	m_wndToolBar.LoadBitmap(theApp.m_bHiColorIcons ? IDB_EXPLORER_24 : IDR_EXPLORER, 0, 0, TRUE /* Locked */);
 }
 
 void CFileView::OnItemExpanding(NMHDR* pHdr, LRESULT* pResult)

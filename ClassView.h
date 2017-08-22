@@ -20,7 +20,7 @@ public:
 	virtual ~CClassView();
 
 	void AdjustLayout();
-	void OnChangeVisualStyle();
+	void LoadClassViewImages();
 
 protected:
 	CClassToolBar m_wndToolBar;
