@@ -128,6 +128,8 @@ static inline int Compare(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST Ite
 #ifdef _DEBUG
     CString lName = GetDisplayNameOf(Parent, ItemId1, Malloc);
     CString rName = GetDisplayNameOf(Parent, ItemId2, Malloc);
+#else
+    Malloc;
 #endif
 
     int res = 0;
@@ -439,7 +441,7 @@ void CFileView::OnSync()
     {
         const CString& path = pDoc->GetPathName();
         LPITEMIDLIST pidl = nullptr;
-        HRESULT hr = SHParseDisplayName(path, NULL, &pidl, 0, 0);
+        /*HRESULT hr =*/ SHParseDisplayName(path, NULL, &pidl, 0, 0);
 
         HTREEITEM hNode = m_wndFileView.GetRootItem();
         TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hNode);
