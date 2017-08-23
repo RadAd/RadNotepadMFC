@@ -7,6 +7,7 @@
 #include "ClassView.h"
 #include "OutputWnd.h"
 #include "PropertiesWnd.h"
+#include <vector>
 
 extern UINT NEAR WM_RADNOTEPAD;
 #define MSG_RADNOTEPAD 0xac20
@@ -23,6 +24,9 @@ public:
 // Operations
 public:
     INT_PTR DoWindowsDialog();
+    void ChildMDIActiviate(CWnd* pWndMDIChild);
+    void ChildMDIDesrtoyed(CWnd* pWndMDIChild);
+    void ChildMDINextWindow(CWnd* pWndMDIChild, BOOL bIsPrev);
 
 // Overrides
 public:
@@ -38,6 +42,8 @@ public:
 #endif
 
 protected:  // control bar embedded members
+    int m_PrevNext;
+    std::vector<CWnd*> m_MDIStack;
 	CMFCMenuBar       m_wndMenuBar;
 	CMFCToolBar       m_wndToolBar;
 	CMFCStatusBar     m_wndStatusBar;
@@ -66,6 +72,7 @@ public:
     afx_msg void OnToolsTool(UINT nID);
     afx_msg void OnUpdateToolsTool(CCmdUI *pCmdUI);
     afx_msg void OnUpdateDockingWindows(CCmdUI *pCmdUI);
+    virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 
 

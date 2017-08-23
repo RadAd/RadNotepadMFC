@@ -55,7 +55,7 @@ static UINT indicators[] =
 
 CMainFrame::CMainFrame()
 {
-	// TODO: add member initialization code here
+    m_PrevNext = -1;
 }
 
 CMainFrame::~CMainFrame()
@@ -546,4 +546,64 @@ void CMainFrame::OnUpdateDockingWindows(CCmdUI *pCmdUI)
             }
         }
     }
+}
+
+static void Erase(std::vector<CWnd*>& m_MDIStack, CWnd* pWndMDIChild)
+{
+    auto it = std::find(m_MDIStack.begin(), m_MDIStack.end(), pWndMDIChild);
+    if (it != m_MDIStack.end())
+        m_MDIStack.erase(it);
+}
+
+static void MoveToTop(std::vector<CWnd*>& m_MDIStack, CWnd* pWndMDIChild)
+{
+    Erase(m_MDIStack, pWndMDIChild);
+    m_MDIStack.insert(m_MDIStack.begin(), pWndMDIChild);
+}
+
+void CMainFrame::ChildMDIActiviate(CWnd* pWndMDIChild)
+{
+    if (m_PrevNext == -1)
+        MoveToTop(m_MDIStack, pWndMDIChild);
+}
+
+void CMainFrame::ChildMDIDesrtoyed(CWnd* pWndMDIChild)
+{
+    Erase(m_MDIStack, pWndMDIChild);
+}
+
+void CMainFrame::ChildMDINextWindow(CWnd* /*pWndMDIChild*/, BOOL bIsPrev)
+{
+    if (bIsPrev)
+    {
+        --m_PrevNext;
+        if (m_PrevNext < 0)
+            m_PrevNext = (int) m_MDIStack.size() - 1;
+    }
+    else
+    {
+        ++m_PrevNext;
+        if (m_PrevNext >= m_MDIStack.size())
+            m_PrevNext = 0;
+    }
+
+    CWnd* pWnd = m_MDIStack[m_PrevNext];
+    m_wndClientArea.SetActiveTab(pWnd->GetSafeHwnd());
+}
+
+BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
+{
+    if (pMsg->message == WM_KEYUP && pMsg->wParam == VK_CONTROL)
+    {
+        CWnd* pWnd = MDIGetActive();
+        if (pWnd != nullptr)
+            MoveToTop(m_MDIStack, MDIGetActive());
+        m_PrevNext = -1;
+    }
+    else if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_CONTROL)
+    {
+        m_PrevNext = 0;
+    }
+
+    return CMDIFrameWndEx::PreTranslateMessage(pMsg);
 }

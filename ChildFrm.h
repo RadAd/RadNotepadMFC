@@ -35,4 +35,8 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
     virtual void OnUpdateFrameTitle(BOOL bAddToTitle);
+public:
+    afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+    afx_msg void OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd);
+    afx_msg void OnDestroy();
 };

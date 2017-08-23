@@ -6,6 +6,7 @@
 #include "RadNotepad.h"
 
 #include "ChildFrm.h"
+#include "MainFrm.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -16,6 +17,9 @@
 IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWndEx)
 
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWndEx)
+    ON_WM_SYSCOMMAND()
+    ON_WM_MDIACTIVATE()
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 // CChildFrame construction/destruction
@@ -86,4 +90,50 @@ void CChildFrame::OnUpdateFrameTitle(BOOL bAddToTitle)
         DestroyIcon(SetIcon(hIcon, FALSE));
     }
     CMDIChildWndEx::OnUpdateFrameTitle(bAddToTitle);
+}
+
+void CChildFrame::OnSysCommand(UINT nID, LPARAM lParam)
+{
+    // TODO Would have been better to subclass the MDIClient
+    // and override WM_MDINEXT but it is already subclassed and
+    // I couldn't work out how to sublass again
+    switch (nID)
+    {
+    case SC_NEXTWINDOW:
+        {
+            CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+            pMainWnd->ChildMDINextWindow(this, FALSE);
+        }
+        break;
+
+    case SC_PREVWINDOW:
+        {
+            CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+            pMainWnd->ChildMDINextWindow(this, TRUE);
+        }
+        break;
+
+    default:
+        CMDIChildWndEx::OnSysCommand(nID, lParam);
+        break;
+    }
+}
+
+void CChildFrame::OnMDIActivate(BOOL bActivate, CWnd* pActivateWnd, CWnd* pDeactivateWnd)
+{
+    CMDIChildWndEx::OnMDIActivate(bActivate, pActivateWnd, pDeactivateWnd);
+
+    if (bActivate)
+    {
+        CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+        pMainWnd->ChildMDIActiviate(this);
+    }
+}
+
+void CChildFrame::OnDestroy()
+{
+    CMDIChildWndEx::OnDestroy();
+
+    CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    pMainWnd->ChildMDIDesrtoyed(this);
 }
