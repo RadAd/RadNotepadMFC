@@ -6,6 +6,7 @@
 #include "MainFrm.h"
 #include "RadNotepad.h"
 #include "RadDocManager.h"
+#include <algorithm>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -14,6 +15,8 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 // TODO A CMFCPropertyGridColorProperty which knows common color names
+
+#define ID_OBJECT_COMBO 100
 
 enum PropType
 {
@@ -350,6 +353,7 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
 	ON_WM_SETTINGCHANGE()
     ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
     ON_WM_DESTROY()
+    ON_CBN_SELCHANGE(ID_OBJECT_COMBO, OnComboSelChange)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -367,7 +371,7 @@ void CPropertiesWnd::AdjustLayout()
 
 	int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
 
-	//m_wndObjectCombo.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), m_nComboHeight, SWP_NOACTIVATE | SWP_NOZORDER);
+	m_wndObjectCombo.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), m_nComboHeight, SWP_NOACTIVATE | SWP_NOZORDER);
 	m_wndToolBar.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
 	m_wndPropList.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight + cyTlb, rectClient.Width(), rectClient.Height() -(m_nComboHeight+cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
 }
@@ -380,25 +384,36 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	CRect rectDummy;
 	rectDummy.SetRectEmpty();
 
-#if 0
 	// Create combo:
-	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | CBS_SORT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
+	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | WS_CLIPSIBLINGS | WS_CLIPCHILDREN;
 
-	if (!m_wndObjectCombo.Create(dwViewStyle, rectDummy, this, 1))
+	if (!m_wndObjectCombo.Create(dwViewStyle, rectDummy, this, ID_OBJECT_COMBO))
 	{
 		TRACE0("Failed to create Properties Combo \n");
 		return -1;      // fail to create
 	}
 
 	m_wndObjectCombo.AddString(_T("Application"));
-	m_wndObjectCombo.AddString(_T("Properties Window"));
+	m_wndObjectCombo.AddString(_T("Editor"));
+    {
+        std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+        std::vector<Language*> vecSortLanguage; // = vecLanguage;
+        for (Language& rLanguage : vecLanguage)
+            vecSortLanguage.push_back(&rLanguage);
+        std::sort(vecSortLanguage.begin(), vecSortLanguage.end(), CompareLanguageTitle);
+
+        for (Language* pLanguage : vecSortLanguage)
+        {
+            int i = m_wndObjectCombo.AddString(pLanguage->title);
+            m_wndObjectCombo.SetItemData(i, (DWORD_PTR) pLanguage);
+        }
+    }
 	m_wndObjectCombo.SetCurSel(0);
 
 	CRect rectCombo;
-	m_wndObjectCombo.GetClientRect (&rectCombo);
+	m_wndObjectCombo.GetClientRect(&rectCombo);
 
 	m_nComboHeight = rectCombo.Height();
-#endif
 
 	if (!m_wndPropList.Create(WS_VISIBLE | WS_CHILD, rectDummy, this, 2))
 	{
@@ -481,52 +496,98 @@ void CPropertiesWnd::InitPropList()
 	m_wndPropList.SetVSDotNetLook();
 	m_wndPropList.MarkModifiedProperties();
 
-    {
-        CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
-        pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
-        pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
-        pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, strEncoding, ARRAYSIZE(strEncoding)));
-        m_wndPropList.AddProperty(pGroup);
-    }
+    int i = m_wndObjectCombo.GetCurSel();
+    Language* pLanguage = (Language*) m_wndObjectCombo.GetItemDataPtr(i);
 
+    if (pLanguage != nullptr)
     {
-        CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
-        pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->editor.bUseTabs));
-        pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth, 1, 100));
-        pGroup->AddSubItem(CreateProperty(_T("Show Indent Guides"), &m_pSettings->editor.bShowIndentGuides));
-        pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
-        pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &m_pSettings->editor.bAutoIndent));
-        m_wndPropList.AddProperty(pGroup);
-    }
-
-    {
-        CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
-        pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &m_pSettings->editor.bShowLineNumbers));
-        pGroup->AddSubItem(CreateProperty(_T("Bookmarks"), &m_pSettings->editor.bShowBookmarks));
         {
-            CMFCPropertyGridProperty* pParent = pGroup;
-            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Fold Marker"), 0, TRUE);
-            pGroup->AddSubItem(CreateProperty(_T("Enabled"), &m_pSettings->editor.bShowFolds));
-            LPCTSTR n[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
-            pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nFoldType, n, ARRAYSIZE(n)));
-            pGroup->AddSubItem(CreateProperty(_T("Fold Background"), &m_pSettings->editor.cFoldBG));
-            pGroup->AddSubItem(CreateProperty(_T("Fold Foreground"), &m_pSettings->editor.cFoldFG));
-            pParent->AddSubItem(pGroup);
+            Theme* pTheme = &m_pSettings->editor.rTheme;
+            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Styles"));
+            for (Style& s : pLanguage->vecStyle)
+            {
+                const StyleClass* os = GetStyleClass(pTheme, s.sclass);
+                // TODO Need to support two levels of defaults
+                const ThemeItem* pDefault = os != nullptr ? &os->theme : &pTheme->tDefault;
+                pGroup->AddSubItem(CreateProperty(s.name, &s.theme, pDefault));
+            }
+            for (GroupStyle& gs : pLanguage->vecGroupStyle)
+            {
+                CMFCPropertyGridProperty* pParent = pGroup;
+                CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(gs.name);
+                for (Style& s : gs.vecStyle)
+                {
+                    const StyleClass* os = GetStyleClass(pTheme, s.sclass);
+                    // TODO Need to support two levels of defaults
+                    const ThemeItem* pDefault = os != nullptr ? &os->theme : &pTheme->tDefault;
+                    pGroup->AddSubItem(CreateProperty(s.name, &s.theme, pDefault));
+                }
+                pParent->AddSubItem(pGroup);
+            }
+            {
+                CMFCPropertyGridProperty* pParent = pGroup;
+                CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Common"));
+                for (Style& s : pTheme->vecBase)
+                {
+                    const StyleClass* os = GetStyleClass(pTheme, s.sclass);
+                    // TODO Need to support two levels of defaults
+                    const ThemeItem* pDefault = os != nullptr ? &os->theme : &pTheme->tDefault;
+                    pGroup->AddSubItem(CreateProperty(s.name, &s.theme, pDefault));
+                }
+                pParent->AddSubItem(pGroup);
+            }
+            m_wndPropList.AddProperty(pGroup);
+        }
+    }
+    else
+    {
+        {
+            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
+            pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
+            pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
+            pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, strEncoding, ARRAYSIZE(strEncoding)));
+            m_wndPropList.AddProperty(pGroup);
         }
 
-        m_wndPropList.AddProperty(pGroup);
-    }
-
-    {
-        Theme* pTheme = &m_pSettings->editor.rTheme;
-        CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
-        pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr));
-        for (StyleClass& sc : pTheme->vecStyleClass)
         {
-            if (!sc.description.IsEmpty())
-                pGroup1->AddSubItem(CreateProperty(sc.description, &sc.theme, &pTheme->tDefault));
+            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
+            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->editor.bUseTabs));
+            pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth, 1, 100));
+            pGroup->AddSubItem(CreateProperty(_T("Show Indent Guides"), &m_pSettings->editor.bShowIndentGuides));
+            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
+            pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &m_pSettings->editor.bAutoIndent));
+            m_wndPropList.AddProperty(pGroup);
         }
-        m_wndPropList.AddProperty(pGroup1);
+
+        {
+            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
+            pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &m_pSettings->editor.bShowLineNumbers));
+            pGroup->AddSubItem(CreateProperty(_T("Bookmarks"), &m_pSettings->editor.bShowBookmarks));
+            {
+                CMFCPropertyGridProperty* pParent = pGroup;
+                CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Fold Marker"), 0, TRUE);
+                pGroup->AddSubItem(CreateProperty(_T("Enabled"), &m_pSettings->editor.bShowFolds));
+                LPCTSTR n[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nFoldType, n, ARRAYSIZE(n)));
+                pGroup->AddSubItem(CreateProperty(_T("Fold Background"), &m_pSettings->editor.cFoldBG));
+                pGroup->AddSubItem(CreateProperty(_T("Fold Foreground"), &m_pSettings->editor.cFoldFG));
+                pParent->AddSubItem(pGroup);
+            }
+
+            m_wndPropList.AddProperty(pGroup);
+        }
+
+        {
+            Theme* pTheme = &m_pSettings->editor.rTheme;
+            CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
+            pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr));
+            for (StyleClass& sc : pTheme->vecStyleClass)
+            {
+                if (!sc.description.IsEmpty())
+                    pGroup1->AddSubItem(CreateProperty(sc.description, &sc.theme, &pTheme->tDefault));
+            }
+            m_wndPropList.AddProperty(pGroup1);
+        }
     }
 
 #if 0
@@ -672,6 +733,12 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM /*wParam*/, LPARAM lParam)
     return 0;
 }
 
+void CPropertiesWnd::OnComboSelChange()
+{
+    m_wndPropList.RemoveAll();
+    InitPropList();
+}
+
 void CPropertiesWnd::SetPropListFont()
 {
 	::DeleteObject(m_fntPropList.Detach());
@@ -691,7 +758,7 @@ void CPropertiesWnd::SetPropListFont()
 	m_fntPropList.CreateFontIndirect(&lf);
 
 	m_wndPropList.SetFont(&m_fntPropList);
-	//m_wndObjectCombo.SetFont(&m_fntPropList);
+	m_wndObjectCombo.SetFont(&m_fntPropList);
 }
 
 static void CleanUp(CMFCPropertyGridProperty* pProp)

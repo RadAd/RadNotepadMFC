@@ -112,6 +112,11 @@ const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt)
         return GetLanguage(pTheme, it->second);
 }
 
+const StyleClass* GetStyleClass(const Theme* pTheme, LPCTSTR strName)
+{
+    return Get(pTheme->vecStyleClass, strName);
+}
+
 void AddExt(Theme* pTheme, const CString& ext, const CString& lexer)
 {
     pTheme->mapExt[ext] = lexer;

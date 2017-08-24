@@ -33,7 +33,7 @@ public:
 protected:
     Settings* m_pSettings;
 	CFont m_fntPropList;
-	//CComboBox m_wndObjectCombo;
+	CComboBox m_wndObjectCombo;
 	CPropertiesToolBar m_wndToolBar;
     CMFCPropertyGridCtrl m_wndPropList;
 
@@ -55,6 +55,7 @@ protected:
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg LRESULT OnPropertyChanged(WPARAM wParam, LPARAM lParam);
+    afx_msg void OnComboSelChange();
 
 	DECLARE_MESSAGE_MAP()
 

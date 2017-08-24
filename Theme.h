@@ -113,6 +113,11 @@ struct Language
     }
 };
 
+static inline bool CompareLanguageTitle(const Language* pLanguageL, const Language* pLanguageR)
+{
+    return pLanguageL->title < pLanguageR->title;
+}
+
 struct StyleClass
 {
     CString name;
@@ -181,3 +186,4 @@ void LoadTheme(Theme* pTheme, Theme* pDefaultTheme);
 void SaveTheme(const Theme* pTheme, const Theme* pDefaultTheme);
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName);
 const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt);
+const StyleClass* GetStyleClass(const Theme* pTheme, LPCTSTR strName);
