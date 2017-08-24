@@ -1019,7 +1019,7 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
             pRootNode->removeChild(pBaseOptions);
 
         // TODO Save formatted
-        if (!IsEmpty(pRootNode))
+        //if (!IsEmpty(pRootNode))
         {
             variant_t name = pFilename;
             pDoc->save(name);
