@@ -142,6 +142,8 @@ BOOL CRadNotepadApp::InitInstance()
 
     CWinAppEx::InitInstance();
 
+    CoInitialize(0);
+
 	// Initialize OLE libraries
 	if (!AfxOleInit())
 	{
@@ -151,6 +153,7 @@ BOOL CRadNotepadApp::InitInstance()
 
     InitTheme(&m_Settings.editor.rTheme);
     LoadTheme(&m_Settings.editor.rTheme);
+    m_Settings.default.rTheme = m_Settings.editor.rTheme;
 
     AfxEnableControlContainer();
 
@@ -225,6 +228,8 @@ BOOL CRadNotepadApp::InitInstance()
 
 int CRadNotepadApp::ExitInstance()
 {
+    SaveTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
+
 	AfxOleTerm(FALSE);
 
     FreeLibrary(m_hSciDLL);

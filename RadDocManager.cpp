@@ -25,6 +25,24 @@ CDocument* CRadDocManager::GetActiveDocument()
         return nullptr;
 }
 
+void CRadDocManager::UpdateAllViews(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+    POSITION posTemplate = GetFirstDocTemplatePosition();
+    while (posTemplate != NULL)
+    {
+        CDocTemplate* pTemplate = (CDocTemplate*) GetNextDocTemplate(posTemplate);
+        ASSERT_KINDOF(CDocTemplate, pTemplate);
+        {
+            POSITION pos = pTemplate->GetFirstDocPosition();
+            while (pos != NULL)
+            {
+                CDocument* pDoc = pTemplate->GetNextDoc(pos);
+                pDoc->UpdateAllViews(pSender, lHint, pHint);
+            }
+        }
+    }
+}
+
 int CRadDocManager::GetModifiedDocumentCount() const
 {
     int nModified = 0;
