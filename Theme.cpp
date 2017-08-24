@@ -35,6 +35,17 @@ static inline typename T::pointer Get(T& vec, LPCTSTR name)
 }
 
 template<class T>
+static inline typename T::const_pointer GetKey(const T& vec, int id)
+{
+    for (T::const_reference v : vec)
+    {
+        if (v.id == id)
+            return &v;
+    }
+    return nullptr;
+}
+
+template<class T>
 static inline typename T::pointer GetKey(T& vec, int id)
 {
     for (T::reference v : vec)
@@ -124,6 +135,7 @@ void InitTheme(Theme* pTheme)
         pTheme->vecStyleClass.push_back({ _T("preprocessor"), _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } });
         pTheme->vecStyleClass.push_back({ _T("operator"),     _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } });
         pTheme->vecStyleClass.push_back({ _T("error"),        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } });
+        //pTheme->vecStyleClass.push_back({ _T("indentguide"),  _T("#Indent Guide"),       { COLOR_NONE,         COLOR_NONE } });
     }
     {
         pTheme->vecBase.push_back({ _T("Indent Guide"), STYLE_INDENTGUIDE, _T("indentguide"), { COLOR_NONE,     COLOR_NONE } });  // TODO Should I add to scheme.master
@@ -884,4 +896,161 @@ void LoadTheme(Theme* pTheme)
         LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
     }
 #endif
+}
+
+const VARIANT vtnull = { VT_NULL };
+
+_bstr_t ToBStr(COLORREF c)
+{
+    WCHAR str[10];
+    wsprintf(str, L"%02x%02x%02x", GetRValue(c), GetGValue(c), GetBValue(c));
+    return str;
+}
+
+bool IsEmpty(MSXML2::IXMLDOMElementPtr pXMLNode)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    return pXMLChildren->Getlength() <= 0;
+}
+
+void SaveTheme(MSXML2::IXMLDOMElementPtr pNode, const ThemeItem& ti, const ThemeItem& dti)
+{
+    if (ti.fore != dti.fore)
+        pNode->setAttribute(_T("fore"), ToBStr(ti.fore));
+    if (ti.back != dti.back)
+        pNode->setAttribute(_T("back"), ToBStr(ti.back));
+    if (ti.font.lfHeight != dti.font.lfHeight)
+        pNode->setAttribute(_T("size"), ti.font.lfHeight);    // TODO Convert MulDiv
+    if (wcscmp(ti.font.lfFaceName, dti.font.lfFaceName) != 0)
+        pNode->setAttribute(_T("face"), ti.font.lfFaceName);
+    if (ti.font.lfWeight != dti.font.lfWeight)
+        pNode->setAttribute(_T("bold"), ti.font.lfWeight == FW_BOLD);
+    if (ti.font.lfItalic != dti.font.lfItalic)
+        pNode->setAttribute(_T("italic"), ti.font.lfItalic);
+    if (ti.eolfilled != dti.eolfilled)
+        pNode->setAttribute(_T("eolfilled"), ti.eolfilled);
+    if (ti.hotspot != dti.hotspot)
+        pNode->setAttribute(_T("hotspot"), ti.hotspot);
+}
+
+void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<Style>& vecStyle, const std::vector<Style>& vecDefaultStyle)
+{
+    for (const Style& s : vecStyle)
+    {
+        // ignore name and class
+        const Style* os = GetKey(vecDefaultStyle, s.id);
+        if (os != nullptr && s.theme != os->theme)
+        {
+            MSXML2::IXMLDOMElementPtr pStyleClass = pDoc->createElement(L"style");
+            pParent->insertBefore(pStyleClass, vtnull);
+
+            pStyleClass->setAttribute(_T("id"), s.id);
+            SaveTheme(pStyleClass, s.theme, os->theme);
+        }
+    }
+}
+
+void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<StyleClass>& vecStyle, const std::vector<StyleClass>& vecDefaultStyle)
+{
+    for (const StyleClass& sc : vecStyle)
+    {
+        // ignore description
+        const StyleClass* osc = Get(vecDefaultStyle, sc.name);
+        if (osc != nullptr && sc.theme != osc->theme)
+        {
+            MSXML2::IXMLDOMElementPtr pStyleClass = pDoc->createElement(L"style-class");
+            pParent->insertBefore(pStyleClass, vtnull);
+
+            _bstr_t name = sc.name;
+            pStyleClass->setAttribute(_T("name"), name);
+            SaveTheme(pStyleClass, sc.theme, osc->theme);
+        }
+    }
+}
+
+void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<GroupStyle>& vecStyle, const std::vector<GroupStyle>& vecDefaultStyle)
+{
+    for (const GroupStyle& gs : vecStyle)
+    {
+        const GroupStyle* ogs = Get(vecDefaultStyle, gs.name);
+        if (ogs != nullptr)
+        {
+            SaveTheme(pDoc, pParent, gs.vecStyle, ogs->vecStyle);
+        }
+    }
+}
+
+void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme)
+{
+    try
+    {
+        MSXML2::IXMLDOMDocumentPtr pDoc(__uuidof(MSXML2::DOMDocument60));
+        pDoc->Putasync(VARIANT_FALSE);
+        pDoc->PutvalidateOnParse(VARIANT_FALSE);
+        pDoc->PutresolveExternals(VARIANT_FALSE);
+        pDoc->PutpreserveWhiteSpace(VARIANT_TRUE);
+        MSXML2::IXMLDOMProcessingInstructionPtr pProcInstr = pDoc->createProcessingInstruction(L"xml", L"version=\"1.0\" encoding=\"UTF-8\"");
+        pDoc->insertBefore(pProcInstr, vtnull);
+        MSXML2::IXMLDOMElementPtr pRootNode = pDoc->createElement(L"Scheme");
+        pDoc->insertBefore(pRootNode, vtnull);
+        MSXML2::IXMLDOMElementPtr pStyleClasses = pDoc->createElement(L"style-classes");
+        pRootNode->insertBefore(pStyleClasses, vtnull);
+        MSXML2::IXMLDOMElementPtr pBaseOptions = pDoc->createElement(L"base-options");
+        pRootNode->insertBefore(pBaseOptions, vtnull);
+
+        if (pTheme->tDefault != pDefaultTheme->tDefault)
+        {
+            MSXML2::IXMLDOMElementPtr pStyleClass = pDoc->createElement(L"style-class");
+            pStyleClasses->insertBefore(pStyleClass, vtnull);
+
+            _bstr_t name = L"default";
+            pStyleClass->setAttribute(_T("name"), name);
+            SaveTheme(pStyleClass, pTheme->tDefault, pDefaultTheme->tDefault);
+        }
+        SaveTheme(pDoc, pStyleClasses, pTheme->vecStyleClass, pDefaultTheme->vecStyleClass);
+        SaveTheme(pDoc, pBaseOptions, pTheme->vecBase, pDefaultTheme->vecBase);
+        // ignore vecKeywordClass
+        // ignore mapExt, mapExtFilter
+        for (const Language& l : pTheme->vecLanguage)
+        {
+            const Language* ol = Get(pDefaultTheme->vecLanguage, l.name);
+            if (ol != nullptr)
+            {
+                // ignore mapProperties, vecKeywords
+                // ignore title and lexer
+                // TODO SaveTheme(pDoc, pParent, .vecStyle, ol->vecStyle);
+                // TODO SaveTheme(pDoc, pParent, l.vecGroupStyle, ol->vecGroupStyle);
+            }
+        }
+
+        if (IsEmpty(pStyleClasses))
+            pRootNode->removeChild(pStyleClasses);
+        if (IsEmpty(pBaseOptions))
+            pRootNode->removeChild(pBaseOptions);
+
+        // TODO Save formatted
+        if (!IsEmpty(pRootNode))
+        {
+            variant_t name = pFilename;
+            pDoc->save(name);
+        }
+    }
+    catch (const _com_error& e)
+    {
+        AfxMessageBox(e.ErrorMessage(), MB_ICONERROR | MB_OK);
+    }
+}
+
+void SaveTheme(const Theme* pTheme, const Theme* pDefaultTheme)
+{
+    TCHAR szPath[MAX_PATH];
+    if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath)))
+    {
+        PathAppend(szPath, _T("RadSoft\\RadNotepad"));
+        if (!PathFileExists(szPath))
+            SHCreateDirectory(NULL, szPath);
+
+        PathAppend(szPath, _T("scheme.user"));
+        SaveTheme(szPath, pTheme, pDefaultTheme);
+    }
 }

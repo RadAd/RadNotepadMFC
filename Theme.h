@@ -24,6 +24,16 @@ struct ThemeItem
     {
     }
 
+    bool operator==(const ThemeItem& other) const
+    {
+        return memcmp(this, &other, sizeof(ThemeItem)) == 0;
+    }
+
+    bool operator!=(const ThemeItem& other) const
+    {
+        return memcmp(this, &other, sizeof(ThemeItem)) != 0;
+    }
+
     COLORREF fore;
     COLORREF back;
     LOGFONT font;
@@ -90,5 +100,6 @@ struct Theme
 void InitTheme(Theme* pSettings);
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
 void LoadTheme(Theme* pTheme);
+void SaveTheme(const Theme* pTheme, const Theme* pDefaultTheme);
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName);
 const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt);
