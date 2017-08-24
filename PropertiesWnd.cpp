@@ -485,6 +485,7 @@ void CPropertiesWnd::InitPropList()
         CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
         pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
         pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
+        pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, strEncoding, ARRAYSIZE(strEncoding)));
         m_wndPropList.AddProperty(pGroup);
     }
 

@@ -176,7 +176,6 @@ struct Theme
     }
 };
 
-void InitTheme(Theme* pSettings);
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
 void LoadTheme(Theme* pTheme, Theme* pDefaultTheme);
 void SaveTheme(const Theme* pTheme, const Theme* pDefaultTheme);

@@ -23,6 +23,7 @@
 		<style-class name="unknowntag" description="Unknown Tag" fore="ff0000"/>
 		<style-class name="attribute" description="Attribute" fore="008080"/>
 		<style-class name="unknownattribute" description="Unknown Attribute" fore="ff0000"/>
+		<style-class name="indentguide" description="Indent Guide" />
 		<style-class name="bracematch" description="Brace Match" fore="0000ee" bold="true"/>
 		<style-class name="bracemismatch" description="Brace Mismatch" fore="ee0000" bold="true"/>
 		<style-class name="linenumbers" description="Line Numbers" />
@@ -33,6 +34,7 @@
 		<style-class name="unclosedstring" description="Unclosed Single-Line String" fore="000000" back="e0c0e0" />
 	</style-classes>
 	<base-options>
+		<style name="Indent Guide" key="33" class="indentguide" />
 		<style name="Line Numbers" key="33" class="linenumbers" />
 		<style name="Brace Match" key="34" class="bracematch" />
 		<style name="Brace Mismatch" key="35" class="bracemismatch" />

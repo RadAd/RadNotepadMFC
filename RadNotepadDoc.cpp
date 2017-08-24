@@ -79,9 +79,6 @@ END_MESSAGE_MAP()
 
 CRadNotepadDoc::CRadNotepadDoc()
 {
-    m_eEncoding = BOM_ANSI; // TODO Default
-    m_ftWrite.dwHighDateTime = 0;
-    m_ftWrite.dwLowDateTime = 0;
 }
 
 CRadNotepadDoc::~CRadNotepadDoc()
@@ -140,8 +137,9 @@ BOOL CRadNotepadDoc::OnNewDocument()
 	if (!CScintillaDoc::OnNewDocument())
 		return FALSE;
 
-	// TODO: add reinitialization code here
-	// (SDI documents will reuse this document)
+    m_eEncoding = theApp.m_Settings.DefaultEncoding;
+    m_ftWrite.dwHighDateTime = 0;
+    m_ftWrite.dwLowDateTime = 0;
 
 	return TRUE;
 }

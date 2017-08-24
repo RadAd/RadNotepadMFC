@@ -151,7 +151,7 @@ BOOL CRadNotepadApp::InitInstance()
 		return FALSE;
 	}
 
-    InitTheme(&m_Settings.editor.rTheme);
+    // TODO Load settings
     LoadTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
     m_Settings.user.rTheme = m_Settings.editor.rTheme;
     ASSERT(m_Settings.editor.rTheme == m_Settings.user.rTheme);
@@ -168,9 +168,7 @@ BOOL CRadNotepadApp::InitInstance()
 	// of your final executable, you should remove from the following
 	// the specific initialization routines you do not need
 	// Change the registry key under which our settings are stored
-	// TODO: You should modify this string to be something appropriate
-	// such as the name of your company or organization
-	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
+	SetRegistryKey(_T("RadSoft"));
 	LoadStdProfileSettings(m_Settings.nMaxMRU);  // Load standard INI file options (including MRU)
 
 	InitContextMenuManager();
@@ -224,6 +222,7 @@ BOOL CRadNotepadApp::InitInstance()
 
 int CRadNotepadApp::ExitInstance()
 {
+    // TODO Save settings
     if (m_Settings.editor.rTheme != m_Settings.user.rTheme)
         SaveTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
 

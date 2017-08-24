@@ -122,31 +122,6 @@ void AddExt(Theme* pTheme, const CString& ext, const CString& lexer)
     filter += ext;
 }
 
-void InitTheme(Theme* pTheme)
-{
-    pTheme->tDefault = { COLOR_BLACK, COLOR_WHITE, Font(-13, _T("Consolas")) };
-    {
-        pTheme->vecStyleClass.push_back({ _T("comment"),      _T("#Comment"),            { COLOR_LT_GREEN,     COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("number"),       _T("#Number"),             { COLOR_LT_CYAN,      COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("keyword"),      _T("#Word"),               { COLOR_LT_BLUE,      COLOR_NONE, Font(0, nullptr, true) } });
-        pTheme->vecStyleClass.push_back({ _T("keyword2"),     _T("#Type"),               { COLOR_LT_CYAN,      COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("string"),       _T("#String"),             { COLOR_LT_MAGENTA,   COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("identifier"),   _T("#Identifier"),         { COLOR_BLACK,        COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("preprocessor"), _T("#Preprocessor"),       { COLOR_LT_RED,       COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("operator"),     _T("#Operator"),           { COLOR_LT_YELLOW,    COLOR_NONE } });
-        pTheme->vecStyleClass.push_back({ _T("error"),        _T("#Error"),              { COLOR_WHITE,        COLOR_LT_RED } });
-        //pTheme->vecStyleClass.push_back({ _T("indentguide"),  _T("#Indent Guide"),       { COLOR_NONE,         COLOR_NONE } });
-    }
-    {
-        pTheme->vecBase.push_back({ _T("Indent Guide"), STYLE_INDENTGUIDE, _T("indentguide"), { COLOR_NONE,     COLOR_NONE } });  // TODO Should I add to scheme.master
-        // TODO THEME_CONTROLCHAR Looks like only the font is used ?
-        // TODO STYLE_INDENTGUIDE Looks like the font isn't used ?
-        // TODO
-        // STYLE_CALLTIP
-        // STYLE_FOLDDISPLAYTEXT
-    }
-}
-
 static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const Theme* pTheme)
 {
     const ThemeItem* pThemeItem = GetThemeItem(style.sclass, pTheme);
