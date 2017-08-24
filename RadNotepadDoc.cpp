@@ -96,9 +96,7 @@ void CRadNotepadDoc::CheckUpdated()
         {
             CFile rFile;
             if (rFile.Open(GetPathName(), CFile::modeRead | CFile::shareDenyNone))
-            {
                 GetFileTime(rFile, NULL, NULL, &ftWrite);
-            }
         }
 
         if (ftWrite.dwHighDateTime == 0 && ftWrite.dwLowDateTime == 0)
@@ -248,7 +246,6 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
         } while (nBytesRead);
 
         CheckReadOnly();
-        GetFileTime(*pFile, NULL, NULL, &m_ftWrite);
 
         //Reinitialize the control settings
         rCtrl.SetUndoCollection(TRUE);
@@ -281,9 +278,18 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
             //Write it to disk
             WriteText(pFile, Buffer, nGrabSize, m_eEncoding);
         }
-
-        GetFileTime(*pFile, NULL, NULL, &m_ftWrite);
     }
+}
+
+void CRadNotepadDoc::ReleaseFile(CFile* pFile, BOOL bAbort)
+{
+    CString strFile = pFile->GetFilePath();
+
+    CScintillaDoc::ReleaseFile(pFile, bAbort);
+
+    CFile rFile;
+    if (rFile.Open(strFile, CFile::modeRead | CFile::shareDenyNone))
+        GetFileTime(rFile, NULL, NULL, &m_ftWrite);
 }
 
 #ifdef SHARED_HANDLERS

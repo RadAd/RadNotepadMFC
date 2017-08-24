@@ -25,11 +25,14 @@ public:
 public:
     void CheckUpdated();
     void CheckReadOnly();
+    void SyncModified();
 
 // Overrides
 public:
-	virtual BOOL OnNewDocument();
-	virtual void Serialize(CArchive& ar);
+	virtual BOOL OnNewDocument() override;
+	virtual void Serialize(CArchive& ar) override;
+    virtual void ReleaseFile(CFile* pFile, BOOL bAbort) override;
+    virtual void SetTitle(LPCTSTR lpszTitle) override;
 #ifdef SHARED_HANDLERS
 	virtual void InitializeSearchContent();
 	virtual void OnDrawThumbnail(CDC& dc, LPRECT lprcBounds);
@@ -39,8 +42,8 @@ public:
 public:
 	virtual ~CRadNotepadDoc();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+	virtual void AssertValid() const override;
+	virtual void Dump(CDumpContext& dc) const override;
 #endif
 
 protected:
@@ -56,9 +59,6 @@ protected:
 	void SetSearchContent(const CString& value);
 #endif // SHARED_HANDLERS
 public:
-    virtual void SetTitle(LPCTSTR lpszTitle);
-
-    void SyncModified();
     afx_msg void OnFileRevert();
     afx_msg void OnUpdateFileRevert(CCmdUI *pCmdUI);
     afx_msg void OnUpdateFileSave(CCmdUI *pCmdUI);
