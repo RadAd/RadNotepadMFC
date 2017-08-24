@@ -726,3 +726,14 @@ void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
     const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
     pCmdUI->SetRadio(m_pLanguage == &vecLanguage[pCmdUI->m_nID - ID_VIEW_FIRSTSCHEME]);
 }
+
+
+void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHint*/)
+{
+    if (lHint == HINT_UPDATE_SETTINGS)
+    {
+        CScintillaCtrl& rCtrl = GetCtrl();
+        const EditorSettings& settings = theApp.m_Settings.editor;
+        Apply(rCtrl, m_pLanguage, &settings.rTheme);
+    }
+}

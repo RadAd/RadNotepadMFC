@@ -5,6 +5,7 @@
 #include "Resource.h"
 #include "MainFrm.h"
 #include "RadNotepad.h"
+#include "RadDocManager.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -462,6 +463,8 @@ void CPropertiesWnd::OnUpdateProperties1(CCmdUI* /*pCmdUI*/)
 void CPropertiesWnd::OnProperties2()
 {
 	// TODO: Add your command handler code here
+    CRadDocManager* pRadDocManager = DYNAMIC_DOWNCAST(CRadDocManager, theApp.m_pDocManager);
+    pRadDocManager->UpdateAllViews(nullptr, HINT_UPDATE_SETTINGS);
 }
 
 void CPropertiesWnd::OnUpdateProperties2(CCmdUI* /*pCmdUI*/)
@@ -661,6 +664,9 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM /*wParam*/, LPARAM lParam)
 
     for (int i = 0; i < m_wndPropList.GetPropertyCount(); ++i)
         Refresh(m_wndPropList.GetProperty(i), prop);
+
+    CRadDocManager* pRadDocManager = DYNAMIC_DOWNCAST(CRadDocManager, theApp.m_pDocManager);
+    pRadDocManager->UpdateAllViews(nullptr, HINT_UPDATE_SETTINGS);
 
     return 0;
 }

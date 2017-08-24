@@ -85,6 +85,7 @@ public:
     afx_msg void OnUpdateSchemeNone(CCmdUI *pCmdUI);
     afx_msg void OnScheme(UINT nID);
     afx_msg void OnUpdateScheme(CCmdUI *pCmdUI);
+    virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/);
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

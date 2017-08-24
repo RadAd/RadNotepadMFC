@@ -52,4 +52,4 @@
 #endif
 #endif
 
-
+#define HINT_UPDATE_SETTINGS    2
