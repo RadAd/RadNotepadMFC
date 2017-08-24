@@ -12,6 +12,7 @@ protected: // create from serialization only
 
 // Attributes
 public:
+    int GetLineEndingMode() const { return m_nLineEndingMode; }
 
 // Operations
 public:
@@ -40,6 +41,7 @@ public:
 
 protected:
     Encoding m_eEncoding;
+    int m_nLineEndingMode;
     FILETIME m_ftWrite;
 
 // Generated message map functions

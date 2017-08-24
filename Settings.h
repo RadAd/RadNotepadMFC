@@ -25,6 +25,10 @@ struct EditorSettings
     bool bUseTabs = FALSE;
     int nTabWidth = 4;
 
+    COLORREF cCaretFG = COLOR_BLACK;
+    int nCaretStyle = CARETSTYLE_LINE;
+    int nCaretWidth = 1;
+
     bool bShowIndentGuides = TRUE;
     bool bHighlightMatchingBraces = TRUE;
     bool bAutoIndent = TRUE;
@@ -45,6 +49,7 @@ struct Settings
     bool bEmptyFileOnStartup = TRUE;
     UINT nMaxMRU = 10;
     Encoding DefaultEncoding = BOM_ANSI;
+    int DefaultLineEnding = SC_EOL_CRLF;
 
     EditorSettings default;
     EditorSettings user;

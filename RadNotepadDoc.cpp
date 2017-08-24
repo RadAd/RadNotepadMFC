@@ -60,6 +60,19 @@ static Encoding CheckBom(PBYTE pData)
     return BOM_ANSI;
 }
 
+static int GetLineEndingMode(CScintillaCtrl& rCtrl, int nLine, int def)
+{
+    CString line = rCtrl.GetLine(nLine);
+    int mode = def;
+    if (line.Right(2) == _T("\r\n"))
+        mode = SC_EOL_CRLF;
+    else if (line.Right(1) == _T("\n"))
+        mode = SC_EOL_LF;
+    else if (line.Right(1) == _T("\r"))
+        mode = SC_EOL_CR;
+    return mode;
+}
+
 // CRadNotepadDoc
 
 IMPLEMENT_DYNCREATE(CRadNotepadDoc, CScintillaDoc)
@@ -138,6 +151,7 @@ BOOL CRadNotepadDoc::OnNewDocument()
 		return FALSE;
 
     m_eEncoding = theApp.m_Settings.DefaultEncoding;
+    m_nLineEndingMode = theApp.m_Settings.DefaultLineEnding;
     m_ftWrite.dwHighDateTime = 0;
     m_ftWrite.dwLowDateTime = 0;
 
@@ -244,6 +258,7 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
         } while (nBytesRead);
 
         CheckReadOnly();
+        m_nLineEndingMode = ::GetLineEndingMode(rCtrl, 0, m_nLineEndingMode);
 
         //Reinitialize the control settings
         rCtrl.SetUndoCollection(TRUE);

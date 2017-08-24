@@ -44,19 +44,6 @@ int GetWidth(CScintillaCtrl& rCtrl, Margin m)
     }
 }
 
-int GetLineEndingMode(CScintillaCtrl& rCtrl, int nLine, int def)
-{
-    CString line = rCtrl.GetLine(nLine);
-    int mode = def;
-    if (line.Right(2) == _T("\r\n"))
-        mode = SC_EOL_CRLF;
-    else if (line.Right(1) == _T("\n"))
-        mode = SC_EOL_LF;
-    else if (line.Right(1) == _T("\r"))
-        mode = SC_EOL_CR;
-    return mode;
-}
-
 // CRadNotepadView
 
 IMPLEMENT_DYNCREATE(CRadNotepadView, CScintillaView)
@@ -332,8 +319,11 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.SetUseTabs(settings.bUseTabs);
     rCtrl.SetTabWidth(settings.nTabWidth);
 
-    int mode = GetLineEndingMode(rCtrl, 0, SC_EOL_CRLF); // TODO Default mode setting
-    rCtrl.SetEOLMode(mode);
+    rCtrl.SetCaretFore(settings.cCaretFG);
+    rCtrl.SetCaretStyle(settings.nCaretStyle);
+    rCtrl.SetCaretWidth(settings.nCaretWidth);
+
+    rCtrl.SetEOLMode(pDoc->GetLineEndingMode());
 
     if (settings.bShowIndentGuides)
         rCtrl.SetIndentationGuides(SC_IV_LOOKBOTH);

@@ -572,15 +572,26 @@ void CPropertiesWnd::InitPropList()
             pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
             pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
             pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, strEncoding, ARRAYSIZE(strEncoding)));
+            LPCTSTR strLineEnding[] = { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") };
+            pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, strLineEnding, ARRAYSIZE(strLineEnding)));
             m_wndPropList.AddProperty(pGroup);
         }
 
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
-            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->editor.bUseTabs));
-            pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth, 1, 100));
+            {
+                CMFCPropertyGridProperty* pParent = pGroup;
+                CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &m_pSettings->editor.cCaretFG, nullptr, nullptr));
+                LPCTSTR strCaretStyle[] = { _T("Invisible"), _T("Line"), _T("Block") };
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nCaretStyle, strCaretStyle, ARRAYSIZE(strCaretStyle)));
+                pGroup->AddSubItem(CreateProperty(_T("Width"), &m_pSettings->editor.nCaretWidth, 1, 4));
+                pParent->AddSubItem(pGroup);
+            }
             pGroup->AddSubItem(CreateProperty(_T("Show Indent Guides"), &m_pSettings->editor.bShowIndentGuides));
             pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
+            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->editor.bUseTabs));
+            pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth, 1, 100));
             pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &m_pSettings->editor.bAutoIndent));
             m_wndPropList.AddProperty(pGroup);
         }
@@ -593,10 +604,10 @@ void CPropertiesWnd::InitPropList()
                 CMFCPropertyGridProperty* pParent = pGroup;
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Fold Marker"), 0, TRUE);
                 pGroup->AddSubItem(CreateProperty(_T("Enabled"), &m_pSettings->editor.bShowFolds));
-                LPCTSTR n[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nFoldType, n, ARRAYSIZE(n)));
-                pGroup->AddSubItem(CreateProperty(_T("Fold Background"), &m_pSettings->editor.cFoldBG, nullptr, nullptr));
-                pGroup->AddSubItem(CreateProperty(_T("Fold Foreground"), &m_pSettings->editor.cFoldFG, nullptr, nullptr));
+                LPCTSTR strFoldStyle[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nFoldType, strFoldStyle, ARRAYSIZE(strFoldStyle)));
+                pGroup->AddSubItem(CreateProperty(_T("Background"), &m_pSettings->editor.cFoldBG, nullptr, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &m_pSettings->editor.cFoldFG, nullptr, nullptr));
                 pParent->AddSubItem(pGroup);
             }
 
