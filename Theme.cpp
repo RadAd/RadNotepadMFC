@@ -186,6 +186,23 @@ inline _bstr_t GetAttribute(MSXML2::IXMLDOMNode* pXMLNode, LPCWSTR name)
     return bstrAttrValue;
 }
 
+inline int IsEmpty(MSXML2::IXMLDOMNode* pXMLNode, DOMNodeType findtype)
+{
+    int count = 0;
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == findtype)
+            ++count;
+    }
+    return count == 0;
+}
+
+
 inline bool operator==(const _bstr_t& s1, LPCWSTR s2)
 {
     return wcscmp(s1, s2) == 0;
@@ -280,9 +297,16 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
                     AfxMessageBox(msg, MB_ICONERROR | MB_OK);
                 }
-                // TODO Check for no other attributes
                 else
                 {
+                    if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                    {
+                        CString msg;
+                        msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                    }
+                    // TODO Check for no other attributes
+
                     StyleClass* pStyleClass = Get(pTheme->vecStyleClass, name);
 
                     ThemeItem rThemeItem;
@@ -340,21 +364,22 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                 _bstr_t key = GetAttribute(pXMLChildNode, _T("key"));
                 _bstr_t sclass = GetAttribute(pXMLChildNode, _T("class"));
 
-                if (isnull(name) || ((LPCTSTR) name)[0] == '\0')
-                {
-                    CString msg;
-                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
-                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-                }
-                else if (isnull(key))
+                if (isnull(key))
                 {
                     CString msg;
                     msg.Format(_T("Missing key: %s"), (LPCTSTR) name);
                     AfxMessageBox(msg, MB_ICONERROR | MB_OK);
                 }
-                // TODO Check for no other attributes
                 else
                 {
+                    if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                    {
+                        CString msg;
+                        msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                    }
+                    // TODO Check for no other attributes
+
                     int nKey = _wtoi(key);
                     Style* pStyle = GetKey(vecStyles, nKey);
                     if (pStyle != nullptr && pStyle->id != nKey)
@@ -371,7 +396,15 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                         LoadThemeItem(pXMLChildNode, rThemeItem);
 
                         if (pStyle == nullptr)
+                        {
+                            if (isnull(name) || ((LPCTSTR) name)[0] == '\0')
+                            {
+                                CString msg;
+                                msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                            }
                             vecStyles.push_back({ name, nKey, sclass, rThemeItem });
+                        }
                         else
                         {
                             pStyle->name = (LPCTSTR) name;
@@ -394,7 +427,6 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                     msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
                     AfxMessageBox(msg, MB_ICONERROR | MB_OK);
                 }
-                // TODO Check for no other attributes
                 if (vecGroupStyles == nullptr)
                 {
                     CString msg;
@@ -403,6 +435,8 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                 }
                 else
                 {
+                    // TODO Check for no other attributes
+
                     GroupStyle* pGroupStyle = Get(*vecGroupStyles, name);
                     if (pGroupStyle == nullptr)
                     {
@@ -448,6 +482,14 @@ void ProcessKeywordClassesInclude(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme
                 }
                 else
                 {
+                    if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                    {
+                        CString msg;
+                        msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                    }
+                    // TODO Check for no other attributes
+
                     KeywordClass* pIncludeKeywordClass = Get(pTheme->vecKeywordClass, name);
                     if (pIncludeKeywordClass != nullptr)
                     {
@@ -504,6 +546,8 @@ void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                 }
                 else
                 {
+                    // TODO Check for no other attributes
+
                     KeywordClass* pKeywordClass = Get(pTheme->vecKeywordClass, name);
                     if (pKeywordClass == nullptr)
                     {
@@ -558,7 +602,17 @@ void ProcessKeywords(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
                     AfxMessageBox(msg, MB_ICONERROR | MB_OK);
                 }
                 else
+                {
+                    if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                    {
+                        CString msg;
+                        msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                    }
+                    // TODO Check for no other attributes
+
                     pLanguage->vecKeywords[_wtoi(key)] = { name, sclass };
+                }
             }
             else
             {
@@ -593,6 +647,14 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
             {
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                 pLanguage->lexer = (LPCTSTR) name;
+
+                if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                {
+                    CString msg;
+                    msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                // TODO Check for no other attributes
             }
             else if (bstrName == L"use-styles")
             {
@@ -607,10 +669,26 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                 _bstr_t value = GetAttribute(pXMLChildNode, _T("value"));
                 pLanguage->mapProperties[(LPCTSTR) name] = (LPCTSTR) value;
+
+                if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                {
+                    CString msg;
+                    msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                // TODO Check for no other attributes
             }
             else if (bstrName == L"comments")
             {
-                // TODO
+                // TODO ...
+
+                if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                {
+                    CString msg;
+                    msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                // TODO Check for no other attributes
             }
             else
             {
@@ -722,10 +800,6 @@ void LoadScheme(LPCTSTR pFilename, Theme* pTheme, std::vector<Language>& vecBase
 void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Language>& vecBaseLanguage)
 {
     TCHAR full[_MAX_PATH];
-
-    PathCombine(full, strDirectory, _T("scheme.master"));
-    if (PathFileExists(full))
-        LoadScheme(full, pTheme, vecBaseLanguage);
 
     PathCombine(full, strDirectory, _T("*.scheme"));
     WIN32_FIND_DATA fd = {};
