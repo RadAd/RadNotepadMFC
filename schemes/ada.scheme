@@ -24,9 +24,9 @@
 			<style name="Number" key="3" class="number"/>
 			<style name="Operators (delimiters)" key="4" class="operator"/>
 			<style name="Character" key="5" class="character"/>
-			<style name="End of line where character is not closed" key="6" class="character"/>
+			<style name="End of line where character is not closed" key="6" class="unclosedstring"/>
 			<style name="String" key="7" class="string"/>
-			<style name="End of line where string is not closed" key="8" class="string"/>
+			<style name="End of line where string is not closed" key="8" class="unclosedstring"/>
 			<style name="Label" key="9" fore="7F0000"/>
 			<style name="Comment" key="10" class="comment"/>
 			<style name="Illegal token" key="11" fore="FF0000"/>

@@ -6,7 +6,7 @@
 			in for and or function local not repeat return until
 		</keyword-class>
 	</keyword-classes>
-	
+
 	<language name="lua" title="Lua" folding="true" foldcomments="true" foldcompact="false" foldpreproc="true">
 		<lexer name="lua" />
 		<comments line="--" streamStart="--[[" streamEnd="]]" blockStart="--[[" blockLine="--" blockEnd="]]" />
@@ -27,7 +27,7 @@
 			<style name="Preprocessor" key="9" class="preprocessor" />
 			<style name="Operator" key="10" class="operator" />
 			<style name="Identifier" key="11" class="identifier" />
-			<style name="End of line string" key="12" fore="000000" back="e0c0e0" eolfilled="true"/>
+			<style name="End of line string" key="12" class="unclosedstring"/>
 		</use-styles>
 	</language>
 </Scheme>

@@ -180,7 +180,7 @@ flat large small .text .data .bss near far
 			<style name="Directive Operand" key="10" class="keyword" />
 			<!-- <style name="Comment block (GNU as /*...*/ syntax, unimplemented)" key="11" class="commentbox" /> -->
 			<style name="Single Quote String" key="12" class="string" />
-			<style name="Unclosed String" key="13" fore="000000" back="E0C0E0" eolfilled="true" />
+			<style name="Unclosed String" key="13" class="unclosedstring" />
 			<style name="Extended Instructions" key="14" fore="B00040" />
 		</use-styles>
 	</language>

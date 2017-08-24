@@ -77,7 +77,7 @@ varchar2 variance view when whenever where while with work write
 year zone
 		</keyword-class>
 	</keyword-classes>
-	
+
 	<base-language name="sqlbase">
 		<lexer name="sql" />
 		<use-styles>
@@ -94,11 +94,11 @@ year zone
 			<style name="Preprocessor" key="9" class="preprocessor"/>
 			<style name="Operator" key="10" bold="true"/>
 			<style name="Identifier" key="11" />
-			<style name="End of line string" key="12" fore="000000" back="e0c0e0" eolfilled="true"/>
+			<style name="End of line string" key="12" class="unclosedstring"/>
 			<!-- braces.sql.style=10 -->
 		</use-styles>
 	</base-language>
-	
+
 	<language name="sql" base="sqlbase" title="SQL">
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="sql"/>

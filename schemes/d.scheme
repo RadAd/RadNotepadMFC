@@ -3,7 +3,7 @@
 	<!-- Scheme for the D language, see www.digitalmars.com -->
 	<!-- Note that there are things to do to fully support D:
 	   1. Add support for /+ +/ comments to the Scintilla cpp lexer.
-	   2. Add support for literal strings to the Scintilla cpp lexer 
+	   2. Add support for literal strings to the Scintilla cpp lexer
 	      (like C# @ strings).
 	   3. Add support for backtick strings to the Scintilla cpp lexer.
     -->
@@ -11,16 +11,16 @@
 		<keyword-class name="d">
 			#line __traits __FILE__ __LINE__
 			__DATE__ __TIME__ __TIMESTAMP__ __VENDOR__ __VERSION__
-			abstract alias align asm assert auto body bool 
-			break byte case cast catch cdouble cent cfloat char class 
-			const continue creal dchar debug default delegate delete 
-			deprecated do double else enum export extern false final finally 
-			float for foreach foreach_reverse function goto idouble if 
-			ifloat import in inout int immutable interface invariant ireal is lazy 
-			long mixin module new nothrow null out override package pragma private 
-			protected public pure real ref return scope short static struct super 
-			switch synchronized template this throw true try typedef typeid 
-			typeof ubyte ucent uint ulong union unittest ushort version void 
+			abstract alias align asm assert auto body bool
+			break byte case cast catch cdouble cent cfloat char class
+			const continue creal dchar debug default delegate delete
+			deprecated do double else enum export extern false final finally
+			float for foreach foreach_reverse function goto idouble if
+			ifloat import in inout int immutable interface invariant ireal is lazy
+			long mixin module new nothrow null out override package pragma private
+			protected public pure real ref return scope short static struct super
+			switch synchronized template this throw true try typedef typeid
+			typeof ubyte ucent uint ulong union unittest ushort version void
 			volatile wchar while with
 		</keyword-class>
 		<keyword-class name="ddoxygen">
@@ -46,7 +46,7 @@
 			<!-- Comment doc: is this needed??? -->
 			<keyword key="2" name="Doxygen Keywords" class="ddoxygen"/>
 		</use-keywords>
-		
+
 		<use-styles>
 			<style name="Default" key="32" />
 			<style name="Whitespace" key="0" />
@@ -54,18 +54,18 @@
 			<style name="Comment Line" key="2" class="commentline"/>
 			<style name="Comment Doc" key="3" class="commentdoc"/>
 			<style name="Comment Nested" key="4" class="commentbox"/>
-			
+
 			<style name="Number" key="5" class="number"/>
 			<style name="Keyword" key="6" class="keyword"/>
 			<style name="Keyword" key="7" class="keyword"/>
 			<style name="Keyword" key="8" class="keyword"/>
 			<style name="Keyword" key="9" class="keyword"/>
-			
+
 			<style name="String" key="10" class="string"/>
-			<style name="End of line string" key="11" fore="000000" back="e0c0e0" eolfilled="true" />
-			
+			<style name="End of line string" key="11" class="unclosedstring" />
+
 			<style name="Character" key="12" class="character"/>
-			
+
 			<style name="Operator" key="13" class="operator"/>
 			<style name="Identifier" key="14" />
 
@@ -73,7 +73,7 @@
 			<style name="Comment Line Doc" key="15" class="commentdoc"/>
 			<style name="Comment Doc Keyword" key="16" class="commentdoc" fore="3060a0"/>
 			<style name="Unknown Comment Doc Keyword" key="17" class="commentdoc" fore="804020"/>
-			
+
 		</use-styles>
 	</language>
 
