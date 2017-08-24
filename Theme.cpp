@@ -407,7 +407,8 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                         }
                         else
                         {
-                            pStyle->name = (LPCTSTR) name;
+                            if (!isnull(name))
+                                pStyle->name = (LPCTSTR) name;
                             if (!isnull(sclass))
                                 pStyle->sclass = (LPCTSTR) sclass;
                             pStyle->theme = rThemeItem;
@@ -971,12 +972,6 @@ _bstr_t ToBStr(COLORREF c)
     return str;
 }
 
-bool IsEmpty(MSXML2::IXMLDOMElementPtr pXMLNode)
-{
-    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
-    return pXMLChildren->Getlength() <= 0;
-}
-
 void SaveTheme(MSXML2::IXMLDOMElementPtr pNode, const ThemeItem& ti, const ThemeItem& dti)
 {
     if (ti.fore != dti.fore)
@@ -1008,7 +1003,7 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
             MSXML2::IXMLDOMElementPtr pStyleClass = pDoc->createElement(L"style");
             pParent->insertBefore(pStyleClass, vtnull);
 
-            pStyleClass->setAttribute(_T("id"), s.id);
+            pStyleClass->setAttribute(_T("key"), s.id);
             SaveTheme(pStyleClass, s.theme, os->theme);
         }
     }
@@ -1036,11 +1031,18 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
 {
     for (const GroupStyle& gs : vecStyle)
     {
+        MSXML2::IXMLDOMElementPtr pGroup = pDoc->createElement(L"group");
+        pGroup->setAttribute(_T("name"), gs.name.GetString());
+        pParent->insertBefore(pGroup, vtnull);
+
         const GroupStyle* ogs = Get(vecDefaultStyle, gs.name);
         if (ogs != nullptr)
         {
-            SaveTheme(pDoc, pParent, gs.vecStyle, ogs->vecStyle);
+            SaveTheme(pDoc, pGroup, gs.vecStyle, ogs->vecStyle);
         }
+
+        if (IsEmpty(pGroup, NODE_ELEMENT))
+            pParent->removeChild(pGroup);
     }
 }
 
@@ -1077,19 +1079,28 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
         // ignore mapExt, mapExtFilter
         for (const Language& l : pTheme->vecLanguage)
         {
+            MSXML2::IXMLDOMElementPtr pLanguage = pDoc->createElement(L"language");
+            pLanguage->setAttribute(_T("name"), l.name.GetString());
+            pRootNode->insertBefore(pLanguage, vtnull);
+            MSXML2::IXMLDOMElementPtr pUseStyles = pDoc->createElement(L"use-styles");
+            pLanguage->insertBefore(pUseStyles, vtnull);
             const Language* ol = Get(pDefaultTheme->vecLanguage, l.name);
             if (ol != nullptr)
             {
                 // ignore mapProperties, vecKeywords
                 // ignore title and lexer
-                // TODO SaveTheme(pDoc, pParent, .vecStyle, ol->vecStyle);
-                // TODO SaveTheme(pDoc, pParent, l.vecGroupStyle, ol->vecGroupStyle);
+                SaveTheme(pDoc, pUseStyles, l.vecStyle, ol->vecStyle);
+                SaveTheme(pDoc, pUseStyles, l.vecGroupStyle, ol->vecGroupStyle);
             }
+            if (IsEmpty(pUseStyles, NODE_ELEMENT))
+                pLanguage->removeChild(pUseStyles);
+            if (IsEmpty(pLanguage, NODE_ELEMENT))
+                pRootNode->removeChild(pLanguage);
         }
 
-        if (IsEmpty(pStyleClasses))
+        if (IsEmpty(pStyleClasses, NODE_ELEMENT))
             pRootNode->removeChild(pStyleClasses);
-        if (IsEmpty(pBaseOptions))
+        if (IsEmpty(pBaseOptions, NODE_ELEMENT))
             pRootNode->removeChild(pBaseOptions);
 
         // TODO Save formatted
