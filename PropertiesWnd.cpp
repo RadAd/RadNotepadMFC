@@ -290,9 +290,9 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, ThemeItem* pThe
 {
 #if 0
     CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(strName, 0, TRUE);
-    pGroup->AddSubItem(CreateProperty(_T("Background"), &pTheme->back, pn(pDefaultTheme, back));
-    pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->fore, pn(pDefaultTheme, fore));
-    pGroup->AddSubItem(CreateProperty(_T("Font"), &pTheme->font), pn(pDefaultTheme, font));
+    pGroup->AddSubItem(CreateProperty(_T("Background"), &pTheme->back, pn(pDefaultTheme1, back), pn(pDefaultTheme2, back)));
+    pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->fore, pn(pDefaultTheme1, fore), pn(pDefaultTheme2, fore)));
+    pGroup->AddSubItem(CreateProperty(_T("Font"), &pTheme->font, pn(pDefaultTheme1, font), pn(pDefaultTheme2, font)));
     return pGroup;
 #else
     return new CMFCThemeProperty(strName, pTheme, pDefaultTheme1, pDefaultTheme2);
