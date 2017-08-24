@@ -36,5 +36,6 @@ struct Settings
     UINT nMaxMRU = 10;
 
     EditorSettings default;
+    EditorSettings user;
     EditorSettings editor;
 };

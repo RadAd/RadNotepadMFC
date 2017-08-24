@@ -152,8 +152,9 @@ BOOL CRadNotepadApp::InitInstance()
 	}
 
     InitTheme(&m_Settings.editor.rTheme);
-    LoadTheme(&m_Settings.editor.rTheme);
-    m_Settings.default.rTheme = m_Settings.editor.rTheme;
+    LoadTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
+    m_Settings.user.rTheme = m_Settings.editor.rTheme;
+    ASSERT(m_Settings.editor.rTheme == m_Settings.user.rTheme);
 
     AfxEnableControlContainer();
 
@@ -172,9 +173,7 @@ BOOL CRadNotepadApp::InitInstance()
 	SetRegistryKey(_T("Local AppWizard-Generated Applications"));
 	LoadStdProfileSettings(m_Settings.nMaxMRU);  // Load standard INI file options (including MRU)
 
-
 	InitContextMenuManager();
-
 	InitKeyboardManager();
 
 	InitTooltipManager();
@@ -206,14 +205,11 @@ BOOL CRadNotepadApp::InitInstance()
 	}
 	m_pMainWnd = pMainFrame;
 
-
 	// Parse command line for standard shell commands, DDE, file open
 	CCommandLineInfo cmdInfo;
     if (!m_Settings.bEmptyFileOnStartup)
         cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
 	ParseCommandLine(cmdInfo);
-
-
 
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
@@ -228,7 +224,8 @@ BOOL CRadNotepadApp::InitInstance()
 
 int CRadNotepadApp::ExitInstance()
 {
-    SaveTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
+    if (m_Settings.editor.rTheme != m_Settings.user.rTheme)
+        SaveTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
 
 	AfxOleTerm(FALSE);
 

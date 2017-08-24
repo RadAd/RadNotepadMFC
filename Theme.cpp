@@ -865,7 +865,7 @@ BOOL CALLBACK EnumResExtMapProc(
 
 #include "Resource.h"
 
-void LoadTheme(Theme* pTheme)
+void LoadTheme(Theme* pTheme, Theme* pDefaultTheme)
 {
     std::vector<Language> vecBaseLanguage;
 
@@ -882,20 +882,30 @@ void LoadTheme(Theme* pTheme)
     PathFindFileName(exepath)[0] = _T('\0');
     LoadSchemeDirectory(exepath, pTheme, vecBaseLanguage);
 
-    TCHAR path[_MAX_PATH];
-    PathCombine(path, exepath, _T("schemes"));
-    LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
+    TCHAR szPath[_MAX_PATH];
+    PathCombine(szPath, exepath, _T("schemes"));
+    LoadSchemeDirectory(szPath, pTheme, vecBaseLanguage);
 
 #if 0
     GetCurrentDirectory(MAX_PATH, path);
-    if (wcscmp(path, exepath) != 0)
+    if (wcscmp(szPath, exepath) != 0)
     {
-        LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
+        LoadSchemeDirectory(szPath, pTheme, vecBaseLanguage);
 
-        PathCombine(path, path, _T("schemes"));
+        PathCombine(szPath, szPath, _T("schemes"));
         LoadSchemeDirectory(path, pTheme, vecBaseLanguage);
     }
 #endif
+
+    *pDefaultTheme = *pTheme;
+
+    if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath)))
+    {
+        PathAppend(szPath, _T("RadSoft\\RadNotepad"));
+        PathAppend(szPath, _T("scheme.user"));
+        if (PathFileExists(szPath))
+            LoadScheme(szPath, pTheme, vecBaseLanguage);
+    }
 }
 
 const VARIANT vtnull = { VT_NULL };
