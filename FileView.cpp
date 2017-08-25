@@ -15,7 +15,6 @@ static char THIS_FILE[]=__FILE__;
 
 // TODO
 // Detect filesystem changes
-// Add item to context menu to open in RadNotepad - view
 
 #define ID_FILE_VIEW_TREE 4
 
@@ -157,9 +156,11 @@ static inline int Compare(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST Ite
     return res;
 }
 
-#define MIN_SHELL_ID 1
+#define ID_VIEW 1
+#define MIN_SHELL_ID 2
 #define MAX_SHELL_ID 2000
 #define ID_EDIT_RENAME (1000)
+#define ID_EDIT_VIEW (1001)
 
 static IContextMenu2* g_pIContext2 = 0;
 static IContextMenu3* g_pIContext3 = 0;
@@ -189,6 +190,12 @@ static LRESULT CALLBACK ContextMenuHookWndProc(HWND hWnd, UINT msg, WPARAM wp, L
                 pMainWnd->SetMessageText(szBufW);
                 return 0;
             }
+            else
+            {
+                CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+                pMainWnd->SetMessageText(_T(""));
+                return 0;
+            }
         }
         break;
 
@@ -216,8 +223,10 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
 {
     CMenu    Menu;
     Menu.CreatePopupMenu();
+    Menu.AppendMenu(MF_ENABLED | MF_STRING, ID_VIEW, _T("View"));
+    Menu.SetDefaultItem(ID_VIEW);
 
-    TheContextMenu->QueryContextMenu(Menu, 0, MIN_SHELL_ID, MAX_SHELL_ID, Flags);
+    TheContextMenu->QueryContextMenu(Menu, Menu.GetMenuItemCount(), MIN_SHELL_ID, MAX_SHELL_ID, Flags);
 
     CMINVOKECOMMANDINFOEX    Command;
     ZeroMemory(&Command, sizeof(Command));
@@ -249,26 +258,33 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
 
     if (Cmd > 0)
     {
-        union
+        if (Cmd == ID_VIEW)
         {
-            char szBuf[MAX_PATH];
-            wchar_t szBufW[MAX_PATH];
-        };
-        szBuf[0] = '\0';
-        szBufW[0] = '\0';
-        if (!!TheContextMenu2)
-            TheContextMenu2->GetCommandString(Cmd - MIN_SHELL_ID, GCS_VERB, NULL, szBuf, MAX_PATH - 1);
-        if (wcscmp(szBufW, L"rename") == 0)
-        {
-            pWnd->SendMessage(WM_COMMAND, ID_EDIT_RENAME);
+            pWnd->SendMessage(WM_COMMAND, ID_EDIT_VIEW);
         }
         else
         {
-            Command.lpVerb = MAKEINTRESOURCEA(Cmd - MIN_SHELL_ID);
-            Command.lpVerbW = MAKEINTRESOURCEW(Cmd - MIN_SHELL_ID);
-            pWnd->SendMessage(0);
+            union
+            {
+                char szBuf[MAX_PATH];
+                wchar_t szBufW[MAX_PATH];
+            };
+            szBuf[0] = '\0';
+            szBufW[0] = '\0';
+            if (!!TheContextMenu2)
+                TheContextMenu2->GetCommandString(Cmd - MIN_SHELL_ID, GCS_VERB, NULL, szBuf, MAX_PATH - 1);
+            if (wcscmp(szBufW, L"rename") == 0)
+            {
+                pWnd->SendMessage(WM_COMMAND, ID_EDIT_RENAME);
+            }
+            else
+            {
+                Command.lpVerb = MAKEINTRESOURCEA(Cmd - MIN_SHELL_ID);
+                Command.lpVerbW = MAKEINTRESOURCEW(Cmd - MIN_SHELL_ID);
+                pWnd->SendMessage(0);
 
-            TheContextMenu->InvokeCommand((LPCMINVOKECOMMANDINFO) &Command);
+                TheContextMenu->InvokeCommand((LPCMINVOKECOMMANDINFO) &Command);
+            }
         }
     }
 
@@ -309,6 +325,7 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
     ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
+    ON_COMMAND(ID_EDIT_VIEW, OnEditView)
     ON_WM_PAINT()
 	ON_WM_SETFOCUS()
     ON_NOTIFY(TVN_ITEMEXPANDING, ID_FILE_VIEW_TREE, OnItemExpanding)
@@ -613,6 +630,7 @@ void CFileView::OnSync()
                     if (hChild == NULL && ILIsEqual(parentpidl, pidl))
                     {
                         m_wndFileView.Select(hNode, TVGN_CARET);
+                        m_wndFileView.EnsureVisible(hNode);
                     }
                 }
                 else
@@ -664,6 +682,17 @@ void CFileView::OnEditRename()
     HTREEITEM hItem = m_wndFileView.GetSelectedItem();
     if (hItem != NULL)
         m_wndFileView.EditLabel(hItem);
+}
+
+void CFileView::OnEditView()
+{
+    HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+    if (hItem != NULL)
+    {
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+        CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc, SHGDN_FORPARSING);
+        theApp.OpenDocumentFile(name);
+    }
 }
 
 void CFileView::OnPaint()
