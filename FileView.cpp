@@ -12,6 +12,10 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+// TODO
+// Detect filesystem changes
+// Add item to context menu to open in RadNotepad - view
+
 #define ID_FILE_VIEW_TREE 4
 
 struct TreeItem
@@ -120,6 +124,14 @@ static inline CString GetDisplayNameOf(const CComPtr<IShellFolder>& Folder, LPCI
         return CString();
 }
 
+template <class I>
+HRESULT GetUIObjectOf(const CComPtr<IShellFolder>& Folder, LPCITEMIDLIST ItemId, CComPtr<I>& Inteface)
+{
+    LPCITEMIDLIST    IdList[1] = { ItemId };
+    HRESULT hr = Folder->GetUIObjectOf(NULL, 1, IdList, __uuidof(Inteface), 0, (LPVOID *) &Inteface);
+    return hr;
+}
+
 static inline int Compare(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST ItemId1, LPCITEMIDLIST ItemId2, const CComPtr<IMalloc>& Malloc)
 {
     bool isFolder1 = IsFolder(Parent, ItemId1);
@@ -143,6 +155,128 @@ static inline int Compare(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST Ite
         res = isFolder2 - isFolder1;
     return res;
 }
+
+#define MIN_SHELL_ID 1
+#define MAX_SHELL_ID 2000
+#define WM_RENAME (WM_USER + 156)
+
+static IContextMenu2* g_pIContext2 = 0;
+static IContextMenu3* g_pIContext3 = 0;
+
+static LRESULT CALLBACK ContextMenuHookWndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR /*uIdSubclass*/, DWORD_PTR /*dwRefData*/)
+{
+    switch (msg)
+    {
+    case WM_MENUSELECT:
+        {
+            // if this is a shell item, get it's descriptive text
+            UINT uItem = (UINT) LOWORD(wp);
+            if (0 == (MF_POPUP & HIWORD(wp))
+                && uItem >= MIN_SHELL_ID && uItem <= MAX_SHELL_ID)
+            {
+                union
+                {
+                    char szBuf[MAX_PATH];
+                    wchar_t szBufW[MAX_PATH];
+                };
+
+                if (g_pIContext2)
+                    g_pIContext2->GetCommandString(uItem - MIN_SHELL_ID, GCS_HELPTEXT,
+                        NULL, szBuf, MAX_PATH - 1);
+
+                // set the status bar text
+                //((CFrameWnd*)(AfxGetApp()->m_pMainWnd))->SetMessageText(szBuf);
+                return 0;
+            }
+        }
+        break;
+
+    default:
+        if (g_pIContext3)
+        {
+            LRESULT ret = 0;
+            if (g_pIContext3->HandleMenuMsg2(msg, wp, lp, &ret) == S_OK)
+                return ret;
+        }
+
+        if (g_pIContext2)
+        {
+            if (g_pIContext2->HandleMenuMsg(msg, wp, lp) == S_OK)
+                return 0;
+        }
+        break;
+    }
+
+    // for all untreated messages, call the original wndproc
+    return DefSubclassProc(hWnd, msg, wp, lp);
+}
+
+static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int Flags, int x, int y)
+{
+    CMenu    Menu;
+    Menu.CreatePopupMenu();
+
+    TheContextMenu->QueryContextMenu(Menu, 0, MIN_SHELL_ID, MAX_SHELL_ID, Flags);
+
+    CMINVOKECOMMANDINFOEX    Command;
+    ZeroMemory(&Command, sizeof(Command));
+    Command.cbSize = sizeof(Command);
+    Command.fMask = CMIC_MASK_UNICODE | CMIC_MASK_PTINVOKE;
+    Command.hwnd = pWnd->GetSafeHwnd();
+    Command.nShow = SW_NORMAL;
+    Command.ptInvoke.x = x;
+    Command.ptInvoke.y = y;
+    if (GetKeyState(VK_CONTROL) < 0)
+        Command.fMask |= CMIC_MASK_CONTROL_DOWN;
+    if (GetKeyState(VK_SHIFT) < 0)
+        Command.fMask |= CMIC_MASK_SHIFT_DOWN;
+
+    CComPtr<IContextMenu2>    TheContextMenu2;
+    TheContextMenu->QueryInterface(IID_PPV_ARGS(&TheContextMenu2));
+    CComPtr<IContextMenu3>    TheContextMenu3;
+    TheContextMenu->QueryInterface(IID_PPV_ARGS(&TheContextMenu3));
+    if (!!TheContextMenu2 || !!TheContextMenu3)
+    {
+        SetWindowSubclass(pWnd->GetSafeHwnd(), ContextMenuHookWndProc, 0, 0);
+        g_pIContext2 = TheContextMenu2;
+        g_pIContext3 = TheContextMenu3;
+    }
+
+    POINT pos = { x, y };
+    pWnd->ClientToScreen(&pos);
+    int Cmd = Menu.TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN, pos.x, pos.y, pWnd);
+
+    if (Cmd > 0)
+    {
+        union
+        {
+            char szBuf[MAX_PATH];
+            wchar_t szBufW[MAX_PATH];
+        };
+        szBuf[0] = '\0';
+        szBufW[0] = '\0';
+        if (!!TheContextMenu2)
+            TheContextMenu2->GetCommandString(Cmd - MIN_SHELL_ID, GCS_VERB, NULL, szBuf, MAX_PATH - 1);
+        if (wcscmp(szBufW, L"rename") == 0)
+        {
+            //SendMessage(hWnd, WM_RENAME, 0, (LPARAM) ItemId);
+        }
+        else
+        {
+            Command.lpVerb = MAKEINTRESOURCEA(Cmd - MIN_SHELL_ID);
+            Command.lpVerbW = MAKEINTRESOURCEW(Cmd - MIN_SHELL_ID);
+            pWnd->SendMessage(0);
+
+            TheContextMenu->InvokeCommand((LPCMINVOKECOMMANDINFO) &Command);
+        }
+    }
+
+    if (!!TheContextMenu2 || !!TheContextMenu3)
+        RemoveWindowSubclass(pWnd->GetSafeHwnd(), ContextMenuHookWndProc, 0);
+    g_pIContext2 = 0;
+    g_pIContext3 = 0;
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CFileView
@@ -402,15 +536,29 @@ void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
 		pWndTree->ScreenToClient(&ptTree);
 
 		UINT flags = 0;
-		HTREEITEM hTreeItem = pWndTree->HitTest(ptTree, &flags);
-		if (hTreeItem != NULL)
+        HTREEITEM hItem = pWndTree->HitTest(ptTree, &flags);
+		if (hItem != NULL)
 		{
-			pWndTree->SelectItem(hTreeItem);
+			pWndTree->SelectItem(hItem);
 		}
-	}
 
-	pWndTree->SetFocus();
-	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EXPLORER, point.x, point.y, this, TRUE);
+        pWndTree->SetFocus();
+        if (hItem != NULL)
+        {
+            TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+            CComPtr<IContextMenu>    TheContextMenu;
+            /*HRESULT hr =*/ GetUIObjectOf(ti->Parent, ti->ItemId, TheContextMenu);
+            if (!!TheContextMenu)
+            {
+                int Flags = /*CMF_EXPLORE |*/ CMF_NORMAL | CMF_CANRENAME | CMF_ITEMMENU;
+                if (GetKeyState(VK_SHIFT) < 0)
+                    Flags |= CMF_EXTENDEDVERBS;
+                ::DoContextMenu(this, TheContextMenu, Flags, ptTree.x, ptTree.y);
+            }
+        }
+    }
+    //pWndTree->SetFocus();
+    //theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EXPLORER, point.x, point.y, this, TRUE);
 }
 
 void CFileView::AdjustLayout()
