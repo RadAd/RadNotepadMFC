@@ -681,10 +681,15 @@ void CRadNotepadView::OnUpdateSchemeNone(CCmdUI *pCmdUI)
         std::vector<LanguageMenuItem> vecSortLanguage;
         for (const Language& rLanguage : vecLanguage)
         {
-            vecSortLanguage.push_back(LanguageMenuItem());
-            LanguageMenuItem& lmi = vecSortLanguage.back();
-            lmi.pLanguage = &rLanguage;
-            lmi.nID = nID++;
+            if (!rLanguage.internal)
+            {
+                vecSortLanguage.push_back(LanguageMenuItem());
+                LanguageMenuItem& lmi = vecSortLanguage.back();
+                lmi.pLanguage = &rLanguage;
+                lmi.nID = nID++;
+            }
+            else
+                nID++;
         }
 
         std::sort(vecSortLanguage.begin(), vecSortLanguage.end());

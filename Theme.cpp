@@ -149,6 +149,9 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
 
     if (pLanguage != nullptr)
     {
+        if (!pLanguage->strWordChars.IsEmpty())
+            rCtrl.SetWordChars(pLanguage->strWordChars);
+
         for (int i = 0; i < KEYWORDSET_MAX; ++i)
         {
             const CString sclass = pLanguage->vecKeywords[i].sclass;
@@ -631,6 +634,14 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
         _bstr_t title = GetAttribute(pXMLNode, _T("title"));
         if (!isnull(title))
             pLanguage->title = (LPCTSTR) title;
+        _bstr_t wordchars = GetAttribute(pXMLNode, _T("wordchars"));
+        if (!isnull(wordchars))
+            pLanguage->strWordChars = (LPCTSTR) wordchars;
+        _bstr_t internal = GetAttribute(pXMLNode, _T("internal"));
+        if (!isnull(internal))
+            pLanguage->internal = internal == _T("true");
+        // TODO _bstr_t casesensitive = GetAttribute(pXMLChildNode, _T("casesensitive"));
+        // TODO _bstr_t usetabs = GetAttribute(pXMLChildNode, _T("usetabs"));
     }
 
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
@@ -741,10 +752,6 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
             {
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                 _bstr_t base = GetAttribute(pXMLChildNode, _T("base"));
-                // TODO _bstr_t wordchars = GetAttribute(pXMLChildNode, _T("wordchars"));
-                // TODO _bstr_t casesensitive = GetAttribute(pXMLChildNode, _T("casesensitive"));
-                // TODO _bstr_t usetabs = GetAttribute(pXMLChildNode, _T("usetabs"));
-                // TODO _bstr_t internal = GetAttribute(pXMLChildNode, _T("internal"));
 
                 const Language* pBaseLanguage = isnull(base) ? nullptr : Get(vecBaseLanguage, base);
                 if (!isnull(base) && pBaseLanguage == nullptr)

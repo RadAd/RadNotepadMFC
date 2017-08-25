@@ -91,6 +91,8 @@ struct Language
     CString name;
     CString title;
     CString lexer;
+    BOOL internal = FALSE;
+    CString strWordChars;
     std::map<CString, CString> mapProperties;
     std::vector<Style> vecStyle;
     std::vector<GroupStyle> vecGroupStyle;
