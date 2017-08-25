@@ -53,10 +53,13 @@ protected:
 	afx_msg void OnEditCut();
 	afx_msg void OnEditCopy();
 	afx_msg void OnEditClear();
+    afx_msg void OnEditRename();
 	afx_msg void OnPaint();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
     afx_msg void OnItemExpanding(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnDeleteItem(NMHDR* pHdr, LRESULT* pResult);
+    afx_msg void OnBeginLabelEdit(NMHDR* pHdr, LRESULT* pResult);
+    afx_msg void OnEndLabelEdit(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnDblClick(NMHDR* pHdr, LRESULT* pResult);
 
 	DECLARE_MESSAGE_MAP()

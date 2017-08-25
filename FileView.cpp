@@ -5,6 +5,7 @@
 #include "Resource.h"
 #include "RadNotepad.h"
 #include "RadDocManager.h"
+#include "MainFrm.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -158,7 +159,7 @@ static inline int Compare(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST Ite
 
 #define MIN_SHELL_ID 1
 #define MAX_SHELL_ID 2000
-#define WM_RENAME (WM_USER + 156)
+#define ID_EDIT_RENAME (1000)
 
 static IContextMenu2* g_pIContext2 = 0;
 static IContextMenu3* g_pIContext3 = 0;
@@ -181,11 +182,11 @@ static LRESULT CALLBACK ContextMenuHookWndProc(HWND hWnd, UINT msg, WPARAM wp, L
                 };
 
                 if (g_pIContext2)
-                    g_pIContext2->GetCommandString(uItem - MIN_SHELL_ID, GCS_HELPTEXT,
-                        NULL, szBuf, MAX_PATH - 1);
+                    g_pIContext2->GetCommandString(uItem - MIN_SHELL_ID, GCS_HELPTEXT, NULL, szBuf, MAX_PATH - 1);
 
                 // set the status bar text
-                //((CFrameWnd*)(AfxGetApp()->m_pMainWnd))->SetMessageText(szBuf);
+                CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+                pMainWnd->SetMessageText(szBufW);
                 return 0;
             }
         }
@@ -259,7 +260,7 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
             TheContextMenu2->GetCommandString(Cmd - MIN_SHELL_ID, GCS_VERB, NULL, szBuf, MAX_PATH - 1);
         if (wcscmp(szBufW, L"rename") == 0)
         {
-            //SendMessage(hWnd, WM_RENAME, 0, (LPARAM) ItemId);
+            pWnd->SendMessage(WM_COMMAND, ID_EDIT_RENAME);
         }
         else
         {
@@ -307,10 +308,13 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
 	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
 	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
 	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
-	ON_WM_PAINT()
+    ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
+    ON_WM_PAINT()
 	ON_WM_SETFOCUS()
     ON_NOTIFY(TVN_ITEMEXPANDING, ID_FILE_VIEW_TREE, OnItemExpanding)
     ON_NOTIFY(TVN_DELETEITEM, ID_FILE_VIEW_TREE, OnDeleteItem)
+    ON_NOTIFY(TVN_BEGINLABELEDIT, ID_FILE_VIEW_TREE, OnBeginLabelEdit)
+    ON_NOTIFY(TVN_ENDLABELEDIT, ID_FILE_VIEW_TREE, OnEndLabelEdit)
     ON_NOTIFY(NM_DBLCLK, ID_FILE_VIEW_TREE, OnDblClick)
 END_MESSAGE_MAP()
 
@@ -326,7 +330,7 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	rectDummy.SetRectEmpty();
 
 	// Create view:
-	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS;
+	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_EDITLABELS;
 
 	if (!m_wndFileView.Create(dwViewStyle, rectDummy, this, ID_FILE_VIEW_TREE))
 	{
@@ -537,14 +541,11 @@ void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
 
 		UINT flags = 0;
         HTREEITEM hItem = pWndTree->HitTest(ptTree, &flags);
-		if (hItem != NULL)
-		{
-			pWndTree->SelectItem(hItem);
-		}
-
         pWndTree->SetFocus();
         if (hItem != NULL)
         {
+            pWndTree->SelectItem(hItem);
+
             TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
             CComPtr<IContextMenu>    TheContextMenu;
             /*HRESULT hr =*/ GetUIObjectOf(ti->Parent, ti->ItemId, TheContextMenu);
@@ -658,6 +659,13 @@ void CFileView::OnEditClear()
 	// TODO: Add your command handler code here
 }
 
+void CFileView::OnEditRename()
+{
+    HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+    if (hItem != NULL)
+        m_wndFileView.EditLabel(hItem);
+}
+
 void CFileView::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
@@ -691,6 +699,30 @@ void CFileView::OnDeleteItem(NMHDR* pHdr, LRESULT* pResult)
     if (ti->ItemId != nullptr)
         ILFree(ti->ItemId);
     delete ti;
+    *pResult = 0;
+}
+
+void CFileView::OnBeginLabelEdit(NMHDR* pHdr, LRESULT* pResult)
+{
+    LPNMTVDISPINFO ntdi = (LPNMTVDISPINFO) pHdr;
+    TreeItem* ti = (TreeItem*) ntdi->item.lParam;
+    CEdit* pEdit = m_wndFileView.GetEditControl();
+    if (pEdit != nullptr)
+    {
+        pEdit->SetWindowText(GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc, SHGDN_FOREDITING));
+    }
+    *pResult = 0;
+}
+
+void CFileView::OnEndLabelEdit(NMHDR* pHdr, LRESULT* pResult)
+{
+    LPNMTVDISPINFO ntdi = (LPNMTVDISPINFO) pHdr;
+    if (ntdi->item.pszText != nullptr)
+    {
+        TreeItem* ti = (TreeItem*) ntdi->item.lParam;
+        LPITEMIDLIST pnewidls = nullptr;
+        ti->Parent->SetNameOf(GetSafeHwnd(), ti->ItemId, ntdi->item.pszText, SHGDN_FOREDITING, &pnewidls);
+    }
     *pResult = 0;
 }
 
