@@ -65,6 +65,7 @@ END_MESSAGE_MAP()
 CRadNotepadApp::CRadNotepadApp()
 {
     m_hSciDLL = NULL;
+    m_SaveSettings = FALSE;
 
 	// support Restart Manager
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_ALL_ASPECTS;
@@ -153,7 +154,6 @@ BOOL CRadNotepadApp::InitInstance()
 
     // TODO Load settings
     LoadTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
-    m_Settings.user.rTheme = m_Settings.editor.rTheme;
     ASSERT(m_Settings.editor.rTheme == m_Settings.user.rTheme);
 
     AfxEnableControlContainer();
@@ -223,7 +223,7 @@ BOOL CRadNotepadApp::InitInstance()
 int CRadNotepadApp::ExitInstance()
 {
     // TODO Save settings
-    if (m_Settings.editor.rTheme != m_Settings.user.rTheme)
+    if (m_SaveSettings)
         SaveTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
 
 	AfxOleTerm(FALSE);
@@ -232,6 +232,13 @@ int CRadNotepadApp::ExitInstance()
     m_hSciDLL = NULL;
 
 	return CWinAppEx::ExitInstance();
+}
+
+void CRadNotepadApp::NotifySettingsChanged()
+{
+    m_SaveSettings = TRUE;
+    CRadDocManager* pRadDocManager = DYNAMIC_DOWNCAST(CRadDocManager, m_pDocManager);
+    pRadDocManager->UpdateAllViews(nullptr, HINT_UPDATE_SETTINGS);
 }
 
 // CRadNotepadApp message handlers

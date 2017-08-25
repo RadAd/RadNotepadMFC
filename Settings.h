@@ -59,6 +59,5 @@ struct Settings
     int DefaultLineEnding = SC_EOL_CRLF;
 
     EditorSettings default;
-    EditorSettings user;
     EditorSettings editor;
 };

@@ -25,9 +25,13 @@ public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
 
+public:
+    void NotifySettingsChanged();
+
 // Implementation
     HMODULE m_hSciDLL;
     Settings m_Settings;
+    BOOL m_SaveSettings;
     std::vector<Tool> m_Tools;
 
 	virtual void PreLoadState();
