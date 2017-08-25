@@ -2656,8 +2656,12 @@
 			_wordquit
 		</keyword-class>
 	</keyword-classes>
-	<language name="au3" title="AutoIt" folding="true" foldcomments="true" foldcompact="true" foldpreproc="true" >
+	<language name="au3" title="AutoIt" >
 		<lexer name="au3"/>
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.compact" value="1" />
+    <property name="fold.preprocessor" value="1" />
 		<use-keywords>
 			<keyword key="0" name="AutoIt Keywords" class="autoit_keywords"/>
 			<keyword key="1" name="AutoIt Functions" class="autoit_functions"/>

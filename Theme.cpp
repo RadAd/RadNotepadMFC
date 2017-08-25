@@ -741,6 +741,10 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
             {
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
                 _bstr_t base = GetAttribute(pXMLChildNode, _T("base"));
+                // TODO _bstr_t wordchars = GetAttribute(pXMLChildNode, _T("wordchars"));
+                // TODO _bstr_t casesensitive = GetAttribute(pXMLChildNode, _T("casesensitive"));
+                // TODO _bstr_t usetabs = GetAttribute(pXMLChildNode, _T("usetabs"));
+                // TODO _bstr_t internal = GetAttribute(pXMLChildNode, _T("internal"));
 
                 const Language* pBaseLanguage = isnull(base) ? nullptr : Get(vecBaseLanguage, base);
                 if (!isnull(base) && pBaseLanguage == nullptr)

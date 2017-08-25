@@ -29,7 +29,7 @@ cmovo cmovno cmovb cmovc cmovnae cmovae cmovnb cmovnc
 cmove cmovz cmovne cmovnz cmovbe cmovna cmova cmovnbe
 cmovs cmovns cmovp cmovpe cmovnp cmovpo cmovl cmovnge
 cmovge cmovnl cmovle cmovng cmovg cmovnle
-cmpxchg486 cmpxchg8b 
+cmpxchg486 cmpxchg8b
 loadall loadall286 ibts icebp int1 int3 int01 int03 iretw
 popaw popfw pushaw pushfw rdmsr rdpmc rdshr rdtsc
 rsdc rsldt rsm rsts salc smi smint smintold svdc svldt svts
@@ -88,7 +88,7 @@ xmm0 xmm1 xmm2 xmm3 xmm4 xmm5 xmm6 xmm7</keyword-class>
 		<!-- # masm directives -->
 		<keyword-class name="directive">
 .186 .286 .286c .286p .287 .386 .386c .386p .387 .486 .486p
-.8086 .8087 .alpha .break .code .const .continue .cref .data .data? 
+.8086 .8087 .alpha .break .code .const .continue .cref .data .data?
 .dosseg .else .elseif .endif .endw .err .err1 .err2 .errb
 .errdef .errdif .errdifi .erre .erridn .erridni .errnb .errndef
 .errnz .exit .fardata .fardata? .if .lall .lfcond .list .listall
@@ -108,7 +108,7 @@ repeat rept seg segment short size sizeof sizestr struc struct
 substr subtitle subttl textequ this title type typedef union while width</keyword-class>
 		<keyword-class name="directive_operand">
 $ ? @b @f addr basic byte c carry? dword
-far far16 fortran fword near near16 overflow? parity? pascal qword 
+far far16 fortran fword near near16 overflow? parity? pascal qword
 real4  real8 real10 sbyte sdword sign? stdcall sword syscall tbyte
 vararg word zero? flat near32 far32
 abs all assumes at casemap common compact
@@ -137,26 +137,27 @@ section group import export</keyword-class>
 a16 a32 o16 o32 byte word dword nosplit $ $$ seq wrt
 flat large small .text .data .bss near far
 %0 %1 %2 %3 %4 %5 %6 %7 %8 %9</keyword-class>
-		
+
 		<keyword-class name="asm_instructions">
 			<include-class name="cpu_instruction1"/>
 			<include-class name="cpu_instruction2"/>
 		</keyword-class>
-		
+
 		<keyword-class name="asm_directives">
 			<include-class name="directive"/>
 			<include-class name="directive_nasm"/>
 		</keyword-class>
-		
+
 		<keyword-class name="asm_operands">
 			<include-class name="directive_operand"/>
 			<include-class name="directive_operand_nasm"/>
 		</keyword-class>
-		
+
 	</keyword-classes>
 
-	<language name="asm" title="Assembler" folding="false">
+	<language name="asm" title="Assembler">
 		<lexer name="asm" />
+    <property name="fold" value="1" />
 		<use-keywords>
 			<keyword key="0" name="CPU Instructions" class="asm_instructions"/>
 			<keyword key="1" name="FPU Instructions" class="fpu_instruction"/>

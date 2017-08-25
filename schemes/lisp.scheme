@@ -69,16 +69,18 @@ zero?</keyword-class></keyword-classes>
 			<style name="Operator" key="10" class="operator"/>
 		</use-styles>
 	</base-language>
-	<language name="lisp" base="lispbase" title="Lisp" folding="true" wordchars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-&lt;&gt;.#+@$%^&amp;=*!?">
+	<language name="lisp" base="lispbase" title="Lisp" wordchars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-&lt;&gt;.#+@$%^&amp;=*!?">
 		<lexer name="lisp"/>
 		<comments line=";" />
+    <property name="fold" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="lisp" />
 		</use-keywords>
 	</language>
-	<language name="scheme" base="lispbase" title="Scheme" folding="true" wordchars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!$%&amp;*/:&lt;=&gt;?^_~+-.@">
+	<language name="scheme" base="lispbase" title="Scheme" wordchars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!$%&amp;*/:&lt;=&gt;?^_~+-.@">
 		<lexer name="lisp" />
 		<comments line=";" />
+    <property name="fold" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="scheme" />
 		</use-keywords>

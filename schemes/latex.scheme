@@ -3,9 +3,10 @@
 	<keyword-classes>
         <keyword-class name="latex"></keyword-class>
 	</keyword-classes>
-	<language name="latex" title="LaTeX" folding="false" >
+	<language name="latex" title="LaTeX" >
 		<lexer name="latex" />
 		<comments line="%" />
+    <property name="fold" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="latex"/>
 		</use-keywords>

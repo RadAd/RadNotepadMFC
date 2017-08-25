@@ -140,9 +140,15 @@
 		</use-styles>
 	</base-language>
 
-	<language base="cppbase" name="cpp" title="C / C++" folding="true" foldcomments="true" foldelse="true" foldcompact="true" foldpreproc="true">
+	<language base="cppbase" name="cpp" title="C / C++">
 		<lexer name="cpp" />
-		<property name="lexer.cpp.track.preprocessor" value="0" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.at.else" value="1" />
+    <property name="fold.compact" value="1" />
+    <property name="fold.preprocessor" value="1" />
+    <property name="fold.cpp.preprocessor.at.else" value="1" />
+    <property name="lexer.cpp.track.preprocessor" value="0" />
 		<comments line="//" streamStart="/*" streamEnd="*/" blockStart="/**" blockLine=" *" blockEnd=" */" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="cpp"/>
@@ -164,15 +170,20 @@
 		</use-styles>
 	</language>
 
-	<language base="cppbase" name="idl" title="IDL" folding="true">
-	    <property name="lexer.cpp.track.preprocessor" value="0" />
+	<language base="cppbase" name="idl" title="IDL">
+    <property name="fold" value="1" />
+	  <property name="lexer.cpp.track.preprocessor" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="idl" />
 		</use-keywords>
 	</language>
 
-	<language base="cppbase" name="javascript" title="JavaScript" folding="true" foldcomments="true" foldelse="true" foldcompact="true">
+	<language base="cppbase" name="javascript" title="JavaScript">
 		<comments line="//" streamStart="/*" streamEnd="*/" blockStart="/**" blockLine=" *" blockEnd=" */" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.at.else" value="1" />
+    <property name="fold.compact" value="1" />
 		<property name="lexer.cpp.track.preprocessor" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="javascript"/>
@@ -186,8 +197,14 @@
 		</use-styles>
 	</language>
 
-	<language base="cppbase" name="csharp" title="C#" folding="true" foldcomments="true" foldelse="true" foldcompact="true" foldpreproc="true">
+	<language base="cppbase" name="csharp" title="C#">
 		<comments line="//" streamStart="/*" streamEnd="*/" blockStart="/**" blockLine=" *" blockEnd=" */" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.at.else" value="1" />
+    <property name="fold.compact" value="1" />
+    <property name="fold.preprocessor" value="1" />
+    <property name="fold.cpp.preprocessor.at.else" value="1" />
 		<property name="lexer.cpp.track.preprocessor" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="csharp"/>
@@ -206,8 +223,12 @@
 		</use-styles>
 	</language>
 
-	<language base="cppbase" name="java" title="Java" folding="true" foldcomments="true" foldelse="true" foldcompact="true">
+	<language base="cppbase" name="java" title="Java">
 		<comments line="//" streamStart="/*" streamEnd="*/" blockStart="/**" blockLine=" *" blockEnd=" */" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.at.else" value="1" />
+    <property name="fold.compact" value="1" />
 		<property name="lexer.cpp.track.preprocessor" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="java"/>

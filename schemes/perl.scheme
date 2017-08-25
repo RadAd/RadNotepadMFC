@@ -34,9 +34,10 @@
 	<style-classes>
 		<style-class name="heredoc" fore="7f007f" back="ddd0dd" eolfilled="true" />
 	</style-classes>
-	<language name="perl" title="Perl" folding="true" >
+	<language name="perl" title="Perl" >
 		<lexer name="perl" />
 		<comments line="#" />
+    <property name="fold" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="perl"/>
 		</use-keywords>

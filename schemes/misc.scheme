@@ -8,8 +8,10 @@
 			rmdir rd shift time type ver verify vol com con lpt nul
 		</keyword-class>
 	</keyword-classes>
-	<language name="properties" title="Properties" folding="true" foldcomments="false">
+	<language name="properties" title="Properties">
 		<lexer name="props"/>
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="0" />
 		<use-styles>
 			<style name="Default" key="32" />
 			<style name="Whitespace" key="0" />

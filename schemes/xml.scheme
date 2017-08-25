@@ -1,13 +1,20 @@
 <?xml version="1.0"?>
 <Scheme>
-	<style-classes><style-class name="sgml" back="efefff" eolfilled="true"/></style-classes>
-	<keyword-classes><keyword-class name="dtd">
+	<style-classes>
+    <style-class name="sgml" back="efefff" eolfilled="true"/>
+  </style-classes>
+	<keyword-classes>
+    <keyword-class name="dtd">
 			ELEMENT DOCTYPE ATTLIST ENTITY NOTATION
-		</keyword-class></keyword-classes>
-	<language name="xml" title="XML" folding="true" foldcomments="false" foldcompact="false">
+		</keyword-class>
+  </keyword-classes>
+	<language name="xml" title="XML">
 		<comments streamStart="&lt;!-- " streamEnd=" --&gt;"/>
 		<lexer name="xml" stylebits="7"/>
 		<property name="fold.html" value="1" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="0" />
+    <property name="fold.compact" value="0" />
 		<use-keywords>
 			<keyword key="5" name="DTD keywords" class="dtd"/>
 		</use-keywords>

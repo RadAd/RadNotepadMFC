@@ -21,9 +21,10 @@ $nokey $scope $showscopes $showscopes $showvars $showvars $countdrivers $list
 $monitoron $monitoroff $dumpon $dumpoff $dumpfile $dumplimit $dumpflush $dumpvars
 $dumpall $reset $reset $reset $reset $reset $random $getpattern $rtoi $itor $realtobits $bitstoreal
 $setup $hold $setuphold $period $width $skew $recovery</keyword-class></keyword-classes>
-	<language name="verilog" title="Verilog" folding="true">
+	<language name="verilog" title="Verilog">
 		<lexer name="verilog" />
 		<comments line="//" streamStart="/*" streamEnd="*/" blockStart="/**" blockLine=" *" blockEnd=" */" />
+    <property name="fold" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="verilog" />
 			<keyword key="2" name="Keywords 2" class="verilog2" />

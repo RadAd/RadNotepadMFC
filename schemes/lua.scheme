@@ -7,9 +7,13 @@
 		</keyword-class>
 	</keyword-classes>
 
-	<language name="lua" title="Lua" folding="true" foldcomments="true" foldcompact="false" foldpreproc="true">
+	<language name="lua" title="Lua">
 		<lexer name="lua" />
 		<comments line="--" streamStart="--[[" streamEnd="]]" blockStart="--[[" blockLine="--" blockEnd="]]" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.compact" value="0" />
+    <property name="fold.preprocessor" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="lua"/>
 		</use-keywords>

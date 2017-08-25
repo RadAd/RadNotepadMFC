@@ -18,8 +18,11 @@
 			val
 		</keyword-class>
 	</keyword-classes>
-	<language name="modula2" title="Modula-2" folding="true" foldcomments="true" foldcompact="false">
+	<language name="modula2" title="Modula-2">
 		<lexer name="pascal" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.compact" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="modula2"/>
 			<keyword key="2" name="Fold Start Words" class="modula2_foldwords"/>

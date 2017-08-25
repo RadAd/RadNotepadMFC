@@ -372,8 +372,12 @@
 			zlib
 		</keyword-class>
 	</keyword-classes>
-	<language name="NSIS" title="NSIS2 Installer" folding="true" foldcomments="true" foldcompact="true" foldpreproc="true">
+	<language name="NSIS" title="NSIS2 Installer">
 		<lexer name="nsis"/>
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.compact" value="1" />
+    <property name="fold.preprocessor" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="NSIS"/>
 			<keyword key="1" name="Variables" class="NSISVars"/>

@@ -131,12 +131,15 @@
 			male female child x-low low high x-high code digits continous
 		</keyword-class>
 	</keyword-classes>
-	
-	<language name="web" title="HTML" folding="true" foldcomments="false" foldcompact="false" wordchars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$_-">
+
+	<language name="web" title="HTML" wordchars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$_-">
 		<comments streamStart="&lt;!-- " streamEnd=" --&gt;"/>
 		<lexer name="hypertext" stylebits="7" />
 		<property name="asp.default.language" value="2" />
 		<property name="fold.html" value="1" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="0" />
+    <property name="fold.compact" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Hypertext" class="hypertext"/>
 			<keyword key="1" name="Javascript" class="javascript"/>
@@ -167,7 +170,7 @@
 			<style name="CDATA" key="17" back="ffdf00"/>
 			<style name="PHP" key="18" fore="0000ff" back="ffefbf"/>
 			<style name="Unquoted Values" key="19" fore="ff00ff" back="ffefff"/>
-			
+
 			<!-- SGML Tags -->
 			<group name="SGML" description="SGML Tags">
 				<style name="Tags &lt;!...&gt;" key="21" fore="000080" back="efefff"/>
@@ -181,8 +184,8 @@
 				<style name="comment" key="29" fore="808000" back="efefff"/>
 				<style name="block" key="31" fore="000066" back="cccce0"/>
 			</group>
-			
-			<!-- Embedded JavaScript -->			
+
+			<!-- Embedded JavaScript -->
 			<group name="JavaScript" description="Embedded JavaScript" class="embeddedjs">
 				<style name="Start" key="40" fore="7f7f00"/>
 				<style name="Default" key="41" fore="000000" eolfilled="true"/>
@@ -198,7 +201,7 @@
 				<style name="EOL" key="51" back="bfbbb0" eolfilled="true"/>
 				<style name="Regular Expression" key="52" back="ffbbb0"/>
 			</group>
-			
+
 			<!-- ASP JavaScript -->
 			<group name="ASP JavaScript" description="JavaScript embedded within an ASP file." class="aspjs" >
 				<style name="Start" key="55" fore="7F7F00" />
@@ -215,7 +218,7 @@
 				<style name="EOL" key="66" back="BFBBB0" eolfilled="true"/>
 				<style name="Regular Expression" key="67" back="FFBBB0"/>
 			</group>
-			
+
 			<!-- Embedded VBS -->
 			<group name="VBScript" description="VBScript code in HTML documents" class="embeddedvbs">
 				<style name="Start" key="70" />
@@ -227,7 +230,7 @@
 				<style name="Identifier" key="76" fore="000080"/>
 				<style name="Unterminated string" key="77" back="7F7FFF" fore="000080"/>
 			</group>
-			
+
 			<!-- ASP VBS -->
 			<group name="ASP VBScript" description="VBScript code embedded within an ASP file." class="aspvbs">
 				<style name="Start" key="80" />
@@ -239,7 +242,7 @@
 				<style name="Identifier" key="86" fore="000080"/>
 				<style name="Unterminated string" key="87" back="7F7FBF" fore="000080"/>
 			</group>
-			
+
 			<!-- Embedded Python -->
 			<group name="Python" description="Python code in HTML documents" class="embeddedpython" >
 				<style name="Start" key="90" fore="808080"/>
@@ -256,7 +259,7 @@
 				<style name="Operators" key="101" bold="true"/>
 				<style name="Identifiers" key="102" />
 			</group>
-			
+
 			<!-- ASP Python -->
 			<group name="ASP Python" description="Python code embedded within an ASP file." class="asppython" >
 				<style name="ASP Python" key="105" fore="808080"/>
@@ -273,7 +276,7 @@
 				<style name="Operators" key="116" bold="true"/>
 				<style name="Identifiers" key="117" />
 			</group>
-			
+
 			<!-- PHP -->
 			<group name="PHP" description="PHP code" class="php">
 				<style name="Default" key="118" />
@@ -289,9 +292,10 @@
 			</group>
 		</use-styles>
 	</language>
-	<language name="css" title="CSS" folding="false" foldcomments="false" foldcompact="false">
+	<language name="css" title="CSS">
 		<comments streamStart="/*" streamEnd="*/"/>
 		<lexer name="css"/>
+    <property name="fold" value="0" />
 		<use-keywords>
 			<keyword key="0" name="CSS 1" class="css"/>
 			<keyword key="1" name="pseudo Classes" class="css-pseudo" />
@@ -318,10 +322,13 @@
 			<style name="Attribute Selection [att='val']" key="16" fore="800000"/>
 		</use-styles>
 	</language>
-	<language name="php" title="PHP" folding="true" foldcomments="false" foldcompact="false" wordchars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$_">
+	<language name="php" title="PHP" wordchars="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$_">
 		<comments line="//" streamStart="/*" streamEnd="*/"/>
 		<lexer name="hypertext" stylebits="7" />
 		<property name="fold.html" value="1" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="0" />
+    <property name="fold.compact" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Hypertext" class="hypertext"/>
 			<keyword key="1" name="Javascript" class="javascript"/>
@@ -330,7 +337,7 @@
 		<use-styles>
 			<style name="Default" key="32" class="default"/>
 			<style name="Text" key="0" class="default"/>
-		
+
 			<group name="PHP" description="PHP code">
 				<style name="Default" key="118" />
 				<style name="Double quoted String" key="119" class="string"/>
@@ -343,7 +350,7 @@
 				<style name="String variable" key="126" fore="00007F" />
 				<style name="Operator" key="127" class="operator"/>
 			</group>
-			
+
 			<group name="HTML" description="HTML">
 				<style name="Tags" key="1" class="tag"/>
 				<style name="Unknown Tags" key="2" class="unknowntag"/>

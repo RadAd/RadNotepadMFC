@@ -290,7 +290,6 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.SetMarginSensitiveN(MARGIN_FOLDS, TRUE);
     rCtrl.SetMarginTypeN(MARGIN_FOLDS, SC_MARGIN_SYMBOL);
     rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
-    rCtrl.SetProperty(_T("fold"), _T("1"));
 
     rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.bShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
     rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
@@ -314,6 +313,7 @@ void CRadNotepadView::OnInitialUpdate()
     for (int i = 0; i < ARRAYSIZE(MTMarker); ++i)
         DefineMarker(MTMarker[i], MT[settings.nFoldType][i], settings.cFoldFG, settings.cFoldBG);
 
+    // TODO Set separate colors and style from Fold
     DefineMarker(RAD_MARKER_BOOKMARK, SC_MARK_BOOKMARK, settings.cFoldFG, settings.cFoldBG);
 
     rCtrl.SetUseTabs(settings.bUseTabs);

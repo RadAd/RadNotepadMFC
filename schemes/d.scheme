@@ -38,8 +38,12 @@
 	</keyword-classes>
 
 	<!-- base scheme for C++ style languages -->
-	<language name="d" title="D" folding="true" foldcomments="true" foldcompact="false" foldpreproc="true">
+	<language name="d" title="D">
 		<lexer name="d" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.compact" value="0" />
+    <property name="fold.preprocessor" value="1" />
 		<comments line="//" streamStart="/*" streamEnd="*/" blockStart="/**" blockLine=" *" blockEnd=" */" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="d"/>

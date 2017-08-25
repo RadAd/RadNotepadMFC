@@ -73,14 +73,14 @@ status label endterm linkend space width
 		</keyword-class>
 	</keyword-classes>
 
-	<language name="docbook" title="Docbook XML" folding="false">
+	<language name="docbook" title="Docbook XML">
 		<lexer name="xml" stylebits="7"/>
-		
+    <property name="fold" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Docbook" class="docbook42"/>
 			<keyword key="5" name="DTD Keywords" class="docbook42.SGMLDTD"/>
 		</use-keywords>
-		
+
 		<use-styles>
 			<style name="Default" key="32" class="default"/>
 			<style name="Text" key="0" class="default"/>

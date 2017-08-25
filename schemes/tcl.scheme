@@ -47,7 +47,7 @@
 			tkScaleControlPress tkScaleDrag tkScaleEndDrag tkScaleIncrement
 			tkScreenChanged tkScrollButton2Down tkScrollButtonDown
 			tkScrollButtonUp tkScrollByPages tkScrollByUnits tkScrollDrag
-			tkScrollEndDrag tkScrollSelect tkScrollStartDrag tkScrollToPos 
+			tkScrollEndDrag tkScrollSelect tkScrollStartDrag tkScrollToPos
 			tkScrollTopBottom tkTabToWindow tkTearOffMenu tkTextAutoScan
 			tkTextButton1 tkTextClosestGap tkTextInsert tkTextKeyExtend
 			tkTextKeySelect tkTextNextPara tkTextNextPos tkTextNextWord
@@ -63,11 +63,13 @@
 			expand
 		</keyword-class>
 	</keyword-classes>
-	
+
 	<!-- base scheme for C++ style languages -->
-	<language name="tcl" title="TCL" folding="true" foldcomments="true">
+	<language name="tcl" title="TCL">
 		<lexer name="tcl" />
 		<comments line="#~" blockStart="##" blockLine=" #" blockEnd="##" />
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="tcl"/>
 			<keyword key="1" name="TK Keywords" class="tk"/>

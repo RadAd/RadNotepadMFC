@@ -74,18 +74,20 @@ timer undfl unlock union val virtual volatile zabs zcos zexp zlog zsin zsqrt</ke
 			<style name="User defined" key="15" fore="E0F0FF"/>
 		</use-styles>
 	</base-language>
-	<language name="fortran77" base="fortranbase" title="Fortran 77" folding="true">
+	<language name="fortran77" base="fortranbase" title="Fortran 77">
 		<lexer name="f77"/>
 		<comments line="!~" />
+    <property name="fold" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="fortran" />
 			<keyword key="1" name="Keywords 2" class="fortran2" />
 			<keyword key="2" name="Keywords 3" class="fortran3" />
 		</use-keywords>
 	</language>
-	<language name="fortran" base="fortranbase" title="Fortran 95" folding="true">
+	<language name="fortran" base="fortranbase" title="Fortran 95">
 		<lexer name="fortran" />
 		<comments line="!~" />
+    <property name="fold" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="fortran" />
 			<keyword key="1" name="Keywords 2" class="fortran2" />

@@ -7,10 +7,13 @@
 			not or pass print raise return try while yield True False
 		</keyword-class>
 	</keyword-classes>
-	<language name="python" title="Python" folding="true" foldcomments="true" foldcompact="false">
+	<language name="python" title="Python">
 		<lexer name="python" />
 		<comments line="#" />
 		<property name="tab.timmy.whinge.level" value="1"/>
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.compact" value="0" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="python"/>
 		</use-keywords>

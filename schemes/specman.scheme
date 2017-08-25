@@ -35,9 +35,10 @@ get_index grab is_blocked is_relevant ungrab mid_do post_do post_trace pre_do
 current_grabber get_current_item get_num_items_sent get_sequence_trace_list get_trace_list
 is_grabbed try_next_item check_is_relevant delay_clock get_sub_drivers regenerate_data
 wait_for_sequences stop</keyword-class></keyword-classes>
-	<language name="specman" title="Specman" folding="true">
+	<language name="specman" title="Specman">
 		<lexer name="specman" />
 		<comments line="//" />
+    <property name="fold" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="specman" />
 			<keyword key="1" name="Keywords 2" class="specman2" />

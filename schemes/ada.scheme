@@ -11,8 +11,12 @@
 			<include-class name="keywords.ada.main"/><include-class name="keywords.ada.operators"/>
 		</keyword-class>
 	</keyword-classes>
-	<language name="ada" title="Ada" folding="true" foldcomments="true" foldcompact="true" foldpreproc="true">
+	<language name="ada" title="Ada">
 		<lexer name="ada"/>
+    <property name="fold" value="1" />
+    <property name="fold.comment" value="1" />
+    <property name="fold.compact" value="1" />
+    <property name="fold.preprocessor" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="keywords.ada"/>
 		</use-keywords>
