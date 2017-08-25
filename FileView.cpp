@@ -219,12 +219,16 @@ static LRESULT CALLBACK ContextMenuHookWndProc(HWND hWnd, UINT msg, WPARAM wp, L
     return DefSubclassProc(hWnd, msg, wp, lp);
 }
 
-static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int Flags, int x, int y)
+static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int Flags, int x, int y, BOOL bCanView)
 {
     CMenu    Menu;
     Menu.CreatePopupMenu();
-    Menu.AppendMenu(MF_ENABLED | MF_STRING, ID_VIEW, _T("View"));
-    Menu.SetDefaultItem(ID_VIEW);
+
+    if (bCanView)
+    {
+        Menu.AppendMenu(MF_ENABLED | MF_STRING, ID_VIEW, _T("View"));
+        Menu.SetDefaultItem(ID_VIEW);
+    }
 
     TheContextMenu->QueryContextMenu(Menu, Menu.GetMenuItemCount(), MIN_SHELL_ID, MAX_SHELL_ID, Flags);
 
@@ -571,7 +575,12 @@ void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
                 int Flags = /*CMF_EXPLORE |*/ CMF_NORMAL | CMF_CANRENAME | CMF_ITEMMENU;
                 if (GetKeyState(VK_SHIFT) < 0)
                     Flags |= CMF_EXTENDEDVERBS;
-                ::DoContextMenu(this, TheContextMenu, Flags, ptTree.x, ptTree.y);
+
+                SFGAOF AttrFlags = SHCIDS_BITMASK;
+                GetAttributesOf(ti->Parent, ti->ItemId, &AttrFlags);
+                BOOL bCanView = (AttrFlags & SFGAO_FILESYSTEM) && !(AttrFlags & SFGAO_FOLDER);
+
+                ::DoContextMenu(this, TheContextMenu, Flags, ptTree.x, ptTree.y, bCanView);
             }
         }
     }
@@ -681,7 +690,13 @@ void CFileView::OnEditRename()
 {
     HTREEITEM hItem = m_wndFileView.GetSelectedItem();
     if (hItem != NULL)
-        m_wndFileView.EditLabel(hItem);
+    {
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+        SFGAOF Flags = SHCIDS_BITMASK;
+        GetAttributesOf(ti->Parent, ti->ItemId, &Flags);
+        if (Flags & SFGAO_CANRENAME)
+            m_wndFileView.EditLabel(hItem);
+    }
 }
 
 void CFileView::OnEditView()
