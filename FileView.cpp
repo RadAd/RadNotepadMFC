@@ -6,6 +6,7 @@
 #include "RadNotepad.h"
 #include "RadDocManager.h"
 #include "MainFrm.h"
+#include <set>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -14,14 +15,17 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 // TODO
-// Detect filesystem changes
+// Remove IDR_POPUP_EXPLORER
+
 
 #define ID_FILE_VIEW_TREE 4
+
+#define MSG_SHELLCHANGE (WM_USER + 117)
 
 struct TreeItem
 {
     CComPtr<IShellFolder>     Parent;
-    LPITEMIDLIST    ItemId;
+    PITEMID_CHILD    ItemId;
 };
 
 static inline CString GetCLSIDName(const wchar_t* path)
@@ -55,21 +59,31 @@ static inline CComPtr<IShellFolder> GetParentFolder(LPITEMIDLIST pidl)
 
     LPITEMIDLIST parent_pidl = ILClone(pidl);
     ILRemoveLastID(parent_pidl);
-    if (parent_pidl && parent_pidl->mkid.cb)
-    {
+
+    if (parent_pidl && !ILIsEmpty(parent_pidl))
         Desktop->BindToObject(parent_pidl, 0, IID_IShellFolder, (LPVOID *) &Parent);
-    }
     else
-    {
         Parent = Desktop;
-    }
+
     if (parent_pidl)
         ILFree(parent_pidl);
 
     return Parent;
 }
 
-static inline HRESULT GetAttributesOf(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST ItemId, SFGAOF *Flags)
+static inline CComPtr<IShellFolder> GetFolder(const CComPtr<IShellFolder>& Parent, PCITEMID_CHILD ItemId)
+{
+    if (ItemId == nullptr)
+        return  Parent;
+    else
+    {
+        CComPtr<IShellFolder> Folder;
+        Parent->BindToObject(ItemId, 0, IID_IShellFolder, (LPVOID *) &Folder);
+        return Folder;
+    }
+}
+
+static inline HRESULT GetAttributesOf(const CComPtr<IShellFolder>& Parent, PCITEMID_CHILD ItemId, SFGAOF *Flags)
 {
     HRESULT    hr = NOERROR;
     LPCITEMIDLIST    IdList[1] = { ItemId };
@@ -77,7 +91,7 @@ static inline HRESULT GetAttributesOf(const CComPtr<IShellFolder>& Parent, LPCIT
     return hr;
 }
 
-static inline bool IsFolder(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST ItemId)
+static inline bool IsFolder(const CComPtr<IShellFolder>& Parent, PCITEMID_CHILD ItemId)
 {
     SFGAOF Flags = SHCIDS_BITMASK;
     GetAttributesOf(Parent, ItemId, &Flags);
@@ -114,7 +128,7 @@ static inline CString GetStr(const CComPtr<IMalloc>& Malloc, LPCITEMIDLIST pidl,
     return ret;
 }
 
-static inline CString GetDisplayNameOf(const CComPtr<IShellFolder>& Folder, LPCITEMIDLIST ItemId, const CComPtr<IMalloc>& Malloc, SHGDNF Flags = SHGDN_NORMAL)
+static inline CString GetDisplayNameOf(const CComPtr<IShellFolder>& Folder, PCITEMID_CHILD ItemId, const CComPtr<IMalloc>& Malloc, SHGDNF Flags = SHGDN_NORMAL)
 {
     STRRET    Name = {};
     HRESULT hr = Folder->GetDisplayNameOf(ItemId, Flags, &Name);
@@ -125,14 +139,14 @@ static inline CString GetDisplayNameOf(const CComPtr<IShellFolder>& Folder, LPCI
 }
 
 template <class I>
-HRESULT GetUIObjectOf(const CComPtr<IShellFolder>& Folder, LPCITEMIDLIST ItemId, CComPtr<I>& Inteface)
+HRESULT GetUIObjectOf(const CComPtr<IShellFolder>& Folder, PCITEMID_CHILD ItemId, CComPtr<I>& Inteface)
 {
     LPCITEMIDLIST    IdList[1] = { ItemId };
     HRESULT hr = Folder->GetUIObjectOf(NULL, 1, IdList, __uuidof(Inteface), 0, (LPVOID *) &Inteface);
     return hr;
 }
 
-static inline int Compare(const CComPtr<IShellFolder>& Parent, LPCITEMIDLIST ItemId1, LPCITEMIDLIST ItemId2, const CComPtr<IMalloc>& Malloc)
+static inline int Compare(const CComPtr<IShellFolder>& Parent, PCITEMID_CHILD ItemId1, PCITEMID_CHILD ItemId2, const CComPtr<IMalloc>& Malloc)
 {
     bool isFolder1 = IsFolder(Parent, ItemId1);
     bool isFolder2 = IsFolder(Parent, ItemId2);
@@ -304,6 +318,8 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
 
 CFileView::CFileView()
 {
+    m_Notify = 0;
+    m_pRootPidl = nullptr;
     HRESULT    hr = NOERROR;
     hr = SHGetMalloc(&m_Malloc);
     HIMAGELIST ImlLarge, ImlSmall;
@@ -313,6 +329,8 @@ CFileView::CFileView()
 
 CFileView::~CFileView()
 {
+    SHChangeNotifyDeregister(m_Notify);
+    ILFree(m_pRootPidl);
     m_FileViewImages.Detach();
 }
 
@@ -337,6 +355,7 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
     ON_NOTIFY(TVN_BEGINLABELEDIT, ID_FILE_VIEW_TREE, OnBeginLabelEdit)
     ON_NOTIFY(TVN_ENDLABELEDIT, ID_FILE_VIEW_TREE, OnEndLabelEdit)
     ON_NOTIFY(NM_DBLCLK, ID_FILE_VIEW_TREE, OnDblClick)
+    ON_MESSAGE(MSG_SHELLCHANGE, OnShellChange)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -431,13 +450,31 @@ void CFileView::FillFileView()
         name = _T("Desktop");
 #else
     HRESULT    hr = NOERROR;
-    LPITEMIDLIST    pIdl = nullptr;
-    hr = SHGetSpecialFolderLocation(GetSafeHwnd(), CSIDL_DRIVES, &pIdl);
-    ti->Parent = GetParentFolder(pIdl);
-    ti->ItemId = ILClone(ILFindLastID(pIdl));
+    hr = SHGetSpecialFolderLocation(GetSafeHwnd(), CSIDL_DRIVES, &m_pRootPidl);
+    ti->Parent = GetParentFolder(m_pRootPidl);
+    ti->ItemId = ILClone(ILFindLastID(m_pRootPidl));
+    ILRemoveLastID(m_pRootPidl);
     CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
-    ILFree(pIdl);
 #endif
+
+    {
+        SHChangeNotifyEntry cne;
+        cne.fRecursive = TRUE;
+        cne.pidl = m_pRootPidl;
+
+        const LONG fEvents = SHCNE_CREATE | SHCNE_DELETE |
+            SHCNE_MKDIR | SHCNE_RMDIR | SHCNE_RENAMEFOLDER |
+            SHCNE_RENAMEITEM;
+        //SHCNE_UPDATEITEM;     // TODO Look into this, not sure if handled properly at the moment
+        //SHCNE_ATTRIBUTES;
+
+        m_Notify = SHChangeNotifyRegister(GetSafeHwnd(),
+            SHCNRF_ShellLevel | SHCNRF_NewDelivery,
+            SHCNE_ALLEVENTS,
+            MSG_SHELLCHANGE,
+            1,
+            &cne);
+    }
 
     TVINSERTSTRUCT tvis = {};
     tvis.hParent = TVI_ROOT;
@@ -503,8 +540,90 @@ void CFileView::InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent)
     }
 }
 
-HTREEITEM CFileView::InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, LPITEMIDLIST ItemId)
+HTREEITEM CFileView::FindItem(HTREEITEM hParentItem, PCITEMID_CHILD pidl)
 {
+    ASSERT(ILIsChild(pidl));
+
+    HTREEITEM hItem = m_wndFileView.GetChildItem(hParentItem);
+    while (hItem != NULL)
+    {
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+
+#ifdef _DEBUG
+        CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
+#endif
+
+        if (ILIsEqual(ti->ItemId, pidl))
+            return hItem;
+
+        hItem = m_wndFileView.GetNextSiblingItem(hItem);
+    }
+
+    return NULL;
+}
+
+HTREEITEM CFileView::FindItem(PCIDLIST_RELATIVE pidl, BOOL bExpandChildren)
+{
+    HTREEITEM hNode = m_wndFileView.GetRootItem();
+    TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hNode);
+    if (ILIsParent(ti->ItemId, pidl, FALSE))
+    {
+        LPITEMIDLIST parentpidl = ILClone(ti->ItemId);
+        HTREEITEM hChild = m_wndFileView.GetChildItem(hNode);
+        while (hChild != NULL)
+        {
+            /*TreeItem**/ ti = (TreeItem*) m_wndFileView.GetItemData(hChild);
+
+#ifdef _DEBUG
+            CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
+#endif
+
+            LPITEMIDLIST childpidl = ILCombine(parentpidl, ti->ItemId);
+            if (ILIsParent(childpidl, pidl, FALSE))
+            {
+                if (bExpandChildren)
+                    m_wndFileView.Expand(hChild, TVE_EXPAND);
+
+                hNode = hChild;
+                hChild = m_wndFileView.GetChildItem(hNode);
+                ILFree(parentpidl);
+                parentpidl = childpidl;
+
+                if (ILIsEqual(parentpidl, pidl))
+                {
+                    ILFree(parentpidl);
+                    return hNode;
+                }
+            }
+            else
+            {
+                ILFree(childpidl);
+
+                hChild = m_wndFileView.GetNextSiblingItem(hChild);
+            }
+        }
+        ILFree(parentpidl);
+    }
+
+    return NULL;
+}
+
+HTREEITEM CFileView::FindParentItem(PCIDLIST_RELATIVE pidl)
+{
+    PIDLIST_RELATIVE pparentidl = ILClone(pidl);
+    ILRemoveLastID(pparentidl);
+
+    HTREEITEM hNode = FindItem(pparentidl, FALSE);
+
+    ILFree(pparentidl);
+
+    return hNode;
+}
+
+HTREEITEM CFileView::InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, PITEMID_CHILD ItemId)
+{
+    ASSERT(ILIsChild(ItemId));
+
     TreeItem* ti = new TreeItem;
     ti->Parent = folder;
     ti->ItemId = ItemId;
@@ -541,6 +660,148 @@ HTREEITEM CFileView::FindSortedPos(HTREEITEM hParent, const TreeItem* tir)
         hChild = m_wndFileView.GetNextSiblingItem(hChild);
     }
     return TVI_LAST;
+}
+
+void CFileView::OnDeleteItem(PCIDLIST_RELATIVE pidls)
+{
+    HTREEITEM hItem = FindItem(pidls, FALSE);
+    if (hItem != NULL)
+    {
+        HTREEITEM hParentItem = m_wndFileView.GetParentItem(hItem);
+        m_wndFileView.DeleteItem(hItem);
+
+        if (hParentItem != NULL && m_wndFileView.GetChildItem(hParentItem) == NULL)
+        {
+            TVITEM item;
+            ZeroMemory(&item, sizeof(item));
+            item.hItem = hParentItem;
+            item.mask = TVIF_CHILDREN;
+            item.cChildren = 0;
+            m_wndFileView.SetItem(&item);
+        }
+    }
+}
+
+void CFileView::OnRenameItem(PCIDLIST_RELATIVE pidls, PCIDLIST_RELATIVE new_pidls)
+{
+    HTREEITEM hItem = FindItem(pidls, FALSE);
+    if (hItem != NULL)
+    {
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+
+        ILFree(ti->ItemId);
+        ti->ItemId = ILClone(ILFindLastID(new_pidls));
+
+        CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
+
+        TVITEM item;
+        ZeroMemory(&item, sizeof(item));
+        item.hItem = hItem;
+        item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+        item.pszText = (LPWSTR) name.GetString();
+        item.iImage = SHMapPIDLToSystemImageListIndex(ti->Parent, ti->ItemId, &item.iSelectedImage);
+        //item.iSelectedImage = item.iImage;
+        m_wndFileView.SetItem(&item);
+
+#if 0   // TODO
+        HTREEITEM hParentItem = m_wndFileView.GetParentItem(hItem);
+        if (hParentItem != NULL)
+            SortChildren(hParentItem);  // TODO Sort or just move the one renamed
+#endif
+    }
+}
+
+void CFileView::OnAddItem(PCIDLIST_RELATIVE pidls)
+{
+    HTREEITEM hParentItem = FindParentItem(pidls);
+    if (hParentItem)
+    {
+        TVITEM item;
+        ZeroMemory(&item, sizeof(item));
+        item.hItem = hParentItem;
+        item.mask = TVIF_CHILDREN;
+        if (hParentItem != TVI_ROOT)
+            m_wndFileView.GetItem(&item);
+
+        if (item.cChildren == 0 || (item.cChildren != 0 && m_wndFileView.GetChildItem(hParentItem) != NULL))
+        {
+            TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hParentItem);
+            CComPtr<IShellFolder> Folder = GetFolder(ti->Parent, ti->ItemId);
+
+            InsertChild(hParentItem, Folder, ILClone(ILFindLastID(pidls)));
+
+            if (hParentItem != TVI_ROOT)
+            {
+                item.cChildren = 1;
+                m_wndFileView.SetItem(&item);
+            }
+
+            if (hParentItem != TVI_ROOT)
+                m_wndFileView.Expand(hParentItem, TVE_EXPAND);
+        }
+    }
+}
+
+void CFileView::OnUpdateItem(PCIDLIST_RELATIVE pidls)
+{
+    HTREEITEM hParentItem = FindParentItem(pidls);
+    if (hParentItem)
+    {
+        TVITEM item;
+        ZeroMemory(&item, sizeof(item));
+        item.hItem = hParentItem;
+        item.mask = TVIF_CHILDREN;
+        if (hParentItem != TVI_ROOT)
+            m_wndFileView.GetItem(&item);
+
+        if (item.cChildren == 0 || (item.cChildren != 0 && m_wndFileView.GetChildItem(hParentItem) != NULL))
+        {
+            TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hParentItem);
+            CComPtr<IShellFolder> Folder = GetFolder(ti->Parent, ti->ItemId);
+
+            CComPtr<IEnumIDList>    EnumIDList;
+            HRESULT hr = Folder->EnumObjects(NULL, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &EnumIDList);
+
+            if (!!EnumIDList)
+            {
+                std::set<HTREEITEM> found;
+
+                while (SUCCEEDED(hr) && (hr != S_FALSE))
+                {
+                    LPITEMIDLIST    ItemId = NULL;
+                    hr = EnumIDList->Next(1, &ItemId, NULL);
+                    if (ItemId != NULL)
+                    {
+                        HTREEITEM hItem = FindItem(hParentItem, ItemId);
+#ifdef _DEBUG
+                        CString name = GetDisplayNameOf(Folder, ItemId, m_Malloc);
+#endif
+
+                        if (hItem == NULL)
+                            hItem = InsertChild(hParentItem, Folder, ILClone(ItemId));
+
+                        found.insert(hItem);
+                    }
+                }
+
+                HTREEITEM hItem = m_wndFileView.GetChildItem(hParentItem);
+                while (hItem != NULL)
+                {
+                    HTREEITEM hNextItem = m_wndFileView.GetNextSiblingItem(hItem);
+                    if (found.find(hItem) == found.end())
+                        m_wndFileView.DeleteItem(hItem);
+                    hItem = hNextItem;
+                }
+
+                TVITEM item;
+                ZeroMemory(&item, sizeof(item));
+                item.hItem = hParentItem;
+                item.mask = TVIF_CHILDREN;
+                item.cChildren = m_wndFileView.GetChildItem(hParentItem) == NULL ? 0 : 1;
+                m_wndFileView.SetItem(&item);
+            }
+        }
+    }
 }
 
 void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
@@ -618,38 +879,11 @@ void CFileView::OnSync()
         LPITEMIDLIST pidl = nullptr;
         /*HRESULT hr =*/ SHParseDisplayName(path, NULL, &pidl, 0, 0);
 
-        HTREEITEM hNode = m_wndFileView.GetRootItem();
-        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hNode);
-        if (ILIsParent(ti->ItemId, pidl, FALSE))
+        HTREEITEM hNode = FindItem(pidl, TRUE);
+        if (hNode != NULL)
         {
-            LPITEMIDLIST parentpidl = ILClone(ti->ItemId);
-            HTREEITEM hChild = m_wndFileView.GetChildItem(hNode);
-            while (hChild != NULL)
-            {
-                /*TreeItem**/ ti = (TreeItem*) m_wndFileView.GetItemData(hChild);
-                LPITEMIDLIST childpidl = ILCombine(parentpidl, ti->ItemId);
-                if (ILIsParent(childpidl, pidl, FALSE))
-                {
-                    m_wndFileView.Expand(hChild, TVE_EXPAND);
-                    //InsertChildren(hNode, ti);
-                    hNode = hChild;
-                    hChild = m_wndFileView.GetChildItem(hNode);
-                    parentpidl = childpidl;
-
-                    if (hChild == NULL && ILIsEqual(parentpidl, pidl))
-                    {
-                        m_wndFileView.Select(hNode, TVGN_CARET);
-                        m_wndFileView.EnsureVisible(hNode);
-                    }
-                }
-                else
-                {
-                    ILFree(childpidl);
-
-                    hChild = m_wndFileView.GetNextSiblingItem(hChild);
-                }
-            }
-            ILFree(parentpidl);
+            m_wndFileView.Select(hNode, TVGN_CARET);
+            m_wndFileView.EnsureVisible(hNode);
         }
 
         ILFree(pidl);
@@ -786,4 +1020,47 @@ void CFileView::OnDblClick(NMHDR* /*pHdr*/, LRESULT* pResult)
         theApp.OpenDocumentFile(name);
     }
     *pResult = 0;
+}
+
+LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
+{
+    PIDLIST_ABSOLUTE* pidls = nullptr;
+    LONG wEventId = 0;
+    HANDLE hLock = SHChangeNotification_Lock((HANDLE) wParam, (DWORD) lParam, &pidls, &wEventId);
+
+    PCIDLIST_RELATIVE child_pidl = m_pRootPidl ? ILFindChild(m_pRootPidl, pidls[0]) : pidls[0];
+    if (child_pidl != nullptr)
+    {
+#ifdef _DEBUG
+        CComPtr<IShellFolder>    Desktop;
+        SHGetDesktopFolder(&Desktop);
+        CString Name = GetDisplayNameOf(Desktop, pidls[0], m_Malloc, SHGDN_FORPARSING);
+#endif
+
+        if (wEventId & SHCNE_DELETE || wEventId & SHCNE_RMDIR)
+        {
+            // TODO What to do if deleting root
+            OnDeleteItem(child_pidl);
+        }
+
+        if (wEventId & SHCNE_RENAMEITEM || wEventId & SHCNE_RENAMEFOLDER)
+        {
+            // TODO What to do if renaming root
+            PCIDLIST_RELATIVE new_child_pidl = m_pRootPidl ? ILFindChild(m_pRootPidl, pidls[1]) : pidls[1];
+            OnRenameItem(child_pidl, new_child_pidl);
+        }
+
+        if (wEventId & SHCNE_CREATE || wEventId & SHCNE_MKDIR)
+        {
+            OnAddItem(child_pidl);
+        }
+
+        if (wEventId & SHCNE_UPDATEITEM || wEventId & SHCNE_UPDATEDIR)
+        {
+            OnUpdateItem(child_pidl);
+        }
+    }
+
+    SHChangeNotification_Unlock(hLock);
+    return 0;
 }

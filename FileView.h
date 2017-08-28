@@ -25,6 +25,8 @@ public:
 
 // Attributes
 protected:
+    ULONG m_Notify;
+    LPITEMIDLIST m_pRootPidl;
     CComPtr<IMalloc> m_Malloc;
 	CViewTree m_wndFileView;
 	CImageList m_FileViewImages;
@@ -34,8 +36,16 @@ protected:
 	void FillFileView();
     void InsertChildren(HTREEITEM hNode, TreeItem* ti);
     void InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent);
-    HTREEITEM InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, LPITEMIDLIST ItemId);
+    HTREEITEM FindItem(HTREEITEM hParentItem, PCITEMID_CHILD pidls);
+    HTREEITEM FindItem(PCIDLIST_RELATIVE pidls, BOOL bExpandChildren);
+    HTREEITEM FindParentItem(PCIDLIST_RELATIVE pidls);
+    HTREEITEM InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, PITEMID_CHILD ItemId);
     HTREEITEM FindSortedPos(HTREEITEM hParent, const TreeItem* tir);
+
+    void OnDeleteItem(PCIDLIST_RELATIVE pidls);
+    void OnRenameItem(PCIDLIST_RELATIVE pidls, PCIDLIST_RELATIVE new_pidls);
+    void OnAddItem(PCIDLIST_RELATIVE pidls);
+    void OnUpdateItem(PCIDLIST_RELATIVE pidls);
 
 // Implementation
 public:
@@ -62,6 +72,7 @@ protected:
     afx_msg void OnBeginLabelEdit(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnEndLabelEdit(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnDblClick(NMHDR* pHdr, LRESULT* pResult);
+    afx_msg LRESULT OnShellChange(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
 };

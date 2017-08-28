@@ -154,7 +154,6 @@ BOOL CRadNotepadApp::InitInstance()
 
     // TODO Load settings
     LoadTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
-    ASSERT(m_Settings.editor.rTheme == m_Settings.user.rTheme);
 
     AfxEnableControlContainer();
 
