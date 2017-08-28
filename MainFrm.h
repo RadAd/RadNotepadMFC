@@ -25,7 +25,7 @@ public:
 public:
     INT_PTR DoWindowsDialog();
     void ChildMDIActiviate(CWnd* pWndMDIChild);
-    void ChildMDIDesrtoyed(CWnd* pWndMDIChild);
+    void ChildMDIDestroyed(CWnd* pWndMDIChild);
     void ChildMDINextWindow(CWnd* pWndMDIChild, BOOL bIsPrev);
 
 // Overrides

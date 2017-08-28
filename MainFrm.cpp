@@ -16,6 +16,42 @@
 
 UINT NEAR WM_RADNOTEPAD = RegisterWindowMessage(_T("RADNOTEPAD"));
 
+static LRESULT CALLBACK MDIClientHookWndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR /*uIdSubclass*/, DWORD_PTR dwRefData)
+{
+    CMainFrame* pMainWnd = (CMainFrame*) dwRefData;
+    switch (msg)
+    {
+    case WM_MDINEXT:
+        {
+            CWnd* pWndMDIChild = CWnd::FromHandle((HWND) wp);
+            pMainWnd->ChildMDINextWindow(pWndMDIChild, lp != 0);
+            return 0;
+        }
+        break;
+
+    case WM_MDIACTIVATE:
+        {
+            CWnd* pWndMDIChild = CWnd::FromHandle((HWND) wp);
+            pMainWnd->ChildMDIActiviate(pWndMDIChild);
+            return DefSubclassProc(hWnd, msg, wp, lp);
+        }
+        break;
+
+    case WM_MDIDESTROY:
+        {
+            CWnd* pWndMDIChild = CWnd::FromHandle((HWND) wp);
+            pMainWnd->ChildMDIDestroyed(pWndMDIChild);
+            return DefSubclassProc(hWnd, msg, wp, lp);
+        }
+        break;
+
+    default:
+        // for all untreated messages, call the original wndproc
+        return DefSubclassProc(hWnd, msg, wp, lp);
+        break;
+    }
+}
+
 // CMainFrame
 
 IMPLEMENT_DYNAMIC(CMainFrame, CMDIFrameWndEx)
@@ -60,12 +96,15 @@ CMainFrame::CMainFrame()
 
 CMainFrame::~CMainFrame()
 {
+    RemoveWindowSubclass(m_hWndMDIClient, MDIClientHookWndProc, 0);
 }
 
 int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CMDIFrameWndEx::OnCreate(lpCreateStruct) == -1)
 		return -1;
+
+    SetWindowSubclass(m_hWndMDIClient, MDIClientHookWndProc, 0, (DWORD_PTR) this);
 
 	BOOL bNameValid;
 
@@ -571,7 +610,7 @@ void CMainFrame::ChildMDIActiviate(CWnd* pWndMDIChild)
         MoveToTop(m_MDIStack, pWndMDIChild);
 }
 
-void CMainFrame::ChildMDIDesrtoyed(CWnd* pWndMDIChild)
+void CMainFrame::ChildMDIDestroyed(CWnd* pWndMDIChild)
 {
     Erase(m_MDIStack, pWndMDIChild);
 }
