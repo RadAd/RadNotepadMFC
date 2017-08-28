@@ -14,10 +14,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-// TODO
-// Remove IDR_POPUP_EXPLORER
-
-
 #define ID_FILE_VIEW_TREE 4
 
 #define MSG_SHELLCHANGE (WM_USER + 117)
@@ -338,18 +334,12 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
 	ON_WM_CREATE()
 	ON_WM_SIZE()
 	ON_WM_CONTEXTMENU()
-	ON_COMMAND(ID_PROPERTIES, OnProperties)
+    ON_WM_PAINT()
+    ON_WM_SETFOCUS()
+    ON_COMMAND(ID_PROPERTIES, OnProperties)
     ON_COMMAND(ID_SYNC, OnSync)
-    ON_COMMAND(ID_OPEN, OnFileOpen)
-	ON_COMMAND(ID_OPEN_WITH, OnFileOpenWith)
-	ON_COMMAND(ID_DUMMY_COMPILE, OnDummyCompile)
-	ON_COMMAND(ID_EDIT_CUT, OnEditCut)
-	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
     ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
     ON_COMMAND(ID_EDIT_VIEW, OnEditView)
-    ON_WM_PAINT()
-	ON_WM_SETFOCUS()
     ON_NOTIFY(TVN_ITEMEXPANDING, ID_FILE_VIEW_TREE, OnItemExpanding)
     ON_NOTIFY(TVN_DELETEITEM, ID_FILE_VIEW_TREE, OnDeleteItem)
     ON_NOTIFY(TVN_BEGINLABELEDIT, ID_FILE_VIEW_TREE, OnBeginLabelEdit)
@@ -845,8 +835,6 @@ void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
             }
         }
     }
-    //pWndTree->SetFocus();
-    //theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EXPLORER, point.x, point.y, this, TRUE);
 }
 
 void CFileView::AdjustLayout()
@@ -890,43 +878,16 @@ void CFileView::OnSync()
     }
 }
 
-void CFileView::OnFileOpen()
-{
-	// TODO: Add your command handler code here
-}
-
-void CFileView::OnFileOpenWith()
-{
-	// TODO: Add your command handler code here
-}
-
-void CFileView::OnDummyCompile()
-{
-	// TODO: Add your command handler code here
-}
-
-void CFileView::OnEditCut()
-{
-	// TODO: Add your command handler code here
-}
-
-void CFileView::OnEditCopy()
-{
-	// TODO: Add your command handler code here
-}
-
-void CFileView::OnEditClear()
-{
-	// TODO: Add your command handler code here
-}
-
 void CFileView::OnEditRename()
 {
     HTREEITEM hItem = m_wndFileView.GetSelectedItem();
     if (hItem != NULL)
     {
         TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
-        SFGAOF Flags = SHCIDS_BITMASK;
+#ifdef _DEBUG
+        CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
+#endif
+        SFGAOF Flags = SHCIDS_COLUMNMASK;
         GetAttributesOf(ti->Parent, ti->ItemId, &Flags);
         if (Flags & SFGAO_CANRENAME)
             m_wndFileView.EditLabel(hItem);
@@ -984,12 +945,23 @@ void CFileView::OnBeginLabelEdit(NMHDR* pHdr, LRESULT* pResult)
 {
     LPNMTVDISPINFO ntdi = (LPNMTVDISPINFO) pHdr;
     TreeItem* ti = (TreeItem*) ntdi->item.lParam;
-    CEdit* pEdit = m_wndFileView.GetEditControl();
-    if (pEdit != nullptr)
+#ifdef _DEBUG
+    CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
+#endif
+
+    SFGAOF Flags = SHCIDS_COLUMNMASK;
+    GetAttributesOf(ti->Parent, ti->ItemId, &Flags);
+    if (Flags & SFGAO_CANRENAME)
     {
-        pEdit->SetWindowText(GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc, SHGDN_FOREDITING));
+        CEdit* pEdit = m_wndFileView.GetEditControl();
+        if (pEdit != nullptr)
+        {
+            pEdit->SetWindowText(GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc, SHGDN_FOREDITING));
+        }
+        *pResult = 0;
     }
-    *pResult = 0;
+    else
+        *pResult = TRUE;
 }
 
 void CFileView::OnEndLabelEdit(NMHDR* pHdr, LRESULT* pResult)

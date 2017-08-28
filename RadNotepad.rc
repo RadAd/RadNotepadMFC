@@ -251,23 +251,6 @@ BEGIN
     END
 END
 
-IDR_POPUP_EXPLORER MENU
-BEGIN
-    POPUP "Explorer"
-    BEGIN
-        MENUITEM "&Open",                       ID_OPEN
-        MENUITEM "Open &With....",              ID_OPEN_WITH
-        MENUITEM SEPARATOR
-        MENUITEM "&Compile",                    ID_DUMMY_COMPILE
-        MENUITEM SEPARATOR
-        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
-        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
-        MENUITEM "&Remove",                     ID_EDIT_CLEAR
-        MENUITEM SEPARATOR
-        MENUITEM "&Properties...",              ID_PROPERTIES
-    END
-END
-
 IDR_OUTPUT_POPUP MENU
 BEGIN
     POPUP "Popup"
@@ -573,7 +556,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_EXPLORER            "Explorer"
     IDS_EDIT_MENU           "Edit"
 END
 

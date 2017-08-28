@@ -57,12 +57,6 @@ protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnProperties();
     afx_msg void OnSync();
-	afx_msg void OnFileOpen();
-	afx_msg void OnFileOpenWith();
-	afx_msg void OnDummyCompile();
-	afx_msg void OnEditCut();
-	afx_msg void OnEditCopy();
-	afx_msg void OnEditClear();
     afx_msg void OnEditRename();
     afx_msg void OnEditView();
     afx_msg void OnPaint();

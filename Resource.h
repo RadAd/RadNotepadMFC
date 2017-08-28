@@ -16,9 +16,6 @@
 #define ID_VIEW_FILEVIEW                133
 #define ID_VIEW_CLASSVIEW               134
 #define ID_PROPERTIES                   135
-#define ID_OPEN                         136
-#define ID_OPEN_WITH                    137
-#define ID_DUMMY_COMPILE                138
 #define ID_CLASS_ADD_MEMBER_FUNCTION    139
 #define ID_CLASS_ADD_MEMBER_VARIABLE    140
 #define ID_CLASS_DEFINITION             141
@@ -46,7 +43,6 @@
 #define IDR_EXPLORER                    169
 #define IDR_SORT                        171
 #define IDR_POPUP_SORT                  173
-#define IDR_POPUP_EXPLORER              174
 #define IDB_CLASS_VIEW                  177
 #define IDR_MENU_IMAGES                 179
 #define ID_TOOLS_MACRO                  181
@@ -55,7 +51,6 @@
 #define IDS_BUILD_TAB                   300
 #define IDS_DEBUG_TAB                   301
 #define IDS_FIND_TAB                    302
-#define IDS_EXPLORER                    305
 #define IDS_EDIT_MENU                   306
 #define IDD_GOTOLINE                    310
 #define IDR_SCHEME_MASTER               312
