@@ -507,10 +507,10 @@ HTREEITEM CFileView::FindItem(HTREEITEM hParentItem, PCITEMID_CHILD pidl)
     return NULL;
 }
 
-HTREEITEM CFileView::FindItem(PCIDLIST_RELATIVE pidl, BOOL bExpandChildren)
+HTREEITEM CFileView::FindItem(PCIDLIST_ABSOLUTE pidl, BOOL bExpandChildren)
 {
     HTREEITEM hNode = TVI_ROOT;
-    LPITEMIDLIST parentpidl = nullptr;
+    PIDLIST_ABSOLUTE parentpidl = ILClone(m_pRootPidl);
 
     HTREEITEM hChild = m_wndFileView.GetChildItem(hNode);
     while (hChild != NULL)
@@ -522,7 +522,13 @@ HTREEITEM CFileView::FindItem(PCIDLIST_RELATIVE pidl, BOOL bExpandChildren)
 #endif
 
         LPITEMIDLIST childpidl = ILCombine(parentpidl, ti->ItemId);
-        if (ti->ItemId == nullptr || ILIsParent(childpidl, pidl, FALSE))
+        if (ILIsEqual(childpidl, pidl))
+        {
+            ILFree(childpidl);
+            ILFree(parentpidl);
+            return hChild;
+        }
+        else if (ti->ItemId == nullptr || ILIsParent(childpidl, pidl, FALSE))
         {
             if (bExpandChildren)
                 m_wndFileView.Expand(hChild, TVE_EXPAND);
@@ -531,12 +537,6 @@ HTREEITEM CFileView::FindItem(PCIDLIST_RELATIVE pidl, BOOL bExpandChildren)
             hChild = m_wndFileView.GetChildItem(hNode);
             ILFree(parentpidl);
             parentpidl = childpidl;
-
-            if (ILIsEqual(parentpidl, pidl))
-            {
-                ILFree(parentpidl);
-                return hNode;
-            }
         }
         else
         {
@@ -550,9 +550,9 @@ HTREEITEM CFileView::FindItem(PCIDLIST_RELATIVE pidl, BOOL bExpandChildren)
     return NULL;
 }
 
-HTREEITEM CFileView::FindParentItem(PCIDLIST_RELATIVE pidl)
+HTREEITEM CFileView::FindParentItem(PCIDLIST_ABSOLUTE pidl)
 {
-    PIDLIST_RELATIVE pparentidl = ILClone(pidl);
+    PIDLIST_ABSOLUTE pparentidl = ILClone(pidl);
     ILRemoveLastID(pparentidl);
 
     HTREEITEM hNode = FindItem(pparentidl, FALSE);
@@ -613,7 +613,7 @@ void CFileView::SortChildren(HTREEITEM hParent)
     m_wndFileView.SortChildrenCB(&scb);
 }
 
-void CFileView::OnDeleteItem(PCIDLIST_RELATIVE pidls)
+void CFileView::OnDeleteItem(PCIDLIST_ABSOLUTE pidls)
 {
     HTREEITEM hItem = FindItem(pidls, FALSE);
     if (hItem != NULL)
@@ -626,7 +626,7 @@ void CFileView::OnDeleteItem(PCIDLIST_RELATIVE pidls)
     }
 }
 
-void CFileView::OnRenameItem(PCIDLIST_RELATIVE pidls, PCIDLIST_RELATIVE new_pidls)
+void CFileView::OnRenameItem(PCIDLIST_ABSOLUTE pidls, PCIDLIST_ABSOLUTE new_pidls)
 {
     HTREEITEM hItem = FindItem(pidls, FALSE);
     if (hItem != NULL)
@@ -652,7 +652,7 @@ void CFileView::OnRenameItem(PCIDLIST_RELATIVE pidls, PCIDLIST_RELATIVE new_pidl
     }
 }
 
-void CFileView::OnAddItem(PCIDLIST_RELATIVE pidls)
+void CFileView::OnAddItem(PCIDLIST_ABSOLUTE pidls)
 {
     HTREEITEM hParentItem = FindParentItem(pidls);
     if (hParentItem)
@@ -675,7 +675,7 @@ void CFileView::OnAddItem(PCIDLIST_RELATIVE pidls)
     }
 }
 
-void CFileView::OnUpdateItem(PCIDLIST_RELATIVE pidls)
+void CFileView::OnUpdateItem(PCIDLIST_ABSOLUTE pidls)
 {
     HTREEITEM hParentItem = FindParentItem(pidls);
     if (hParentItem)
@@ -835,11 +835,10 @@ void CFileView::OnSync()
     if (pDoc != nullptr)
     {
         const CString& path = pDoc->GetPathName();
-        LPITEMIDLIST pidl = nullptr;
+        PIDLIST_ABSOLUTE pidl = nullptr;
         /*HRESULT hr =*/ SHParseDisplayName(path, NULL, &pidl, 0, 0);
-        PCIDLIST_RELATIVE child_pidl = m_pRootPidl ? ILFindChild(m_pRootPidl, pidl) : pidl;
 
-        HTREEITEM hNode = FindItem(child_pidl, TRUE);
+        HTREEITEM hNode = FindItem(pidl, TRUE);
         if (hNode != NULL)
         {
             m_wndFileView.Select(hNode, TVGN_CARET);
@@ -988,8 +987,7 @@ LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
     LONG wEventId = 0;
     HANDLE hLock = SHChangeNotification_Lock((HANDLE) wParam, (DWORD) lParam, &pidls, &wEventId);
 
-    PCIDLIST_RELATIVE child_pidl = m_pRootPidl ? ILFindChild(m_pRootPidl, pidls[0]) : pidls[0];
-    if (child_pidl != nullptr)
+    if (pidls[0] != nullptr)
     {
 #ifdef _DEBUG
         CComPtr<IShellFolder>    Desktop;
@@ -998,27 +996,18 @@ LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
 #endif
 
         if (wEventId & SHCNE_DELETE || wEventId & SHCNE_RMDIR)
-        {
             // TODO What to do if deleting root
-            OnDeleteItem(child_pidl);
-        }
+            OnDeleteItem(pidls[0]);
 
         if (wEventId & SHCNE_RENAMEITEM || wEventId & SHCNE_RENAMEFOLDER)
-        {
             // TODO What to do if renaming root
-            PCIDLIST_RELATIVE new_child_pidl = m_pRootPidl ? ILFindChild(m_pRootPidl, pidls[1]) : pidls[1];
-            OnRenameItem(child_pidl, new_child_pidl);
-        }
+            OnRenameItem(pidls[0], pidls[1]);
 
         if (wEventId & SHCNE_CREATE || wEventId & SHCNE_MKDIR)
-        {
-            OnAddItem(child_pidl);
-        }
+            OnAddItem(pidls[0]);
 
         if (wEventId & SHCNE_UPDATEITEM || wEventId & SHCNE_UPDATEDIR)
-        {
-            OnUpdateItem(child_pidl);
-        }
+            OnUpdateItem(pidls[0]);
     }
 
     SHChangeNotification_Unlock(hLock);

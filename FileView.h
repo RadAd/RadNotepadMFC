@@ -29,16 +29,16 @@ protected:
     void InsertChildren(HTREEITEM hNode, TreeItem* ti);
     void InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent);
     HTREEITEM FindItem(HTREEITEM hParentItem, PCITEMID_CHILD pidls);
-    HTREEITEM FindItem(PCIDLIST_RELATIVE pidls, BOOL bExpandChildren);
-    HTREEITEM FindParentItem(PCIDLIST_RELATIVE pidls);
+    HTREEITEM FindItem(PCIDLIST_ABSOLUTE pidls, BOOL bExpandChildren);
+    HTREEITEM FindParentItem(PCIDLIST_ABSOLUTE pidls);
     HTREEITEM InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, PITEMID_CHILD ItemId);
     HTREEITEM FindSortedPos(HTREEITEM hParent, const TreeItem* tir);
     void SortChildren(HTREEITEM hParent);
 
-    void OnDeleteItem(PCIDLIST_RELATIVE pidls);
-    void OnRenameItem(PCIDLIST_RELATIVE pidls, PCIDLIST_RELATIVE new_pidls);
-    void OnAddItem(PCIDLIST_RELATIVE pidls);
-    void OnUpdateItem(PCIDLIST_RELATIVE pidls);
+    void OnDeleteItem(PCIDLIST_ABSOLUTE pidls);
+    void OnRenameItem(PCIDLIST_ABSOLUTE pidls, PCIDLIST_ABSOLUTE new_pidls);
+    void OnAddItem(PCIDLIST_ABSOLUTE pidls);
+    void OnUpdateItem(PCIDLIST_ABSOLUTE pidls);
 
 // Implementation
 public:
