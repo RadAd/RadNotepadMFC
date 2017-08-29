@@ -25,6 +25,7 @@ public:
 
 // Attributes
 protected:
+    HACCEL m_hAccel;
     ULONG m_Notify;
     LPITEMIDLIST m_pRootPidl;
     CComPtr<IMalloc> m_Malloc;
@@ -70,5 +71,7 @@ protected:
     afx_msg LRESULT OnShellChange(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
+public:
+    virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
 

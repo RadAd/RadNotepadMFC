@@ -154,8 +154,6 @@ static int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSor
 #define ID_VIEW 1
 #define MIN_SHELL_ID 2
 #define MAX_SHELL_ID 2000
-#define ID_EDIT_RENAME (1000)
-#define ID_EDIT_VIEW (1001)
 
 static IContextMenu2* g_pIContext2 = 0;
 static IContextMenu3* g_pIContext3 = 0;
@@ -299,6 +297,7 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
 
 CFileView::CFileView()
 {
+    m_hAccel = NULL;
     m_Notify = 0;
     m_pRootPidl = nullptr;
     HRESULT    hr = NOERROR;
@@ -340,6 +339,8 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CDockablePane::OnCreate(lpCreateStruct) == -1)
 		return -1;
+
+    m_hAccel = LoadAccelerators(NULL, MAKEINTRESOURCE(IDR_EXPLORER));
 
 	CRect rectDummy;
 	rectDummy.SetRectEmpty();
@@ -1055,4 +1056,16 @@ LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
 
     SHChangeNotification_Unlock(hLock);
     return 0;
+}
+
+
+BOOL CFileView::PreTranslateMessage(MSG* pMsg)
+{
+    if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
+    {
+        HACCEL hAccel = m_hAccel;
+        return hAccel != NULL &&  ::TranslateAccelerator(m_hWnd, hAccel, pMsg);
+    }
+
+    return CDockablePane::PreTranslateMessage(pMsg);
 }
