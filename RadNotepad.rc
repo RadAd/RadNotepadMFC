@@ -415,6 +415,11 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_SYNC                 "Sync with Active Document\nSync"
+END
+
+STRINGTABLE
+BEGIN
     IDS_CONVERTLINEENDINGS  "Convert line endings?"
 END
 
@@ -423,6 +428,7 @@ BEGIN
     IDR_MAINFRAME           "RadNotepad"
     IDR_RadNotepadTYPE      "\n\nRadNotepad\n\n\nRadNotepad.Document\nRadNotepad.Document"
     ID_WINDOW_MANAGER       "&Windows..."
+    ID_PROPERTIES           "Show file properties\nProperties"
 END
 
 STRINGTABLE
