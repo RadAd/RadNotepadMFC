@@ -94,44 +94,19 @@ static inline bool IsFolder(const CComPtr<IShellFolder>& Parent, PCITEMID_CHILD 
     return ((Flags & SFGAO_FOLDER) || (Flags & SFGAO_HASSUBFOLDER));
 }
 
-static inline CString GetStr(const CComPtr<IMalloc>& Malloc, LPCITEMIDLIST pidl, STRRET Str)
-{
-    // TODO Use StrRetToBuf
-    CString ret;
-    switch (Str.uType)
-    {
-    case STRRET_CSTR:
-        //ret = ToTString(Str.cStr);
-        ret = Str.cStr;
-        break;
-
-    case STRRET_OFFSET:
-        //ret = ToTString((char *) pidl + Str.uOffset);
-        ret = (char *) pidl + Str.uOffset;
-        break;
-
-    case STRRET_WSTR:
-        {
-            //ret = ToTString(Str.pOleStr);
-            ret = Str.pOleStr;
-            Malloc->Free(Str.pOleStr);
-        }
-        break;
-
-    default:
-        break;
-    }
-    return ret;
-}
-
 static inline CString GetDisplayNameOf(const CComPtr<IShellFolder>& Folder, PCITEMID_CHILD ItemId, const CComPtr<IMalloc>& Malloc, SHGDNF Flags = SHGDN_NORMAL)
 {
     STRRET    Name = {};
     HRESULT hr = Folder->GetDisplayNameOf(ItemId, Flags, &Name);
+    CString ret;
     if (SUCCEEDED(hr))
-        return GetStr(Malloc, ItemId, Name);
-    else
-        return CString();
+    {
+        StrRetToBuf(&Name, ItemId, ret.GetBufferSetLength(MAX_PATH), MAX_PATH);
+        ret.ReleaseBuffer();
+        if (Name.uType == STRRET_WSTR)
+            Malloc->Free(Name.pOleStr);
+    }
+    return ret;
 }
 
 template <class I>
