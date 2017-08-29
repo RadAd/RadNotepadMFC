@@ -141,6 +141,16 @@ static inline int Compare(const CComPtr<IShellFolder>& Parent, PCITEMID_CHILD It
     return res;
 }
 
+static int CALLBACK CompareFunc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
+{
+    IMalloc* Malloc((IMalloc*) lParamSort);
+
+    TreeItem* ti1 = (TreeItem*) lParam1;
+    TreeItem* ti2 = (TreeItem*) lParam2;
+
+    return Compare(ti1->Parent, ti1->ItemId, ti2->ItemId, Malloc);
+}
+
 #define ID_VIEW 1
 #define MIN_SHELL_ID 2
 #define MAX_SHELL_ID 2000
@@ -627,6 +637,15 @@ HTREEITEM CFileView::FindSortedPos(HTREEITEM hParent, const TreeItem* tir)
     return TVI_LAST;
 }
 
+void CFileView::SortChildren(HTREEITEM hParent)
+{
+    TVSORTCB scb;
+    scb.hParent = hParent;
+    scb.lpfnCompare = CompareFunc;
+    scb.lParam = (LPARAM) (IMalloc*) m_Malloc;
+    m_wndFileView.SortChildrenCB(&scb);
+}
+
 void CFileView::OnDeleteItem(PCIDLIST_RELATIVE pidls)
 {
     HTREEITEM hItem = FindItem(pidls, FALSE);
@@ -668,11 +687,9 @@ void CFileView::OnRenameItem(PCIDLIST_RELATIVE pidls, PCIDLIST_RELATIVE new_pidl
         //item.iSelectedImage = item.iImage;
         m_wndFileView.SetItem(&item);
 
-#if 0   // TODO
         HTREEITEM hParentItem = m_wndFileView.GetParentItem(hItem);
         if (hParentItem != NULL)
-            SortChildren(hParentItem);  // TODO Sort or just move the one renamed
-#endif
+            SortChildren(hParentItem);
     }
 }
 

@@ -41,6 +41,7 @@ protected:
     HTREEITEM FindParentItem(PCIDLIST_RELATIVE pidls);
     HTREEITEM InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, PITEMID_CHILD ItemId);
     HTREEITEM FindSortedPos(HTREEITEM hParent, const TreeItem* tir);
+    void SortChildren(HTREEITEM hParent);
 
     void OnDeleteItem(PCIDLIST_RELATIVE pidls);
     void OnRenameItem(PCIDLIST_RELATIVE pidls, PCIDLIST_RELATIVE new_pidls);
