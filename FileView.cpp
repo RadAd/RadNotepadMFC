@@ -826,7 +826,7 @@ void CFileView::OnUpdateFileSelected(CCmdUI *pCmdUI)
 void CFileView::OnUpdateActiveDocument(CCmdUI *pCmdUI)
 {
     CDocument* pDoc = CRadDocManager::GetActiveDocument();
-    pCmdUI->Enable(pDoc != nullptr);
+    pCmdUI->Enable(pDoc != nullptr && !pDoc->GetPathName().IsEmpty());
 }
 
 void CFileView::OnSync()
@@ -844,6 +844,10 @@ void CFileView::OnSync()
         {
             m_wndFileView.Select(hNode, TVGN_CARET);
             m_wndFileView.EnsureVisible(hNode);
+        }
+        else
+        {
+            AfxMessageBox(L"Cannot find file.", MB_OK | MB_ICONERROR);
         }
 
         ILFree(pidl);
@@ -872,8 +876,20 @@ void CFileView::OnEditView()
     if (hItem != NULL)
     {
         TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
-        CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc, SHGDN_FORPARSING);
-        theApp.OpenDocumentFile(name);
+
+        SFGAOF AttrFlags = SHCIDS_BITMASK;
+        GetAttributesOf(ti->Parent, ti->ItemId, &AttrFlags);
+        BOOL bCanView = (AttrFlags & SFGAO_FILESYSTEM) && !(AttrFlags & SFGAO_FOLDER);
+
+        if (bCanView)
+        {
+            CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc, SHGDN_FORPARSING);
+            theApp.OpenDocumentFile(name);
+        }
+        else
+        {
+            AfxMessageBox(L"Cannot view folders.", MB_OK | MB_ICONERROR);
+        }
     }
 }
 
