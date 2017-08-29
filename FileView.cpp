@@ -830,7 +830,35 @@ void CFileView::AdjustLayout()
 
 void CFileView::OnProperties()
 {
-    AfxMessageBox(_T("Properties...."));
+    HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+    if (hItem != NULL)
+    {
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+#ifdef _DEBUG
+        CString name = GetDisplayNameOf(ti->Parent, ti->ItemId, m_Malloc);
+#endif
+        CComPtr<IContextMenu>    TheContextMenu;
+        /*HRESULT hr =*/ GetUIObjectOf(ti->Parent, ti->ItemId, TheContextMenu);
+        if (!!TheContextMenu)
+        {
+            CMINVOKECOMMANDINFOEX    Command;
+            ZeroMemory(&Command, sizeof(Command));
+            Command.cbSize = sizeof(Command);
+            Command.fMask = CMIC_MASK_UNICODE;
+            Command.hwnd = GetSafeHwnd();
+            Command.nShow = SW_NORMAL;
+            if (GetKeyState(VK_CONTROL) < 0)
+                Command.fMask |= CMIC_MASK_CONTROL_DOWN;
+            if (GetKeyState(VK_SHIFT) < 0)
+                Command.fMask |= CMIC_MASK_SHIFT_DOWN;
+
+            Command.lpVerb = "properties";
+            Command.lpVerbW = L"properties";
+            SendMessage(0);
+
+            TheContextMenu->InvokeCommand((LPCMINVOKECOMMANDINFO) &Command);
+        }
+    }
 }
 
 void CFileView::OnSync()
