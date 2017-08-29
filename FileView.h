@@ -29,7 +29,7 @@ public:
 protected:
     HACCEL m_hAccel;
     ULONG m_Notify;
-    LPITEMIDLIST m_pRootPidl;
+    PtrIDAbsolute m_pRootPidl;
     CComPtr<IMalloc> m_Malloc;
 	CViewTree m_wndFileView;
 	CImageList m_FileViewImages;

@@ -52,13 +52,10 @@ static inline CComPtr<IShellFolder> GetFolder(PCIDLIST_ABSOLUTE pidl)
 
 static inline CComPtr<IShellFolder> GetParentFolder(PCIDLIST_ABSOLUTE pidl)
 {
-    LPITEMIDLIST parent_pidl = ILClone(pidl);
-    ILRemoveLastID(parent_pidl);
+    PtrIDAbsolute parent_pidl(ILClone(pidl));
+    ILRemoveLastID(parent_pidl.get());
 
-    CComPtr<IShellFolder> Parent = GetFolder(parent_pidl);
-
-    if (parent_pidl)
-        ILFree(parent_pidl);
+    CComPtr<IShellFolder> Parent = GetFolder(parent_pidl.get());
 
     return Parent;
 }
@@ -105,6 +102,13 @@ struct TreeItem
     CString GetDisplayNameOf(const CComPtr<IMalloc>& Malloc, SHGDNF Flags = SHGDN_NORMAL) const
     {
         return ::GetDisplayNameOf(Parent, ItemId.get(), Malloc, Flags);
+    }
+
+    void SetName(HWND hWnd, LPCWSTR text, SHGDNF Flags)
+    {
+        LPITEMIDLIST pnewidls = nullptr;
+        Parent->SetNameOf(hWnd, ItemId.get(), text, Flags, &pnewidls);
+        ItemId.reset(pnewidls);
     }
 
     bool IsFolder() const
@@ -332,7 +336,6 @@ CFileView::CFileView()
 CFileView::~CFileView()
 {
     SHChangeNotifyDeregister(m_Notify);
-    ILFree(m_pRootPidl);
     m_FileViewImages.Detach();
 }
 
@@ -412,7 +415,7 @@ void CFileView::FillFileView()
     {
         SHChangeNotifyEntry cne;
         cne.fRecursive = TRUE;
-        cne.pidl = m_pRootPidl;
+        cne.pidl = m_pRootPidl.get();
 
         const LONG fEvents = SHCNE_CREATE | SHCNE_DELETE |
             SHCNE_MKDIR | SHCNE_RMDIR | SHCNE_RENAMEFOLDER |
@@ -429,13 +432,13 @@ void CFileView::FillFileView()
     }
 
 #if 0
-    HRESULT    hr = NOERROR;
     TreeItem ti;
-    hr = SHGetDesktopFolder(&ti.Parent);
+    /*HRESULT hr =*/ SHGetDesktopFolder(&ti.Parent);
     ti.ItemId = nullptr;
 #else
-    HRESULT    hr = NOERROR;
-    hr = SHGetSpecialFolderLocation(GetSafeHwnd(), CSIDL_DRIVES, &m_pRootPidl);
+    PIDLIST_ABSOLUTE pRootPidl = nullptr;
+    /*HRESULT hr =*/ SHGetSpecialFolderLocation(GetSafeHwnd(), CSIDL_DRIVES, &pRootPidl);
+    m_pRootPidl.reset(pRootPidl);
 
     TreeItem ti;
     ti.ItemId = nullptr;
@@ -444,7 +447,7 @@ void CFileView::FillFileView()
 #if 1
     if (m_pRootPidl != nullptr)
     {
-        ti.Parent = GetFolder(m_pRootPidl);
+        ti.Parent = GetFolder(m_pRootPidl.get());
         ti.ItemId = nullptr;
     }
     InsertChildren(TVI_ROOT, &ti);
@@ -464,11 +467,7 @@ void CFileView::InsertChildren(HTREEITEM hNode, TreeItem* ti)
 {
     if (m_wndFileView.GetChildItem(hNode) == NULL)
     {
-        CComPtr<IShellFolder>    Folder;
-        if (ti->ItemId == nullptr)
-            Folder = ti->Parent;
-        else
-            ti->Parent->BindToObject(ti->ItemId.get(), 0, IID_IShellFolder, (LPVOID *) &Folder);
+        CComPtr<IShellFolder> Folder = ti->GetFolder();
 
         if (!!Folder)
             InsertChildren(Folder, hNode);
@@ -529,7 +528,7 @@ HTREEITEM CFileView::FindItem(HTREEITEM hParentItem, PCITEMID_CHILD pidl)
 HTREEITEM CFileView::FindItem(PCIDLIST_ABSOLUTE pidl, BOOL bExpandChildren)
 {
     HTREEITEM hNode = TVI_ROOT;
-    PtrIDAbsolute parentpidl(ILClone(m_pRootPidl));
+    PtrIDAbsolute parentpidl(ILClone(m_pRootPidl.get()));
 
     HTREEITEM hChild = m_wndFileView.GetChildItem(hNode);
     while (hChild != NULL)
@@ -565,12 +564,10 @@ HTREEITEM CFileView::FindItem(PCIDLIST_ABSOLUTE pidl, BOOL bExpandChildren)
 
 HTREEITEM CFileView::FindParentItem(PCIDLIST_ABSOLUTE pidl)
 {
-    PIDLIST_ABSOLUTE pparentidl = ILClone(pidl);
-    ILRemoveLastID(pparentidl);
+    PtrIDAbsolute pparentidl(ILClone(pidl));
+    ILRemoveLastID(pparentidl.get());
 
-    HTREEITEM hNode = FindItem(pparentidl, FALSE);
-
-    ILFree(pparentidl);
+    HTREEITEM hNode = FindItem(pparentidl.get(), FALSE);
 
     return hNode;
 }
@@ -847,10 +844,11 @@ void CFileView::OnSync()
     if (pDoc != nullptr)
     {
         const CString& path = pDoc->GetPathName();
-        PIDLIST_ABSOLUTE pidl = nullptr;
-        /*HRESULT hr =*/ SHParseDisplayName(path, NULL, &pidl, 0, 0);
+        PIDLIST_ABSOLUTE tpidl = nullptr;
+        /*HRESULT hr =*/ SHParseDisplayName(path, NULL, &tpidl, 0, 0);
+        PtrIDAbsolute pidl(tpidl);
 
-        HTREEITEM hNode = FindItem(pidl, TRUE);
+        HTREEITEM hNode = FindItem(pidl.get(), TRUE);
         if (hNode != NULL)
         {
             m_wndFileView.Select(hNode, TVGN_CARET);
@@ -860,8 +858,6 @@ void CFileView::OnSync()
         {
             AfxMessageBox(L"Cannot find file.", MB_OK | MB_ICONERROR);
         }
-
-        ILFree(pidl);
     }
 }
 
@@ -884,6 +880,7 @@ void CFileView::OnEditRename()
 void CFileView::OnEditView()
 {
     HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+
     if (hItem != NULL)
     {
         TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
@@ -967,8 +964,19 @@ void CFileView::OnEndLabelEdit(NMHDR* pHdr, LRESULT* pResult)
     if (ntdi->item.pszText != nullptr)
     {
         TreeItem* ti = (TreeItem*) ntdi->item.lParam;
-        LPITEMIDLIST pnewidls = nullptr;
-        ti->Parent->SetNameOf(GetSafeHwnd(), ti->ItemId.get(), ntdi->item.pszText, SHGDN_FOREDITING, &pnewidls);
+        ti->SetName(GetSafeHwnd(), ntdi->item.pszText, SHGDN_FOREDITING);
+
+        TVITEM item = {};
+        item.hItem = ntdi->item.hItem;
+        item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+        item.pszText = ntdi->item.pszText;
+        item.iImage = SHMapPIDLToSystemImageListIndex(ti->Parent, ti->ItemId.get(), &item.iSelectedImage);
+        //item.iSelectedImage = item.iImage;
+        m_wndFileView.SetItem(&item);
+
+        HTREEITEM hParentItem = m_wndFileView.GetParentItem(ntdi->item.hItem);
+        if (hParentItem != NULL)
+            SortChildren(hParentItem);
     }
     *pResult = 0;
 }
@@ -1027,7 +1035,7 @@ LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
 
 BOOL CFileView::PreTranslateMessage(MSG* pMsg)
 {
-    if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
+    if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST && m_wndFileView.GetEditControl() == NULL)
     {
         HACCEL hAccel = m_hAccel;
         return hAccel != NULL &&  ::TranslateAccelerator(m_hWnd, hAccel, pMsg);
