@@ -617,6 +617,9 @@ void CMainFrame::ChildMDIDestroyed(CWnd* pWndMDIChild)
 
 void CMainFrame::ChildMDINextWindow(CWnd* /*pWndMDIChild*/, BOOL bIsPrev)
 {
+    if (m_PrevNext < 0)
+        m_PrevNext = 0;
+
     if (bIsPrev)
     {
         --m_PrevNext;
@@ -642,10 +645,6 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
         if (pWnd != nullptr)
             MoveToTop(m_MDIStack, MDIGetActive());
         m_PrevNext = -1;
-    }
-    else if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_CONTROL)
-    {
-        m_PrevNext = 0;
     }
 
     return CMDIFrameWndEx::PreTranslateMessage(pMsg);
