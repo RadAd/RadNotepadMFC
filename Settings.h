@@ -26,7 +26,7 @@ struct EditorSettings
     bool bUseTabs = FALSE;
     int nTabWidth = 4;
 
-    COLORREF cCaretFG = COLOR_BLACK;
+    COLORREF cCaretFG = COLOR_NONE;
     int nCaretStyle = CARETSTYLE_LINE;
     int nCaretWidth = 1;
 

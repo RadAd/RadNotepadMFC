@@ -319,7 +319,10 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.SetUseTabs(settings.bUseTabs);
     rCtrl.SetTabWidth(settings.nTabWidth);
 
-    rCtrl.SetCaretFore(settings.cCaretFG);
+    if (settings.cCaretFG != COLOR_NONE)
+        rCtrl.SetCaretFore(settings.cCaretFG);
+    else
+        rCtrl.SetCaretFore(settings.rTheme.tDefault.fore);
     rCtrl.SetCaretStyle(settings.nCaretStyle);
     rCtrl.SetCaretWidth(settings.nCaretWidth);
 
