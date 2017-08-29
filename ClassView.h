@@ -2,16 +2,7 @@
 #pragma once
 
 #include "ViewTree.h"
-
-class CClassToolBar : public CMFCToolBar
-{
-	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
-	{
-		CMFCToolBar::OnUpdateCmdUI((CFrameWnd*) GetOwner(), bDisableIfNoHndler);
-	}
-
-	virtual BOOL AllowShowOnList() const { return FALSE; }
-};
+#include "PaneToolBar.h"
 
 class CClassView : public CDockablePane
 {
@@ -23,7 +14,7 @@ public:
 	void LoadClassViewImages();
 
 protected:
-	CClassToolBar m_wndToolBar;
+    CPaneToolBar m_wndToolBar;
 	CViewTree m_wndClassView;
 	CImageList m_ClassViewImages;
 	UINT m_nCurrSort;
