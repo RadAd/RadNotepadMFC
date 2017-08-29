@@ -321,9 +321,13 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
     ON_WM_PAINT()
     ON_WM_SETFOCUS()
     ON_COMMAND(ID_PROPERTIES, OnProperties)
+    ON_UPDATE_COMMAND_UI(ID_PROPERTIES, OnUpdateFileSelected)
     ON_COMMAND(ID_SYNC, OnSync)
+    ON_UPDATE_COMMAND_UI(ID_SYNC, OnUpdateActiveDocument)
     ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
+    ON_UPDATE_COMMAND_UI(ID_EDIT_RENAME, OnUpdateFileSelected)
     ON_COMMAND(ID_EDIT_VIEW, OnEditView)
+    ON_UPDATE_COMMAND_UI(ID_EDIT_VIEW, OnUpdateFileSelected)
     ON_NOTIFY(TVN_ITEMEXPANDING, ID_FILE_VIEW_TREE, OnItemExpanding)
     ON_NOTIFY(TVN_DELETEITEM, ID_FILE_VIEW_TREE, OnDeleteItem)
     ON_NOTIFY(TVN_BEGINLABELEDIT, ID_FILE_VIEW_TREE, OnBeginLabelEdit)
@@ -341,6 +345,7 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 
     m_hAccel = LoadAccelerators(NULL, MAKEINTRESOURCE(IDR_EXPLORER));
+    m_wndToolBar.SetAccel(m_hAccel);
 
 	CRect rectDummy;
 	rectDummy.SetRectEmpty();
@@ -877,6 +882,18 @@ void CFileView::OnProperties()
             TheContextMenu->InvokeCommand((LPCMINVOKECOMMANDINFO) &Command);
         }
     }
+}
+
+void CFileView::OnUpdateFileSelected(CCmdUI *pCmdUI)
+{
+    HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+    pCmdUI->Enable(hItem != NULL);
+}
+
+void CFileView::OnUpdateActiveDocument(CCmdUI *pCmdUI)
+{
+    CDocument* pDoc = CRadDocManager::GetActiveDocument();
+    pCmdUI->Enable(pDoc != nullptr);
 }
 
 void CFileView::OnSync()

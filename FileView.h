@@ -7,12 +7,87 @@ struct TreeItem;
 
 class CFileViewToolBar : public CMFCToolBar
 {
-	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler)
+public:
+    CFileViewToolBar()
+    {
+        m_nSize = 0;
+        m_pAccel = nullptr;
+    }
+
+    virtual ~CFileViewToolBar()
+    {
+        delete [] m_pAccel;
+    }
+
+private:
+	virtual void OnUpdateCmdUI(CFrameWnd* /*pTarget*/, BOOL bDisableIfNoHndler) override
 	{
 		CMFCToolBar::OnUpdateCmdUI((CFrameWnd*) GetOwner(), bDisableIfNoHndler);
 	}
 
-	virtual BOOL AllowShowOnList() const { return FALSE; }
+    virtual BOOL OnUserToolTip(CMFCToolBarButton* pButton, CString& strTTText) const override
+    {
+        TCHAR szFullText[256];
+
+        AfxLoadString(pButton->m_nID, szFullText);
+        AfxExtractSubString(strTTText, szFullText, 1, '\n');
+
+        if (m_bShowShortcutKeys)
+        {
+            CString strAccelText;
+            BOOL bFound = FALSE;
+            for (int i = 0; i < m_nSize; i++)
+            {
+                if (m_pAccel[i].cmd == pButton->m_nID)
+                {
+                    bFound = TRUE;
+
+                    CMFCAcceleratorKey helper(&m_pAccel[i]);
+
+                    CString strKey;
+                    helper.Format(strKey);
+
+                    if (!strAccelText.IsEmpty())
+                    {
+                        strAccelText += _T("; ");
+                    }
+
+                    strAccelText += strKey;
+
+#if 0
+                    if (!m_bAllAccelerators)
+                    {
+                        break;
+                    }
+#endif
+                }
+            }
+
+            if (bFound)
+            {
+                strTTText += _T(" (");
+                strTTText += strAccelText;
+                strTTText += _T(')');
+            }
+        }
+
+        return TRUE;
+    }
+
+    virtual BOOL AllowShowOnList() const { return FALSE; }
+
+public:
+    void SetAccel(HACCEL hAccel)
+    {
+        m_nSize = ::CopyAcceleratorTable(hAccel, nullptr, 0);
+        delete[] m_pAccel;
+        m_pAccel = new ACCEL[m_nSize];
+        ::CopyAcceleratorTable(hAccel, m_pAccel, m_nSize);
+    }
+
+private:
+    int m_nSize;
+    ACCEL* m_pAccel;
 };
 
 class CFileView : public CDockablePane
@@ -58,6 +133,8 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	afx_msg void OnProperties();
+    afx_msg void OnUpdateFileSelected(CCmdUI *pCmdUI);
+    afx_msg void OnUpdateActiveDocument(CCmdUI *pCmdUI);
     afx_msg void OnSync();
     afx_msg void OnEditRename();
     afx_msg void OnEditView();
