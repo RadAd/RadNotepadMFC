@@ -6,6 +6,17 @@
 
 struct TreeItem;
 
+struct ITEMIDLISTDeleter
+{
+    void operator()(LPITEMIDLIST p)
+    {
+        ILFree(p);
+    }
+};
+
+typedef std::unique_ptr<ITEMIDLIST __unaligned, ITEMIDLISTDeleter> PtrIDChild;
+typedef std::unique_ptr<ITEMIDLIST __unaligned, ITEMIDLISTDeleter> PtrIDAbsolute;
+
 class CFileView : public CDockablePane
 {
 // Construction
@@ -31,7 +42,7 @@ protected:
     HTREEITEM FindItem(HTREEITEM hParentItem, PCITEMID_CHILD pidls);
     HTREEITEM FindItem(PCIDLIST_ABSOLUTE pidls, BOOL bExpandChildren);
     HTREEITEM FindParentItem(PCIDLIST_ABSOLUTE pidls);
-    HTREEITEM InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, PITEMID_CHILD ItemId);
+    HTREEITEM InsertChild(HTREEITEM hParent, CComPtr<IShellFolder>& folder, PtrIDChild ItemId);
     HTREEITEM FindSortedPos(HTREEITEM hParent, const TreeItem* tir);
     void SortChildren(HTREEITEM hParent);
 
