@@ -460,7 +460,7 @@ void CMainFrame::OnToolsTool(UINT nID)
         {
             s->Replace(_T("{file}"), FileName);
             s->Replace(_T("{path}"), Dir);
-            s->Replace(_T("{selected}"), pView->GetCtrl().GetSelText());
+            s->Replace(_T("{selected}"), pView->GetCurrentWord());
         }
 
         PathQuoteSpaces(FileName);

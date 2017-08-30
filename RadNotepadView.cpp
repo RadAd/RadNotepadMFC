@@ -265,6 +265,48 @@ void CRadNotepadView::SetLineEndingsMode(int mode)
     }
 }
 
+CStringW CRadNotepadView::GetTextRange(Sci_CharacterRange cr)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    CStringA ret;
+
+    Sci_TextRange tr = {};
+    tr.chrg = cr;
+    //int nLen = rCtrl.GetTextRange(&tr);
+    int nLen = tr.chrg.cpMax - tr.chrg.cpMin + 1;
+    tr.lpstrText = ret.GetBufferSetLength(nLen);
+    nLen = rCtrl.GetTextRange(&tr);
+    ret.ReleaseBuffer();
+
+    return CScintillaCtrl::UTF82W(ret, -1);
+}
+
+CStringW CRadNotepadView::GetCurrentWord(BOOL bSelect)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    if (rCtrl.GetSelectionEmpty())
+    {
+        if (bSelect)
+        {
+            Sci_Position nPos = rCtrl.GetCurrentPos();
+            int start = rCtrl.WordStartPosition(nPos, TRUE);
+            int end = rCtrl.WordEndPosition(nPos, TRUE);
+            rCtrl.SetSel(start, end);
+            return rCtrl.GetSelText();
+        }
+        else
+        {
+            Sci_Position nPos = rCtrl.GetCurrentPos();
+            Sci_CharacterRange cr;
+            cr.cpMin = rCtrl.WordStartPosition(nPos, TRUE);
+            cr.cpMax = rCtrl.WordEndPosition(nPos, TRUE);
+            return GetTextRange(cr);
+        }
+    }
+    else
+        return rCtrl.GetSelText();
+}
+
 // CRadNotepadView message handlers
 
 
@@ -522,10 +564,11 @@ void CRadNotepadView::OnUpdateLineEndings(CCmdUI *pCmdUI)
 
 void CRadNotepadView::OnEditMakeUppercase()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    CString sel = rCtrl.GetSelText();
+    CString sel = GetCurrentWord(TRUE);
     if (!sel.IsEmpty())
     {
+        CScintillaCtrl& rCtrl = GetCtrl();
+
         sel.MakeUpper();
         rCtrl.ReplaceSel(sel);
 
@@ -538,10 +581,11 @@ void CRadNotepadView::OnEditMakeUppercase()
 
 void CRadNotepadView::OnEditMakeLowercase()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    CString sel = rCtrl.GetSelText();
+    CString sel = GetCurrentWord(TRUE);
     if (!sel.IsEmpty())
     {
+        CScintillaCtrl& rCtrl = GetCtrl();
+
         sel.MakeLower();
         rCtrl.ReplaceSel(sel);
 
@@ -589,39 +633,9 @@ void CRadNotepadView::OnEditFindPrevious()
         TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
 }
 
-static CStringW GetTextRange(CScintillaCtrl& rCtrl, Sci_CharacterRange cr)
-{
-    CStringA ret;
-
-    Sci_TextRange tr = {};
-    tr.chrg = cr;
-    //int nLen = rCtrl.GetTextRange(&tr);
-    int nLen = tr.chrg.cpMax - tr.chrg.cpMin + 1;
-    tr.lpstrText = ret.GetBufferSetLength(nLen);
-    nLen = rCtrl.GetTextRange(&tr);
-    ret.ReleaseBuffer();
-
-    return CScintillaCtrl::UTF82W(ret, -1);
-}
-
-static CStringW GetCurrentWord(CScintillaCtrl& rCtrl)
-{
-    if (rCtrl.GetSelectionEmpty())
-    {
-        Sci_Position nPos = rCtrl.GetCurrentPos();
-        Sci_CharacterRange cr;
-        cr.cpMin = rCtrl.WordStartPosition(nPos, TRUE);
-        cr.cpMax = rCtrl.WordEndPosition(nPos, TRUE);
-        return GetTextRange(rCtrl, cr);
-    }
-    else
-        return rCtrl.GetSelText();
-}
-
 void CRadNotepadView::OnEditFindNextCurrentWord()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    g_scintillaEditState.strFind = GetCurrentWord(rCtrl);
+    g_scintillaEditState.strFind = GetCurrentWord();
     g_scintillaEditState.bNext = TRUE;
     if (!FindText(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
@@ -629,8 +643,7 @@ void CRadNotepadView::OnEditFindNextCurrentWord()
 
 void CRadNotepadView::OnEditFindPreviousCurrentWord()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    g_scintillaEditState.strFind = GetCurrentWord(rCtrl);
+    g_scintillaEditState.strFind = GetCurrentWord();
     g_scintillaEditState.bNext = TRUE;
     if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);

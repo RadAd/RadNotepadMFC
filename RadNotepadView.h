@@ -16,6 +16,8 @@ public:
 // Operations
 public:
     void SetLineEndingsMode(int mode);
+    CStringW GetTextRange(Sci_CharacterRange cr);
+    CStringW GetCurrentWord(BOOL bSelect = FALSE);
 
 // Overrides
 public:
