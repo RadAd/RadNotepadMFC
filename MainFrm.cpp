@@ -637,6 +637,11 @@ void CMainFrame::ChildMDINextWindow(CWnd* /*pWndMDIChild*/, BOOL bIsPrev)
     m_wndClientArea.SetActiveTab(pWnd->GetSafeHwnd());
 }
 
+void CMainFrame::NotifySettingsChanged()
+{
+    m_wndOutput.NotifySettingsChanged();
+}
+
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
     if (pMsg->message == WM_KEYUP && pMsg->wParam == VK_CONTROL)

@@ -238,6 +238,9 @@ void CRadNotepadApp::NotifySettingsChanged()
     m_SaveSettings = TRUE;
     CRadDocManager* pRadDocManager = DYNAMIC_DOWNCAST(CRadDocManager, m_pDocManager);
     pRadDocManager->UpdateAllViews(nullptr, HINT_UPDATE_SETTINGS);
+
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, m_pMainWnd);
+    pMainFrame->NotifySettingsChanged();
 }
 
 // CRadNotepadApp message handlers

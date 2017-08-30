@@ -108,6 +108,13 @@ void COutputWnd::UpdateFonts()
         m_wndOutput[ow].SetFont(&afxGlobalData.fontRegular);
 }
 
+void COutputWnd::NotifySettingsChanged()
+{
+    OutputWindowE vecOutputWindowE[] = { OW_OUTPUT, OW_LOG };
+    for (OutputWindowE ow : vecOutputWindowE)
+        m_wndOutput[ow].NotifySettingsChanged();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // COutputList1
 
@@ -117,6 +124,13 @@ COutputList::COutputList()
 
 COutputList::~COutputList()
 {
+}
+
+void COutputList::NotifySettingsChanged()
+{
+    Theme* pTheme = &theApp.m_Settings.editor.rTheme;
+    const Language* pLanguage = GetLanguage(pTheme, _T("output"));
+    Apply(*this, pLanguage, pTheme);
 }
 
 void COutputList::Clear()

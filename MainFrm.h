@@ -1,7 +1,4 @@
 
-// MainFrm.h : interface of the CMainFrame class
-//
-
 #pragma once
 #include "FileView.h"
 #include "ClassView.h"
@@ -27,11 +24,12 @@ public:
     void ChildMDIActiviate(CWnd* pWndMDIChild);
     void ChildMDIDestroyed(CWnd* pWndMDIChild);
     void ChildMDINextWindow(CWnd* pWndMDIChild, BOOL bIsPrev);
+    void NotifySettingsChanged();
 
 // Overrides
 public:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd* pParentWnd = NULL, CCreateContext* pContext = NULL);
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+	virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd* pParentWnd = NULL, CCreateContext* pContext = NULL) override;
 
 // Implementation
 public:

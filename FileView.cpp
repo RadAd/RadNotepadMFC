@@ -13,6 +13,7 @@
 // top level file updates
 // file view collapse all
 // file view change root
+// auto sync with current file
 
 #ifdef _DEBUG
 #undef THIS_FILE

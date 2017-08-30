@@ -11,6 +11,7 @@ public:
 	COutputList();
 
 public:
+    void NotifySettingsChanged();
     void Clear();
     void SetDirectory(LPCTSTR pText) { m_strDirectory = pText; }
     void AppendText(LPCSTR pText, int nLen);
@@ -49,6 +50,7 @@ public:
 	COutputWnd();
 
 	void UpdateFonts();
+    void NotifySettingsChanged();
     COutputList* Get(OutputWindowE ow) { return &m_wndOutput[ow]; }
 
 // Attributes
