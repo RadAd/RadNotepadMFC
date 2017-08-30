@@ -151,6 +151,8 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
     {
         if (!pLanguage->strWordChars.IsEmpty())
             rCtrl.SetWordChars(pLanguage->strWordChars);
+        else
+            rCtrl.SetCharsDefault();
 
         for (int i = 0; i < KEYWORDSET_MAX; ++i)
         {
