@@ -444,11 +444,11 @@ void CMainFrame::OnToolsTool(UINT nID)
     ted.directory = _T("{path}");
     ted.pWndOutput = &m_wndOutput;
 
-    CChildFrame* pChildFrame = DYNAMIC_DOWNCAST(CChildFrame, MDIGetActive());
-    if (pChildFrame != nullptr)
+    CMDIChildWnd* pFrame = MDIGetActive();
+    if (pFrame != nullptr)
     {
-        CDocument* pDoc = pChildFrame->GetActiveDocument();
-        CRadNotepadView* pView = dynamic_cast<CRadNotepadView*>(pChildFrame->GetActiveView());
+        CDocument* pDoc = pFrame->GetActiveDocument();
+        CRadNotepadView* pView = dynamic_cast<CRadNotepadView*>(pFrame->GetActiveView());
 
         TCHAR FileName[MAX_PATH] = _T("");
         StrCpy(FileName, pDoc->GetPathName());
@@ -646,9 +646,9 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
     if (pMsg->message == WM_KEYUP && pMsg->wParam == VK_CONTROL)
     {
-        CWnd* pWnd = MDIGetActive();
+        CMDIChildWnd* pWnd = MDIGetActive();
         if (pWnd != nullptr)
-            MoveToTop(m_MDIStack, MDIGetActive());
+            MoveToTop(m_MDIStack, pWnd);
         m_PrevNext = -1;
     }
 

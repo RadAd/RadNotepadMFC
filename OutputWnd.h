@@ -26,15 +26,13 @@ private:
     CString m_strDirectory;
 
 protected:
-	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-	afx_msg void OnEditCopy();
-	afx_msg void OnEditClear();
-	afx_msg void OnViewOutput();
-    afx_msg void OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult);
-
-	DECLARE_MESSAGE_MAP()
-public:
+    DECLARE_MESSAGE_MAP()
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+    afx_msg void OnEditCopy();
+    afx_msg void OnEditClear();
+    afx_msg void OnViewOutput();
+    afx_msg void OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult);
 };
 
 enum OutputWindowE {
@@ -49,27 +47,30 @@ class COutputWnd : public CDockablePane
 public:
 	COutputWnd();
 
-	void UpdateFonts();
-    void NotifySettingsChanged();
-    COutputList* Get(OutputWindowE ow) { return &m_wndOutput[ow]; }
-
 // Attributes
 protected:
 	CMFCTabCtrl	m_wndTabs;
-
 	COutputList m_wndOutput[OW_MAX];
 
+// Overrides
 protected:
-	void AdjustHorzScroll(CListBox& wndListBox);
+    virtual BOOL PreTranslateMessage(MSG* pMsg) override;
+
+public:
+    void AdjustHorzScroll(CListBox& wndListBox);
+    void UpdateFonts();
+    void NotifySettingsChanged();
+    COutputList* Get(OutputWindowE ow) { return &m_wndOutput[ow]; }
+    void Activate(COutputList* pOutputList);
+    void Activate(OutputWindowE ow);
 
 // Implementation
 public:
 	virtual ~COutputWnd();
 
 protected:
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
 };
 

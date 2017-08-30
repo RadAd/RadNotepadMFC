@@ -15,9 +15,7 @@ CRadDocManager::~CRadDocManager()
 
 CDocument* CRadDocManager::GetActiveDocument()
 {
-    CWnd* pWnd = AfxGetMainWnd();
-    ASSERT_KINDOF(CMDIFrameWndEx, pWnd);
-    CMDIFrameWndEx* pMainWnd = (CMDIFrameWndEx*) pWnd;
+    CMDIFrameWndEx* pMainWnd = DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd());
     CMDIChildWnd* pChild = pMainWnd->MDIGetActive();
     if (pChild != nullptr)
         return pChild->GetActiveDocument();

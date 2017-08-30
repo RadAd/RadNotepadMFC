@@ -27,8 +27,11 @@ public:
     void NotifySettingsChanged();
 
 // Overrides
-public:
+protected:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+    virtual BOOL PreTranslateMessage(MSG* pMsg) override;
+
+public:
 	virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd* pParentWnd = NULL, CCreateContext* pContext = NULL) override;
 
 // Implementation
@@ -38,6 +41,10 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
+
+protected:
+    BOOL CreateDockingWindows();
+    void SetDockingWindowIcons();
 
 protected:  // control bar embedded members
     int m_PrevNext;
@@ -53,24 +60,19 @@ protected:  // control bar embedded members
 
 // Generated message map functions
 protected:
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    DECLARE_MESSAGE_MAP()
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnWindowManager();
 	afx_msg void OnViewCustomize();
-	afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
 	afx_msg void OnViewPane(UINT nID);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnUpdateClear(CCmdUI* pCmdUI);
-	DECLARE_MESSAGE_MAP()
-
-	BOOL CreateDockingWindows();
-	void SetDockingWindowIcons();
-    afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
-    afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
-public:
     afx_msg void OnToolsTool(UINT nID);
     afx_msg void OnUpdateToolsTool(CCmdUI *pCmdUI);
     afx_msg void OnUpdateDockingWindows(CCmdUI *pCmdUI);
-    virtual BOOL PreTranslateMessage(MSG* pMsg);
+    afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
+    afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
 };
 
 

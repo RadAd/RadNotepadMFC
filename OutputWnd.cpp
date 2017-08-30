@@ -79,7 +79,7 @@ void COutputWnd::OnSize(UINT nType, int cx, int cy)
 	CDockablePane::OnSize(nType, cx, cy);
 
 	// Tab control should cover the whole client area:
-	m_wndTabs.SetWindowPos (NULL, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
+	m_wndTabs.SetWindowPos(NULL, -1, -1, cx, cy, SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
@@ -113,6 +113,17 @@ void COutputWnd::NotifySettingsChanged()
     OutputWindowE vecOutputWindowE[] = { OW_OUTPUT, OW_LOG };
     for (OutputWindowE ow : vecOutputWindowE)
         m_wndOutput[ow].NotifySettingsChanged();
+}
+
+void COutputWnd::Activate(COutputList* pOutputList)
+{
+    int i = m_wndTabs.GetTabFromHwnd(pOutputList->GetSafeHwnd());
+    m_wndTabs.SetActiveTab(i);
+}
+
+void COutputWnd::Activate(OutputWindowE ow)
+{
+    m_wndTabs.SetActiveTab(ow);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -277,4 +288,22 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
     SetReadOnly(TRUE);
     SetHotspotActiveUnderline(TRUE);
     return 0;
+}
+
+
+BOOL COutputWnd::PreTranslateMessage(MSG* pMsg)
+{
+    if (pMsg->message == WM_KEYUP && pMsg->wParam == VK_ESCAPE)
+    {
+        CMDIFrameWndEx* pMainWnd = DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd());
+        CFrameWnd* pFrameWnd = pMainWnd->GetActiveFrame();
+        if (pFrameWnd != nullptr)
+        {
+            CView* pView = pFrameWnd->GetActiveView();
+            if (pView)
+                pView->SetFocus();
+        }
+    }
+
+    return CDockablePane::PreTranslateMessage(pMsg);
 }

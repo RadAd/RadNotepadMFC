@@ -244,6 +244,8 @@ void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
             COutputList* pOutputList = ted.pWndOutput->Get(OW_OUTPUT);
             if (pOutputList)
             {
+                ted.pWndOutput->Activate(pOutputList);
+                pOutputList->SetFocus();
                 pOutputList->SetDirectory(ted.directory);
                 pOutputList->Clear();
                 pOutputList->AppendText(_T("Execute: "), -1);
