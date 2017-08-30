@@ -315,8 +315,6 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     ThemeItem rThemeItem;
                     if (name == L"default")
                         rThemeItem = pTheme->tDefault;
-                    else if (pStyleClass != nullptr)
-                        rThemeItem = pStyleClass->theme;
 
                     if (!isnull(inherit_style))
                     {

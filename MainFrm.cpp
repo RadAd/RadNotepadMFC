@@ -436,6 +436,7 @@ static CString ExpandEnvironmentStrings(LPCTSTR str)
 void CMainFrame::OnToolsTool(UINT nID)
 {
     // TODO What to do if no active file
+    // TODO Save current file? Load when done?
 
     const Tool& tool = theApp.m_Tools[nID - ID_TOOLS_FIRSTTOOL];
     ToolExecuteData ted;
