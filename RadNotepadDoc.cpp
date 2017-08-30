@@ -391,6 +391,14 @@ void CRadNotepadDoc::SetTitle(LPCTSTR lpszTitle)
     CScintillaDoc::SetTitle(strTitle);
 }
 
+void CRadNotepadDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
+{
+    bool bPathNameFirstSet = GetPathName().IsEmpty();
+    CScintillaDoc::SetPathName(lpszPathName, bAddToMRU);
+    if (bPathNameFirstSet)
+        UpdateAllViews(nullptr, HINT_PATH_UPDATED);
+}
+
 void CRadNotepadDoc::SyncModified()
 {
     CScintillaView* pView = GetView();

@@ -1,7 +1,4 @@
 
-// RadNotepadDoc.h : interface of the CRadNotepadDoc class
-//
-
 #pragma once
 
 class CRadNotepadDoc : public CScintillaDoc
@@ -26,6 +23,7 @@ public:
 	virtual void Serialize(CArchive& ar) override;
     virtual void ReleaseFile(CFile* pFile, BOOL bAbort) override;
     virtual void SetTitle(LPCTSTR lpszTitle) override;
+    virtual void SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU = TRUE) override;
 #ifdef SHARED_HANDLERS
 	virtual void InitializeSearchContent();
 	virtual void OnDrawThumbnail(CDC& dc, LPRECT lprcBounds);

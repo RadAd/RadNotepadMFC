@@ -53,3 +53,4 @@
 #endif
 
 #define HINT_UPDATE_SETTINGS    2
+#define HINT_PATH_UPDATED       3

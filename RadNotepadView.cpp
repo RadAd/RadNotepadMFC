@@ -728,10 +728,30 @@ void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
 
 void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHint*/)
 {
-    if (lHint == HINT_UPDATE_SETTINGS)
+    switch (lHint)
     {
-        CScintillaCtrl& rCtrl = GetCtrl();
-        const EditorSettings& settings = theApp.m_Settings.editor;
-        Apply(rCtrl, m_pLanguage, &settings.rTheme);
+    case HINT_UPDATE_SETTINGS:
+        {
+            CScintillaCtrl& rCtrl = GetCtrl();
+            const EditorSettings& settings = theApp.m_Settings.editor;
+            Apply(rCtrl, m_pLanguage, &settings.rTheme);
+        }
+        break;
+
+    case HINT_PATH_UPDATED:
+        if (m_pLanguage == nullptr)
+        {
+            CRadNotepadDoc* pDoc = GetDocument();
+            CString strFileName = pDoc->GetPathName();
+            PCTSTR strExt = PathFindExtension(strFileName);
+
+            m_pLanguage = GetLanguageForExt(&theApp.m_Settings.editor.rTheme, strExt);
+
+            CScintillaCtrl& rCtrl = GetCtrl();
+            const EditorSettings& settings = theApp.m_Settings.editor;
+
+            Apply(rCtrl, m_pLanguage, &settings.rTheme);
+        }
+        break;
     }
 }

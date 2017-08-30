@@ -1,7 +1,4 @@
 
-// RadNotepadView.h : interface of the CRadNotepadView class
-//
-
 #pragma once
 
 class CRadNotepadDoc;
@@ -22,8 +19,11 @@ public:
 
 // Overrides
 public:
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
+	virtual void OnDraw(CDC* pDC) override;
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+    virtual void OnInitialUpdate() override;
+    virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
+    virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/) override;
 
     virtual void OnCharAdded(_Inout_ SCNotification* pSCNotification);
     virtual void OnModified(_Inout_ SCNotification* pSCNotification);
@@ -46,14 +46,12 @@ protected:
 
 // Generated message map functions
 protected:
-	afx_msg void OnFilePrintPreview();
+    DECLARE_MESSAGE_MAP()
+    afx_msg void OnFilePrintPreview();
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnUpdateLine(CCmdUI* pCmdUI);
     afx_msg void OnUpdateInsert(CCmdUI* pCmdUI);
-    DECLARE_MESSAGE_MAP()
-public:
-    virtual void OnInitialUpdate();
     afx_msg void OnViewMarker(UINT nID);
     afx_msg void OnUpdateViewMarker(CCmdUI *pCmdUI);
     afx_msg void OnViewWhitespace();
@@ -72,10 +70,7 @@ public:
     afx_msg void OnUpdateLineEndings(CCmdUI *pCmdUI);
     afx_msg void OnEditMakeUppercase();
     afx_msg void OnEditMakeLowercase();
-    virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
-protected:
     afx_msg LRESULT OnCheckUpdate(WPARAM wParam, LPARAM lParam);
-public:
     afx_msg void OnEditGotoLine();
     afx_msg void OnEditFindPrevious();
     afx_msg void OnEditFindNextCurrentWord();
@@ -85,7 +80,6 @@ public:
     afx_msg void OnUpdateSchemeNone(CCmdUI *pCmdUI);
     afx_msg void OnScheme(UINT nID);
     afx_msg void OnUpdateScheme(CCmdUI *pCmdUI);
-    virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/);
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp
