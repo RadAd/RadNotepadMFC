@@ -8,6 +8,12 @@
 #include "MainFrm.h"
 #include <set>
 
+// TODO
+// notify all view of file rename
+// top level file updates
+// file view collapse all
+// file view change root
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -104,11 +110,17 @@ struct TreeItem
         return ::GetDisplayNameOf(Parent, ItemId.get(), Malloc, Flags);
     }
 
-    void SetName(HWND hWnd, LPCWSTR text, SHGDNF Flags)
+    BOOL SetName(HWND hWnd, LPCWSTR text, SHGDNF Flags)
     {
         LPITEMIDLIST pnewidls = nullptr;
-        Parent->SetNameOf(hWnd, ItemId.get(), text, Flags, &pnewidls);
-        ItemId.reset(pnewidls);
+        HRESULT hr = Parent->SetNameOf(hWnd, ItemId.get(), text, Flags, &pnewidls);
+        if (SUCCEEDED(hr) && pnewidls != nullptr)
+        {
+            ItemId.reset(pnewidls);
+            return TRUE;
+        }
+        else
+            return FALSE;
     }
 
     bool IsFolder() const
@@ -949,9 +961,7 @@ void CFileView::OnBeginLabelEdit(NMHDR* pHdr, LRESULT* pResult)
     {
         CEdit* pEdit = m_wndFileView.GetEditControl();
         if (pEdit != nullptr)
-        {
             pEdit->SetWindowText(ti->GetDisplayNameOf(m_Malloc, SHGDN_FOREDITING));
-        }
         *pResult = 0;
     }
     else
@@ -964,19 +974,20 @@ void CFileView::OnEndLabelEdit(NMHDR* pHdr, LRESULT* pResult)
     if (ntdi->item.pszText != nullptr)
     {
         TreeItem* ti = (TreeItem*) ntdi->item.lParam;
-        ti->SetName(GetSafeHwnd(), ntdi->item.pszText, SHGDN_FOREDITING);
+        if (ti->SetName(GetSafeHwnd(), ntdi->item.pszText, SHGDN_FOREDITING))
+        {
+            TVITEM item = {};
+            item.hItem = ntdi->item.hItem;
+            item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
+            item.pszText = ntdi->item.pszText;
+            item.iImage = SHMapPIDLToSystemImageListIndex(ti->Parent, ti->ItemId.get(), &item.iSelectedImage);
+            //item.iSelectedImage = item.iImage;
+            m_wndFileView.SetItem(&item);
 
-        TVITEM item = {};
-        item.hItem = ntdi->item.hItem;
-        item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE;
-        item.pszText = ntdi->item.pszText;
-        item.iImage = SHMapPIDLToSystemImageListIndex(ti->Parent, ti->ItemId.get(), &item.iSelectedImage);
-        //item.iSelectedImage = item.iImage;
-        m_wndFileView.SetItem(&item);
-
-        HTREEITEM hParentItem = m_wndFileView.GetParentItem(ntdi->item.hItem);
-        if (hParentItem != NULL)
-            SortChildren(hParentItem);
+            HTREEITEM hParentItem = m_wndFileView.GetParentItem(ntdi->item.hItem);
+            if (hParentItem != NULL)
+                SortChildren(hParentItem);
+        }
     }
     *pResult = 0;
 }

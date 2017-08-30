@@ -39,3 +39,18 @@ BOOL CViewTree::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
 
 	return bRes;
 }
+
+BOOL CViewTree::PreTranslateMessage(MSG* pMsg)
+{
+    if (pMsg->message == WM_KEYUP && GetEditControl() != NULL)
+    {
+        if (pMsg->wParam == VK_ESCAPE)
+            //m_wndFileView.EndEditLabelNow(TRUE);
+            PostMessage(TVM_ENDEDITLABELNOW, TRUE);
+        else if (pMsg->wParam == VK_RETURN)
+            //m_wndFileView.EndEditLabelNow(TRUE);
+            PostMessage(TVM_ENDEDITLABELNOW, FALSE);
+    }
+
+    return CTreeCtrl::PreTranslateMessage(pMsg);
+}
