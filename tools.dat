@@ -13,14 +13,14 @@
     <tool name="Google">
         <cmd>https://www.google.com.au/search?q={selected}</cmd>
     </tool>
-    <tool name="FindStr" capture="true">
+    <tool name="FindStr" capture="Find">
         <cmd>findstr.exe</cmd>
         <param>/L /S /N "{selected}" *.txt *.cpp *.h *.java</param>
     </tool>
-    <tool name="VCMake" capture="true">
+    <tool name="VCMake" capture="Build">
         <cmd>%HOMEDRIVE%%HOMEPATH%\Dropbox\Utils\CommandLine\bin\vcmake.bat</cmd>
     </tool>
-    <tool name="Output" capture="true">
+    <tool name="Output" capture="output">
         <cmd>cmd.exe</cmd>
         <param>/C type {file}</param>
     </tool>

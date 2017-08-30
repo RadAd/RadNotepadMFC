@@ -48,9 +48,6 @@
 #define ID_TOOLS_MACRO                  181
 #define IDR_OUTPUT_POPUP                182
 #define IDR_PROPERTIES                  183
-#define IDS_BUILD_TAB                   300
-#define IDS_DEBUG_TAB                   301
-#define IDS_FIND_TAB                    302
 #define IDS_EDIT_MENU                   306
 #define IDD_GOTOLINE                    310
 #define IDR_SCHEME_MASTER               312

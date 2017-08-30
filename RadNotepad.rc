@@ -572,13 +572,6 @@ BEGIN
     IDS_EDIT_MENU           "Edit"
 END
 
-STRINGTABLE
-BEGIN
-    IDS_BUILD_TAB           "Build"
-    IDS_DEBUG_TAB           "Debug"
-    IDS_FIND_TAB            "Find"
-END
-
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

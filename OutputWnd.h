@@ -35,12 +35,6 @@ protected:
     afx_msg void OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult);
 };
 
-enum OutputWindowE {
-    OW_OUTPUT,
-    OW_LOG,
-    OW_MAX,
-};
-
 class COutputWnd : public CDockablePane
 {
 // Construction
@@ -50,7 +44,6 @@ public:
 // Attributes
 protected:
 	CMFCTabCtrl	m_wndTabs;
-	COutputList m_wndOutput[OW_MAX];
 
 // Overrides
 protected:
@@ -60,9 +53,8 @@ public:
     void AdjustHorzScroll(CListBox& wndListBox);
     void UpdateFonts();
     void NotifySettingsChanged();
-    COutputList* Get(OutputWindowE ow) { return &m_wndOutput[ow]; }
-    void Activate(COutputList* pOutputList);
-    void Activate(OutputWindowE ow);
+    COutputList* Get(LPCTSTR pOutput, BOOL bCreate = FALSE);
+    COutputList* Reset(LPCTSTR pOutput, LPCTSTR pText);
 
 // Implementation
 public:
@@ -73,4 +65,3 @@ protected:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnSize(UINT nType, int cx, int cy);
 };
-

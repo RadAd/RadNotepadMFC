@@ -91,8 +91,13 @@ void ProcessTools(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Tool>& rTools)
                     else
                         wcscpy_s(strIcon, tool.cmd);
                     ExtractIconEx(strIcon, 0, nullptr, &tool.hIcon, nIcon);
-                    if (!isnull(capture) && capture == L"true")
-                        tool.bCapture = TRUE;
+                    if (!isnull(capture) && !(capture == L"false"))
+                    {
+                        if (capture == L"true")
+                            tool.capture = L"Output";
+                        else
+                            tool.capture = (LPCTSTR) capture;
+                    }
                 }
             }
             else
@@ -189,6 +194,7 @@ struct CaptureOutputData
     HANDLE hProcess;
     HANDLE hRead;
     COutputWnd* pWndOutput; // TODO Maybe into the Scintilla control
+    CString sCapture;
 };
 
 static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
@@ -199,7 +205,7 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
     DWORD dwRead = 0;
     while (ReadFile(pData->hRead, Buffer, ARRAYSIZE(Buffer), &dwRead, nullptr))
     {
-        COutputList* pOutputList = pData->pWndOutput->Get(OW_OUTPUT);
+        COutputList* pOutputList = pData->pWndOutput->Get(pData->sCapture);
         if (pOutputList)
             pOutputList->AppendText(Buffer, dwRead);
     }
@@ -209,7 +215,7 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
     GetExitCodeProcess(pData->hProcess, &dwExitCode);
     CString msg;
     msg.Format(_T("Exit code: %d\n"), dwExitCode);
-    COutputList* pOutputList = pData->pWndOutput->Get(OW_OUTPUT);
+    COutputList* pOutputList = pData->pWndOutput->Get(pData->sCapture);
     if (pOutputList)
         pOutputList->AppendText(msg);
 
@@ -222,7 +228,7 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
 
 void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
 {
-    if (tool.bCapture)
+    if (!tool.capture.IsEmpty())
     {
         SECURITY_ATTRIBUTES sa = { sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE };
 
@@ -241,13 +247,9 @@ void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
         if (CreateProcess(nullptr, cmdline, nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, ted.directory, &si, &pi))
         {
             ted.pWndOutput->ShowPane(TRUE, FALSE, FALSE);
-            COutputList* pOutputList = ted.pWndOutput->Get(OW_OUTPUT);
+            COutputList* pOutputList = ted.pWndOutput->Reset(tool.capture, ted.directory);
             if (pOutputList)
             {
-                ted.pWndOutput->Activate(pOutputList);
-                pOutputList->SetFocus();
-                pOutputList->SetDirectory(ted.directory);
-                pOutputList->Clear();
                 pOutputList->AppendText(_T("Execute: "), -1);
                 pOutputList->AppendText(cmdline, -1);
                 pOutputList->AppendText(_T("\n"), -1);
@@ -260,6 +262,7 @@ void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
             cd->hProcess = pi.hProcess;
             cd->hRead = hRead;
             cd->pWndOutput = ted.pWndOutput;
+            cd->sCapture = tool.capture;
             if (CreateThread(nullptr, 0, CaptureOutput, cd, 0, nullptr) == NULL)
             {
                 CloseHandle(hRead);

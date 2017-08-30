@@ -448,7 +448,7 @@ void CMainFrame::OnToolsTool(UINT nID)
     if (pFrame != nullptr)
     {
         CDocument* pDoc = pFrame->GetActiveDocument();
-        CRadNotepadView* pView = dynamic_cast<CRadNotepadView*>(pFrame->GetActiveView());
+        CRadNotepadView* pView = DYNAMIC_DOWNCAST(CRadNotepadView, pFrame->GetActiveView());
 
         TCHAR FileName[MAX_PATH] = _T("");
         StrCpy(FileName, pDoc->GetPathName());

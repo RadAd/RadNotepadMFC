@@ -45,30 +45,12 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-	// Create output panes:
-	const DWORD dwStyle = LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL;
-
-    OutputWindowE vecOutputWindowE[] = { OW_OUTPUT, OW_LOG };
-    int vecOWName[] = { IDS_BUILD_TAB, IDS_DEBUG_TAB, IDS_FIND_TAB };
-
-    for (OutputWindowE ow : vecOutputWindowE)
-    {
-        if (!m_wndOutput[ow].Create(dwStyle, rectDummy, &m_wndTabs, 2 + ow))
-        {
-            TRACE0("Failed to create output windows\n");
-            return -1;      // fail to create
-        }
-    }
-
 	//UpdateFonts();
 
-	// Attach list windows to tab:
-    for (OutputWindowE ow : vecOutputWindowE)
+    if (Get(_T("Output"), TRUE) == nullptr)
     {
-        CString strTabName;
-        BOOL bNameValid = strTabName.LoadString(vecOWName[ow]);
-        ASSERT(bNameValid);
-        m_wndTabs.AddTab(&m_wndOutput[ow], strTabName, (UINT) 0);
+        TRACE0("Failed to create output windows\n");
+        return -1;      // fail to create
     }
 
 	return 0;
@@ -103,27 +85,58 @@ void COutputWnd::AdjustHorzScroll(CListBox& wndListBox)
 
 void COutputWnd::UpdateFonts()
 {
-    OutputWindowE vecOutputWindowE[] = { OW_OUTPUT, OW_LOG };
-    for (OutputWindowE ow : vecOutputWindowE)
-        m_wndOutput[ow].SetFont(&afxGlobalData.fontRegular);
+    for (int i = 0; i < m_wndTabs.GetTabsNum(); ++i)
+    {
+        CWnd* pWnd = m_wndTabs.GetTabWnd(i);
+        pWnd->SetFont(&afxGlobalData.fontRegular);
+    }
 }
 
 void COutputWnd::NotifySettingsChanged()
 {
-    OutputWindowE vecOutputWindowE[] = { OW_OUTPUT, OW_LOG };
-    for (OutputWindowE ow : vecOutputWindowE)
-        m_wndOutput[ow].NotifySettingsChanged();
+    for (int i = 0; i < m_wndTabs.GetTabsNum(); ++i)
+    {
+        COutputList* pWnd = DYNAMIC_DOWNCAST(COutputList, m_wndTabs.GetTabWnd(i));
+        pWnd->NotifySettingsChanged();
+    }
 }
 
-void COutputWnd::Activate(COutputList* pOutputList)
+COutputList* COutputWnd::Get(LPCTSTR pOutput, BOOL bCreate)
 {
+    COutputList* pOutputList = nullptr;
+    for (int i = 0; i < m_wndTabs.GetTabsNum() && pOutputList == nullptr; ++i)
+    {
+        CString strLabel;
+        m_wndTabs.GetTabLabel(i, strLabel);
+        if (strLabel.CompareNoCase(pOutput) == 0)
+            pOutputList = DYNAMIC_DOWNCAST(COutputList, m_wndTabs.GetTabWnd(i));
+    }
+    if (bCreate && pOutputList == nullptr)
+    {
+        CRect rectDummy;
+        rectDummy.SetRectEmpty();
+        const DWORD dwStyle = LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL;
+        pOutputList = new COutputList();
+        if (!pOutputList->Create(dwStyle, rectDummy, &m_wndTabs, 0))
+        {
+            TRACE0("Failed to create output windows\n");
+            delete pOutputList;
+            return nullptr;      // fail to create
+        }
+        m_wndTabs.AddTab(pOutputList, pOutput, (UINT) 0);
+    }
+    return pOutputList;
+}
+
+COutputList* COutputWnd::Reset(LPCTSTR pOutput, LPCTSTR pDirectory)
+{
+    COutputList* pOutputList = Get(pOutput, TRUE);
     int i = m_wndTabs.GetTabFromHwnd(pOutputList->GetSafeHwnd());
     m_wndTabs.SetActiveTab(i);
-}
-
-void COutputWnd::Activate(OutputWindowE ow)
-{
-    m_wndTabs.SetActiveTab(ow);
+    pOutputList->SetFocus();
+    pOutputList->SetDirectory(pDirectory);
+    pOutputList->Clear();
+    return pOutputList;
 }
 
 /////////////////////////////////////////////////////////////////////////////
