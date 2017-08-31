@@ -1019,25 +1019,32 @@ LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
 
     if (pidls[0] != nullptr)
     {
-#ifdef _DEBUG
+        CShellChanged sc;
+        sc.wEventId = wEventId;
+
         CComPtr<IShellFolder>    Desktop;
         SHGetDesktopFolder(&Desktop);
-        CString Name = GetDisplayNameOf(Desktop, pidls[0], m_Malloc, SHGDN_FORPARSING);
-#endif
+        sc.strName = GetDisplayNameOf(Desktop, pidls[0], m_Malloc, SHGDN_FORPARSING);
 
         if (wEventId & SHCNE_DELETE || wEventId & SHCNE_RMDIR)
             // TODO What to do if deleting root
             OnDeleteItem(pidls[0]);
 
         if (wEventId & SHCNE_RENAMEITEM || wEventId & SHCNE_RENAMEFOLDER)
+        {
             // TODO What to do if renaming root
+            sc.strNewName = GetDisplayNameOf(Desktop, pidls[1], m_Malloc, SHGDN_FORPARSING);
             OnRenameItem(pidls[0], pidls[1]);
+        }
 
         if (wEventId & SHCNE_CREATE || wEventId & SHCNE_MKDIR)
             OnAddItem(pidls[0]);
 
         if (wEventId & SHCNE_UPDATEITEM || wEventId & SHCNE_UPDATEDIR)
             OnUpdateItem(pidls[0]);
+
+        CRadDocManager* pDocManager = DYNAMIC_DOWNCAST(CRadDocManager, theApp.m_pDocManager);
+        pDocManager->UpdateAllViews(nullptr, HINT_SHELL_CHANGED, &sc);
     }
 
     SHChangeNotification_Unlock(hLock);

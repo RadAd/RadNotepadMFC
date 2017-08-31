@@ -120,17 +120,17 @@ void CRadNotepadView::OnCharAdded(_Inout_ SCNotification* pSCNotification)
             int nLine = rCtrl.LineFromPosition(nPos);
             if (nLine > 0)
             {
-                CString srtLine = rCtrl.GetLine(nLine - 1);
-                for (int pos = 0; pos < srtLine.GetLength(); pos++)
+                CString strLine = rCtrl.GetLine(nLine - 1);
+                for (int pos = 0; pos < strLine.GetLength(); pos++)
                 {
-                    if (srtLine[pos] != ' ' && srtLine[pos] != '\t')
+                    if (strLine[pos] != ' ' && strLine[pos] != '\t')
                     {
-                        srtLine = srtLine.Left(pos);
+                        strLine = strLine.Left(pos);
                         break;
                     }
                 }
-                if (!srtLine.IsEmpty())
-                    rCtrl.ReplaceSel(srtLine);
+                if (!strLine.IsEmpty())
+                    rCtrl.ReplaceSel(strLine);
             }
         }
     }
@@ -314,15 +314,23 @@ void CRadNotepadView::OnInitialUpdate()
 {
     CScintillaView::OnInitialUpdate();
 
+    CScintillaCtrl& rCtrl = GetCtrl();
+
     CRadNotepadDoc* pDoc = GetDocument();
     CString strFileName = pDoc->GetPathName();
     PCTSTR strExt = PathFindExtension(strFileName);
 
     m_pLanguage = GetLanguageForExt(&theApp.m_Settings.editor.rTheme, strExt);
+    if (m_pLanguage == nullptr)
+    {
+        CString strLine = rCtrl.GetLine(0);
+        // TODO Define this in a file somewhere
+        if (strLine.Left(5) == L"<?xml")
+            m_pLanguage = GetLanguage(&theApp.m_Settings.editor.rTheme, L"xml");
+    }
 
     // TODO Copy some settings from other ctrl (ie split view, new window)
 
-    CScintillaCtrl& rCtrl = GetCtrl();
     const EditorSettings& settings = theApp.m_Settings.editor;
 
     Apply(rCtrl, m_pLanguage, &settings.rTheme);
@@ -739,8 +747,9 @@ void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
 }
 
 
-void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHint*/)
+void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
 {
+    CRadNotepadDoc* pDoc = GetDocument();
     switch (lHint)
     {
     case HINT_UPDATE_SETTINGS:
@@ -752,9 +761,8 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHin
         break;
 
     case HINT_PATH_UPDATED:
-        if (m_pLanguage == nullptr)
+        if (pDoc->GetView() == this && m_pLanguage == nullptr)
         {
-            CRadNotepadDoc* pDoc = GetDocument();
             CString strFileName = pDoc->GetPathName();
             PCTSTR strExt = PathFindExtension(strFileName);
 
@@ -764,6 +772,19 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* /*pHin
             const EditorSettings& settings = theApp.m_Settings.editor;
 
             Apply(rCtrl, m_pLanguage, &settings.rTheme);
+        }
+        break;
+
+    case HINT_SHELL_CHANGED:
+        if (pDoc->GetView() == this && !pDoc->GetPathName().IsEmpty())
+        {
+            const CShellChanged* psc = DYNAMIC_DOWNCAST(CShellChanged, pHint);
+            CString strFileName = pDoc->GetPathName();
+            if (strFileName == psc->strName)
+            {
+                if (psc->wEventId & SHCNE_RENAMEITEM || psc->wEventId & SHCNE_RENAMEFOLDER)
+                    pDoc->SetPathName(psc->strNewName);
+            }
         }
         break;
     }

@@ -52,5 +52,14 @@
 #endif
 #endif
 
+// UpdateAllViews
 #define HINT_UPDATE_SETTINGS    2
 #define HINT_PATH_UPDATED       3
+#define HINT_SHELL_CHANGED      4
+
+struct CShellChanged : public CObject
+{
+    LONG wEventId;
+    CString strName;
+    CString strNewName;
+};

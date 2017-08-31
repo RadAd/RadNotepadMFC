@@ -13,7 +13,11 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-// TODO A CMFCPropertyGridColorProperty which knows common color names
+// TODO
+// A CMFCPropertyGridColorProperty which knows common color names
+// Selecting and pasting into edit color (and maybe others) appends text instead
+// A button to reset user settings
+// Add "Language: " to front of language settings
 
 #define ID_OBJECT_COMBO 100
 

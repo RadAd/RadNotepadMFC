@@ -214,7 +214,7 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
     DWORD dwExitCode = 0;
     GetExitCodeProcess(pData->hProcess, &dwExitCode);
     CString msg;
-    msg.Format(_T("Exit code: %d\n"), dwExitCode);
+    msg.Format(_T("> Exit code: %d\n"), dwExitCode);
     COutputList* pOutputList = pData->pWndOutput->Get(pData->sCapture);
     if (pOutputList)
         pOutputList->AppendText(msg);
@@ -250,7 +250,7 @@ void ExecuteTool(const Tool& tool, const ToolExecuteData& ted)
             COutputList* pOutputList = ted.pWndOutput->Reset(tool.capture, ted.directory);
             if (pOutputList)
             {
-                pOutputList->AppendText(_T("Execute: "), -1);
+                pOutputList->AppendText(_T("> "), -1);
                 pOutputList->AppendText(cmdline, -1);
                 pOutputList->AppendText(_T("\n"), -1);
             }

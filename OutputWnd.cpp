@@ -14,6 +14,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// TODO
+// Allow a choice of lexer - maybe use the tab name for the lexer
+// Search for next/prev error
+
 /////////////////////////////////////////////////////////////////////////////
 // COutputBar
 

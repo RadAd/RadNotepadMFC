@@ -38,6 +38,7 @@
 .for=fortran77
 .h=cpp
 .hpp=cpp
+.hta=Web
 .html=Web
 .htm=Web
 .idl=cpp
@@ -55,10 +56,7 @@
 .php=php
 .pl=perl
 .pm=perl
-.pnpt=xml
-.pnproj=xml
 .pod=perl
-.proj=xml
 .properties=properties
 .ps1=powershell
 .py=python
