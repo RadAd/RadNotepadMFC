@@ -431,7 +431,7 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_wndObjectCombo.AddString(_T("Application"));
 	m_wndObjectCombo.AddString(_T("Editor"));
     {
-        std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+        std::vector<Language>& vecLanguage = theApp.m_Settings.user.vecLanguage;
         std::vector<Language*> vecSortLanguage; // = vecLanguage;
         for (Language& rLanguage : vecLanguage)
             vecSortLanguage.push_back(&rLanguage);
@@ -537,7 +537,7 @@ void CPropertiesWnd::InitPropList()
     if (pLanguage != nullptr)
     {
         {
-            Theme* pTheme = &m_pSettings->editor.rTheme;
+            Theme* pTheme = &m_pSettings->user;
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Styles"));
             for (Style& s : pLanguage->vecStyle)
             {
@@ -580,46 +580,47 @@ void CPropertiesWnd::InitPropList()
     }
     else if (i == 1) // Editor
     {
+        Theme* pTheme = &m_pSettings->user;
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
-                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &m_pSettings->editor.cCaretFG, &m_pSettings->editor.rTheme.tDefault.fore, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cCaretFG, &m_pSettings->user.tDefault.fore, nullptr));
                 LPCTSTR strCaretStyle[] = { _T("Invisible"), _T("Line"), _T("Block") };
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nCaretStyle, strCaretStyle, ARRAYSIZE(strCaretStyle)));
-                pGroup->AddSubItem(CreateProperty(_T("Width"), &m_pSettings->editor.nCaretWidth, 1, 4));
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nCaretStyle, strCaretStyle, ARRAYSIZE(strCaretStyle)));
+                pGroup->AddSubItem(CreateProperty(_T("Width"), &pTheme->editor.nCaretWidth, 1, 4));
                 pParent->AddSubItem(pGroup);
             }
-            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->editor.bUseTabs));
-            pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth, 1, 100));
+            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pTheme->editor.bUseTabs));
+            pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &pTheme->editor.nTabWidth, 1, 100));
             LPCTSTR strIndentGuideStyle[] = { _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") };
-            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &m_pSettings->editor.nIndentGuideType, strIndentGuideStyle, ARRAYSIZE(strIndentGuideStyle)));
-            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
-            pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &m_pSettings->editor.bAutoIndent));
+            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pTheme->editor.nIndentGuideType, strIndentGuideStyle, ARRAYSIZE(strIndentGuideStyle)));
+            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pTheme->editor.bHighlightMatchingBraces));
+            pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pTheme->editor.bAutoIndent));
             m_wndPropList.AddProperty(pGroup);
         }
 
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
-            pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &m_pSettings->editor.bShowLineNumbers));
+            pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &pTheme->editor.bShowLineNumbers));
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Bookmarks"), 0, TRUE);
-                pGroup->AddSubItem(CreateProperty(_T("Enabled"), &m_pSettings->editor.bShowBookmarks));
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nBookmarkType, 0, 31));
-                pGroup->AddSubItem(CreateProperty(_T("Background"), &m_pSettings->editor.cBookmarkBG, nullptr, nullptr));
-                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &m_pSettings->editor.cBookmarkFG, nullptr, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Enabled"), &pTheme->editor.bShowBookmarks));
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nBookmarkType, 0, 31));
+                pGroup->AddSubItem(CreateProperty(_T("Background"), &pTheme->editor.cBookmarkBG, nullptr, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cBookmarkFG, nullptr, nullptr));
                 pParent->AddSubItem(pGroup);
             }
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Fold Marker"), 0, TRUE);
-                pGroup->AddSubItem(CreateProperty(_T("Enabled"), &m_pSettings->editor.bShowFolds));
+                pGroup->AddSubItem(CreateProperty(_T("Enabled"), &pTheme->editor.bShowFolds));
                 LPCTSTR strFoldStyle[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nFoldType, strFoldStyle, ARRAYSIZE(strFoldStyle)));
-                pGroup->AddSubItem(CreateProperty(_T("Background"), &m_pSettings->editor.cFoldBG, nullptr, nullptr));
-                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &m_pSettings->editor.cFoldFG, nullptr, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nFoldType, strFoldStyle, ARRAYSIZE(strFoldStyle)));
+                pGroup->AddSubItem(CreateProperty(_T("Background"), &pTheme->editor.cFoldBG, nullptr, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cFoldFG, nullptr, nullptr));
                 pParent->AddSubItem(pGroup);
             }
 
@@ -627,7 +628,6 @@ void CPropertiesWnd::InitPropList()
         }
 
         {
-            Theme* pTheme = &m_pSettings->editor.rTheme;
             CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
             pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr, nullptr));
             for (StyleClass& sc : pTheme->vecStyleClass)

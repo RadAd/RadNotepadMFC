@@ -90,7 +90,7 @@ BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
         }
     }
 #endif
-    const Theme* pTheme = &theApp.m_Settings.editor.rTheme;
+    const Theme* pTheme = &theApp.m_Settings.user;
     for (auto el : pTheme->mapExtFilter)
     {
         const Language* pLanguage = GetLanguage(pTheme, el.first);

@@ -79,6 +79,40 @@ struct GroupStyle
     }
 };
 
+enum FoldType
+{
+    MT_ARROW,
+    MT_PLUSMINUS,
+    MT_CIRCLE,
+    MT_BOX
+};
+
+struct ThemeEditor
+{
+    COLORREF cCaretFG = COLOR_NONE;
+    int nCaretStyle = CARETSTYLE_LINE;
+    int nCaretWidth = 1;
+
+    bool bUseTabs = FALSE;
+    int nTabWidth = 4;
+    int nIndentGuideType = SC_IV_LOOKBOTH;
+    bool bHighlightMatchingBraces = TRUE;
+    bool bAutoIndent = TRUE;
+
+    bool bShowLineNumbers = FALSE;
+
+    bool bShowBookmarks = TRUE;
+    int nBookmarkType = SC_MARK_BOOKMARK;
+    COLORREF cBookmarkFG = COLOR_LT_CYAN;
+    COLORREF cBookmarkBG = COLOR_BLACK;
+
+    bool bShowFolds = FALSE;
+    FoldType nFoldType = MT_BOX;
+    COLORREF cFoldFG = COLOR_LT_CYAN;
+    COLORREF cFoldBG = COLOR_BLACK;
+};
+
+
 struct Language
 {
     Language(LPCSTR name, const Language* pBaseLanguage = nullptr)
@@ -93,6 +127,7 @@ struct Language
     CString lexer;
     BOOL internal = FALSE;
     CString strWordChars;
+    ThemeEditor editor;
     std::map<CString, CString> mapProperties;
     std::vector<Style> vecStyle;
     std::vector<GroupStyle> vecGroupStyle;
@@ -162,6 +197,7 @@ struct KeywordClass
 struct Theme
 {
     ThemeItem tDefault;
+    ThemeEditor editor;
     std::vector<StyleClass> vecStyleClass;
     std::vector<Style> vecBase;
     std::vector<KeywordClass> vecKeywordClass;

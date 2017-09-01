@@ -320,31 +320,31 @@ void CRadNotepadView::OnInitialUpdate()
     CString strFileName = pDoc->GetPathName();
     PCTSTR strExt = PathFindExtension(strFileName);
 
-    m_pLanguage = GetLanguageForExt(&theApp.m_Settings.editor.rTheme, strExt);
+    m_pLanguage = GetLanguageForExt(&theApp.m_Settings.user, strExt);
     if (m_pLanguage == nullptr)
     {
         CString strLine = rCtrl.GetLine(0);
         // TODO Define this in a file somewhere
         if (strLine.Left(5) == L"<?xml")
-            m_pLanguage = GetLanguage(&theApp.m_Settings.editor.rTheme, L"xml");
+            m_pLanguage = GetLanguage(&theApp.m_Settings.user, L"xml");
     }
 
     // TODO Copy some settings from other ctrl (ie split view, new window)
 
-    const EditorSettings& settings = theApp.m_Settings.editor;
+    const Theme* pTheme = &theApp.m_Settings.user;
 
-    Apply(rCtrl, m_pLanguage, &settings.rTheme);
+    Apply(rCtrl, m_pLanguage, pTheme);
 
     //Setup folding
-    rCtrl.SetMarginWidthN(MARGIN_FOLDS, settings.bShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_FOLDS, pTheme->editor.bShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
     rCtrl.SetMarginSensitiveN(MARGIN_FOLDS, TRUE);
     rCtrl.SetMarginTypeN(MARGIN_FOLDS, SC_MARGIN_SYMBOL);
     rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
 
-    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.bShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
+    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, pTheme->editor.bShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
 
-    rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
-    DefineMarker(RAD_MARKER_BOOKMARK, settings.nBookmarkType, settings.cBookmarkFG, settings.cBookmarkBG);
+    rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, pTheme->editor.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
+    DefineMarker(RAD_MARKER_BOOKMARK, pTheme->editor.nBookmarkType, pTheme->editor.cBookmarkFG, pTheme->editor.cBookmarkBG);
 
     //Setup markers
     int MTMarker[] = {
@@ -363,25 +363,25 @@ void CRadNotepadView::OnInitialUpdate()
         { SC_MARK_BOXMINUS,    SC_MARK_BOXPLUS,    SC_MARK_VLINE, SC_MARK_LCORNER,      SC_MARK_BOXPLUSCONNECTED,    SC_MARK_BOXMINUSCONNECTED,    SC_MARK_TCORNER },
     };
     for (int i = 0; i < ARRAYSIZE(MTMarker); ++i)
-        DefineMarker(MTMarker[i], MT[settings.nFoldType][i], settings.cFoldFG, settings.cFoldBG);
+        DefineMarker(MTMarker[i], MT[pTheme->editor.nFoldType][i], pTheme->editor.cFoldFG, pTheme->editor.cFoldBG);
 
-    rCtrl.SetUseTabs(settings.bUseTabs);
-    rCtrl.SetTabWidth(settings.nTabWidth);
+    rCtrl.SetUseTabs(pTheme->editor.bUseTabs);
+    rCtrl.SetTabWidth(pTheme->editor.nTabWidth);
 
-    if (settings.cCaretFG != COLOR_NONE)
-        rCtrl.SetCaretFore(settings.cCaretFG);
+    if (pTheme->editor.cCaretFG != COLOR_NONE)
+        rCtrl.SetCaretFore(pTheme->editor.cCaretFG);
     else
-        rCtrl.SetCaretFore(settings.rTheme.tDefault.fore);
-    rCtrl.SetCaretStyle(settings.nCaretStyle);
-    rCtrl.SetCaretWidth(settings.nCaretWidth);
+        rCtrl.SetCaretFore(pTheme->tDefault.fore);
+    rCtrl.SetCaretStyle(pTheme->editor.nCaretStyle);
+    rCtrl.SetCaretWidth(pTheme->editor.nCaretWidth);
 
     rCtrl.SetEOLMode(pDoc->GetLineEndingMode());
 
-    rCtrl.SetIndentationGuides(settings.nIndentGuideType);
+    rCtrl.SetIndentationGuides(pTheme->editor.nIndentGuideType);
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
-    m_bHighlightMatchingBraces = settings.bHighlightMatchingBraces;
-    m_bAutoIndent = settings.bAutoIndent;
+    m_bHighlightMatchingBraces = pTheme->editor.bHighlightMatchingBraces;
+    m_bAutoIndent = pTheme->editor.bAutoIndent;
 
     rCtrl.ClearCmdKey('[' | (SCMOD_CTRL << 16));
     rCtrl.ClearCmdKey('[' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));
@@ -676,8 +676,8 @@ void CRadNotepadView::OnSchemeNone()
 
     m_pLanguage = pLanguage;
     CScintillaCtrl& rCtrl = GetCtrl();
-    const EditorSettings& settings = theApp.m_Settings.editor;
-    Apply(rCtrl, m_pLanguage, &settings.rTheme);
+    const Theme* pTheme = &theApp.m_Settings.user;
+    Apply(rCtrl, m_pLanguage, pTheme);
 }
 
 void CRadNotepadView::OnUpdateSchemeNone(CCmdUI *pCmdUI)
@@ -688,7 +688,7 @@ void CRadNotepadView::OnUpdateSchemeNone(CCmdUI *pCmdUI)
         for (int i = ID_VIEW_FIRSTSCHEME; i < ID_VIEW_LASTSCHEME; ++i)
             pCmdUI->m_pSubMenu->DeleteMenu(i, MF_BYCOMMAND);
 
-        const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+        const std::vector<Language>& vecLanguage = theApp.m_Settings.user.vecLanguage;
 
         int nID = ID_VIEW_FIRSTSCHEME;
         struct LanguageMenuItem
@@ -729,18 +729,18 @@ void CRadNotepadView::OnUpdateSchemeNone(CCmdUI *pCmdUI)
 
 void CRadNotepadView::OnScheme(UINT nID)
 {
-    const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+    const std::vector<Language>& vecLanguage = theApp.m_Settings.user.vecLanguage;
     const Language* pLanguage = &vecLanguage[nID - ID_VIEW_FIRSTSCHEME];
 
     m_pLanguage = pLanguage;
     CScintillaCtrl& rCtrl = GetCtrl();
-    const EditorSettings& settings = theApp.m_Settings.editor;
-    Apply(rCtrl, m_pLanguage, &settings.rTheme);
+    const Theme* pTheme = &theApp.m_Settings.user;
+    Apply(rCtrl, m_pLanguage, pTheme);
 }
 
 void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
 {
-    const std::vector<Language>& vecLanguage = theApp.m_Settings.editor.rTheme.vecLanguage;
+    const std::vector<Language>& vecLanguage = theApp.m_Settings.user.vecLanguage;
     pCmdUI->SetRadio(m_pLanguage == &vecLanguage[pCmdUI->m_nID - ID_VIEW_FIRSTSCHEME]);
 }
 
@@ -753,8 +753,8 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
     case HINT_UPDATE_SETTINGS:
         {
             CScintillaCtrl& rCtrl = GetCtrl();
-            const EditorSettings& settings = theApp.m_Settings.editor;
-            Apply(rCtrl, m_pLanguage, &settings.rTheme);
+            const Theme* pTheme = &theApp.m_Settings.user;
+            Apply(rCtrl, m_pLanguage, pTheme);
         }
         break;
 
@@ -764,12 +764,11 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
             CString strFileName = pDoc->GetPathName();
             PCTSTR strExt = PathFindExtension(strFileName);
 
-            m_pLanguage = GetLanguageForExt(&theApp.m_Settings.editor.rTheme, strExt);
+            m_pLanguage = GetLanguageForExt(&theApp.m_Settings.user, strExt);
 
             CScintillaCtrl& rCtrl = GetCtrl();
-            const EditorSettings& settings = theApp.m_Settings.editor;
-
-            Apply(rCtrl, m_pLanguage, &settings.rTheme);
+            const Theme* pTheme = &theApp.m_Settings.user;
+            Apply(rCtrl, m_pLanguage, pTheme);
         }
         break;
 

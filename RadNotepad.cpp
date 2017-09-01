@@ -153,7 +153,7 @@ BOOL CRadNotepadApp::InitInstance()
 	}
 
     // TODO Load settings
-    LoadTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
+    LoadTheme(&m_Settings.user, &m_Settings.default);
 
     AfxEnableControlContainer();
 
@@ -223,7 +223,7 @@ int CRadNotepadApp::ExitInstance()
 {
     // TODO Save settings
     if (m_SaveSettings)
-        SaveTheme(&m_Settings.editor.rTheme, &m_Settings.default.rTheme);
+        SaveTheme(&m_Settings.user, &m_Settings.default);
 
 	AfxOleTerm(FALSE);
 

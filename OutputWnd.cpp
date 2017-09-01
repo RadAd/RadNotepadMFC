@@ -156,7 +156,7 @@ COutputList::~COutputList()
 
 void COutputList::NotifySettingsChanged()
 {
-    Theme* pTheme = &theApp.m_Settings.editor.rTheme;
+    const Theme* pTheme = &theApp.m_Settings.user;
     const Language* pLanguage = GetLanguage(pTheme, _T("output"));
     Apply(*this, pLanguage, pTheme);
 }
@@ -298,7 +298,7 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     SetupDirectAccess();    // Should be in CScintillaCtrl::OnCreate
 
-    Theme* pTheme = &theApp.m_Settings.editor.rTheme;
+    const Theme* pTheme = &theApp.m_Settings.user;
     const Language* pLanguage = GetLanguage(pTheme, _T("output"));
     Apply(*this, pLanguage, pTheme);
 
