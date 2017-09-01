@@ -342,7 +342,9 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
 
     rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, settings.bShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
+
     rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, settings.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
+    DefineMarker(RAD_MARKER_BOOKMARK, settings.nBookmarkType, settings.cBookmarkFG, settings.cBookmarkBG);
 
     //Setup markers
     int MTMarker[] = {
@@ -363,9 +365,6 @@ void CRadNotepadView::OnInitialUpdate()
     for (int i = 0; i < ARRAYSIZE(MTMarker); ++i)
         DefineMarker(MTMarker[i], MT[settings.nFoldType][i], settings.cFoldFG, settings.cFoldBG);
 
-    // TODO Set separate colors and style from Fold
-    DefineMarker(RAD_MARKER_BOOKMARK, SC_MARK_BOOKMARK, settings.cFoldFG, settings.cFoldBG);
-
     rCtrl.SetUseTabs(settings.bUseTabs);
     rCtrl.SetTabWidth(settings.nTabWidth);
 
@@ -378,8 +377,7 @@ void CRadNotepadView::OnInitialUpdate()
 
     rCtrl.SetEOLMode(pDoc->GetLineEndingMode());
 
-    if (settings.bShowIndentGuides)
-        rCtrl.SetIndentationGuides(SC_IV_LOOKBOTH);
+    rCtrl.SetIndentationGuides(settings.nIndentGuideType);
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
     m_bHighlightMatchingBraces = settings.bHighlightMatchingBraces;

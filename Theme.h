@@ -117,7 +117,10 @@ struct Language
 
 static inline bool CompareLanguageTitle(const Language* pLanguageL, const Language* pLanguageR)
 {
-    return pLanguageL->title < pLanguageR->title;
+    if (pLanguageL->internal == pLanguageR->internal)
+        return pLanguageL->title < pLanguageR->title;
+    else
+        return !pLanguageL->internal;
 }
 
 struct StyleClass

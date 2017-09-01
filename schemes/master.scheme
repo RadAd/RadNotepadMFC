@@ -34,11 +34,11 @@
 		<style-class name="unclosedstring" description="Unclosed Single-Line String" fore="000000" back="e0c0e0" eolfilled="true"/>
 	</style-classes>
 	<base-options>
-		<style name="Indent Guide" key="33" class="indentguide" />
 		<style name="Line Numbers" key="33" class="linenumbers" />
 		<style name="Brace Match" key="34" class="bracematch" />
 		<style name="Brace Mismatch" key="35" class="bracemismatch" />
-		<style name="Control Characters" key="36" class="controlchars" />
+		<style name="Control Characters" key="36" class="controlchars" />   <!-- *only* font is used -->
+		<style name="Indent Guide" key="37" class="indentguide" />   <!-- font not used -->
 	</base-options>
 	<keyword-classes>
 		<keyword-class name="javascript">

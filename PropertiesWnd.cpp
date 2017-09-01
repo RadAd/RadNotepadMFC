@@ -439,7 +439,8 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
         for (Language* pLanguage : vecSortLanguage)
         {
-            int i = m_wndObjectCombo.AddString(pLanguage->title);
+            CString name = pLanguage->internal ? _T("Output: ") + pLanguage->title : _T("Language: ") + pLanguage->title;
+            int i = m_wndObjectCombo.AddString(name);
             m_wndObjectCombo.SetItemData(i, (DWORD_PTR) pLanguage);
         }
     }
@@ -567,33 +568,34 @@ void CPropertiesWnd::InitPropList()
             m_wndPropList.AddProperty(pGroup);
         }
     }
-    else
+    else if (i == 0)    // Application
     {
-        {
-            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
-            pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
-            pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
-            pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, strEncoding, ARRAYSIZE(strEncoding)));
-            LPCTSTR strLineEnding[] = { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") };
-            pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, strLineEnding, ARRAYSIZE(strLineEnding)));
-            m_wndPropList.AddProperty(pGroup);
-        }
-
+        CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
+        pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
+        pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
+        pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, strEncoding, ARRAYSIZE(strEncoding)));
+        LPCTSTR strLineEnding[] = { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") };
+        pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, strLineEnding, ARRAYSIZE(strLineEnding)));
+        m_wndPropList.AddProperty(pGroup);
+    }
+    else if (i == 1) // Editor
+    {
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
-                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &m_pSettings->editor.cCaretFG, nullptr, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &m_pSettings->editor.cCaretFG, &m_pSettings->editor.rTheme.tDefault.fore, nullptr));
                 LPCTSTR strCaretStyle[] = { _T("Invisible"), _T("Line"), _T("Block") };
                 pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nCaretStyle, strCaretStyle, ARRAYSIZE(strCaretStyle)));
                 pGroup->AddSubItem(CreateProperty(_T("Width"), &m_pSettings->editor.nCaretWidth, 1, 4));
                 pParent->AddSubItem(pGroup);
             }
-            pGroup->AddSubItem(CreateProperty(_T("Show Indent Guides"), &m_pSettings->editor.bShowIndentGuides));
-            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
             pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &m_pSettings->editor.bUseTabs));
             pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &m_pSettings->editor.nTabWidth, 1, 100));
+            LPCTSTR strIndentGuideStyle[] = { _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") };
+            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &m_pSettings->editor.nIndentGuideType, strIndentGuideStyle, ARRAYSIZE(strIndentGuideStyle)));
+            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &m_pSettings->editor.bHighlightMatchingBraces));
             pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &m_pSettings->editor.bAutoIndent));
             m_wndPropList.AddProperty(pGroup);
         }
@@ -601,7 +603,15 @@ void CPropertiesWnd::InitPropList()
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
             pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &m_pSettings->editor.bShowLineNumbers));
-            pGroup->AddSubItem(CreateProperty(_T("Bookmarks"), &m_pSettings->editor.bShowBookmarks));
+            {
+                CMFCPropertyGridProperty* pParent = pGroup;
+                CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Bookmarks"), 0, TRUE);
+                pGroup->AddSubItem(CreateProperty(_T("Enabled"), &m_pSettings->editor.bShowBookmarks));
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &m_pSettings->editor.nBookmarkType, 0, 31));
+                pGroup->AddSubItem(CreateProperty(_T("Background"), &m_pSettings->editor.cBookmarkBG, nullptr, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &m_pSettings->editor.cBookmarkFG, nullptr, nullptr));
+                pParent->AddSubItem(pGroup);
+            }
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Fold Marker"), 0, TRUE);

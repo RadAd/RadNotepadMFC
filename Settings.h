@@ -23,25 +23,24 @@ enum FoldType
 struct EditorSettings
 {
     // TODO Also make these settings per Language?
-    bool bUseTabs = FALSE;
-    int nTabWidth = 4;
+    // TODO Store these settings
 
     COLORREF cCaretFG = COLOR_NONE;
     int nCaretStyle = CARETSTYLE_LINE;
     int nCaretWidth = 1;
 
-    bool bShowIndentGuides = TRUE;
-    // TODO Move indentguide colours here (font not used)
+    bool bUseTabs = FALSE;
+    int nTabWidth = 4;
+    int nIndentGuideType = SC_IV_LOOKBOTH;
     bool bHighlightMatchingBraces = TRUE;
-    // TODO Move bracematch, bracemismatch colours here (font is used)
-
     bool bAutoIndent = TRUE;
 
     bool bShowLineNumbers = FALSE;
-    // TODO Move linenumbers colours here (font is used)
-    // TODO Move controlchars colours here (*only* font is used)
+
     bool bShowBookmarks = TRUE;
-    // TODO bookmark style
+    int nBookmarkType = SC_MARK_BOOKMARK;
+    COLORREF cBookmarkFG = COLOR_LT_CYAN;
+    COLORREF cBookmarkBG = COLOR_BLACK;
 
     bool bShowFolds = FALSE;
     FoldType nFoldType = MT_BOX;
