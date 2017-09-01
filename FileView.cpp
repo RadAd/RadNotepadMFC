@@ -9,7 +9,6 @@
 #include <set>
 
 // TODO
-// notify all view of file rename
 // top level file updates
 // file view collapse all
 // file view change root
@@ -444,7 +443,7 @@ void CFileView::FillFileView()
             &cne);
     }
 
-#if 0
+#if 1
     TreeItem ti;
     /*HRESULT hr =*/ SHGetDesktopFolder(&ti.Parent);
     ti.ItemId = nullptr;
@@ -493,7 +492,7 @@ void CFileView::InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent)
 
     bool children = false;
     CComPtr<IEnumIDList>    EnumIDList;
-    HRESULT hr = Folder->EnumObjects(NULL, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS, &EnumIDList);
+    HRESULT hr = Folder->EnumObjects(NULL, SHCONTF_FOLDERS | SHCONTF_NONFOLDERS | SHCONTF_ENABLE_ASYNC, &EnumIDList);
 
     if (!!EnumIDList)
     {
@@ -507,7 +506,12 @@ void CFileView::InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent)
 #ifdef _DEBUG
                 CString name = GetDisplayNameOf(Folder, ItemId, m_Malloc);
 #endif
-                InsertChild(hParent, Folder, PtrIDChild(ItemId));
+                SFGAOF AttrFlags = SHCIDS_BITMASK;
+                LPCITEMIDLIST    IdList[1] = { ItemId };
+                hr = Folder->GetAttributesOf(1, IdList, &AttrFlags);
+
+                if (AttrFlags & (SFGAO_FILESYSANCESTOR | SFGAO_FILESYSTEM))
+                    InsertChild(hParent, Folder, PtrIDChild(ItemId));
             }
         }
     }
@@ -1005,8 +1009,14 @@ void CFileView::OnDblClick(NMHDR* /*pHdr*/, LRESULT* pResult)
     if (hItem != NULL && nFlags & TVHT_ONITEM)
     {
         TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
-        CString name = ti->GetDisplayNameOf(m_Malloc, SHGDN_FORPARSING);
-        theApp.OpenDocumentFile(name);
+
+        SFGAOF Flags = SHCIDS_BITMASK;
+        ti->GetAttributesOf(&Flags);
+        if (Flags & SFGAO_STREAM)
+        {
+            CString name = ti->GetDisplayNameOf(m_Malloc, SHGDN_FORPARSING);
+            theApp.OpenDocumentFile(name);
+        }
     }
     *pResult = 0;
 }
