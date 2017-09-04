@@ -29,7 +29,7 @@
 #define ID_VIEW_OUTPUTWND               149
 #define ID_VIEW_PROPERTIESWND           150
 #define ID_SORTPROPERTIES               151
-#define ID_PROPERTIES1                  152
+#define ID_PROPERTIES_RESET             152
 #define ID_PROPERTIES2                  153
 #define ID_EXPAND_ALL                   154
 #define IDS_FILE_VIEW                   155
@@ -98,7 +98,7 @@
 #define ID_TOOLS_LASTTOOL               33099
 
 // Next default values for new objects
-//
+// 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        316

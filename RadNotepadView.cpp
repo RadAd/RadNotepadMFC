@@ -20,6 +20,7 @@
 
 // TODO
 // Look into replacing scintilla scrollbars with splitter scrollbars (maybe just the vertical one)
+// Replace tabs with spaces or spaces with tabs
 
 #define WM_CHECKUPDATE (WM_USER + 1)
 
@@ -526,13 +527,7 @@ void CRadNotepadView::OnEditMakeUppercase()
     if (!sel.IsEmpty())
     {
         CScintillaCtrl& rCtrl = GetCtrl();
-
-        sel.MakeUpper();
-        rCtrl.ReplaceSel(sel);
-
-        Sci_Position start = rCtrl.GetSelectionStart();
-        Sci_Position end = rCtrl.GetSelectionStart();
-        rCtrl.SetSel(start - sel.GetLength(), end);
+        rCtrl.UpperCase();
     }
 }
 
@@ -543,13 +538,7 @@ void CRadNotepadView::OnEditMakeLowercase()
     if (!sel.IsEmpty())
     {
         CScintillaCtrl& rCtrl = GetCtrl();
-
-        sel.MakeLower();
-        rCtrl.ReplaceSel(sel);
-
-        Sci_Position start = rCtrl.GetSelectionStart();
-        Sci_Position end = rCtrl.GetSelectionStart();
-        rCtrl.SetSel(start - sel.GetLength(), end);
+        rCtrl.LowerCase();
     }
 }
 

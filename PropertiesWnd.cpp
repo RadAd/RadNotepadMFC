@@ -380,8 +380,8 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
 	ON_UPDATE_COMMAND_UI(ID_EXPAND_ALL, OnUpdateExpandAllProperties)
 	ON_COMMAND(ID_SORTPROPERTIES, OnSortProperties)
 	ON_UPDATE_COMMAND_UI(ID_SORTPROPERTIES, OnUpdateSortProperties)
-	ON_COMMAND(ID_PROPERTIES1, OnProperties1)
-	ON_UPDATE_COMMAND_UI(ID_PROPERTIES1, OnUpdateProperties1)
+	ON_COMMAND(ID_PROPERTIES_RESET, OnPropertiesReset)
+	ON_UPDATE_COMMAND_UI(ID_PROPERTIES_RESET, OnUpdatePropertiesReset)
 	ON_COMMAND(ID_PROPERTIES2, OnProperties2)
 	ON_UPDATE_COMMAND_UI(ID_PROPERTIES2, OnUpdateProperties2)
 	ON_WM_SETFOCUS()
@@ -498,17 +498,15 @@ void CPropertiesWnd::OnUpdateSortProperties(CCmdUI* pCmdUI)
 	pCmdUI->SetCheck(m_wndPropList.IsAlphabeticMode());
 }
 
-void CPropertiesWnd::OnProperties1()
+void CPropertiesWnd::OnPropertiesReset()
 {
-	// TODO: Add your command handler code here
-    // TODO Temporary to refresh properties
-    m_wndPropList.RemoveAll();
+    m_pSettings->user = m_pSettings->default;
     InitPropList();
 }
 
-void CPropertiesWnd::OnUpdateProperties1(CCmdUI* /*pCmdUI*/)
+void CPropertiesWnd::OnUpdatePropertiesReset(CCmdUI* pCmdUI)
 {
-	// TODO: Add your command update UI handler code here
+    pCmdUI->Enable(m_pSettings->user != m_pSettings->default);
 }
 
 void CPropertiesWnd::OnProperties2()
