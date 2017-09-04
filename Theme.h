@@ -259,6 +259,7 @@ struct Theme
 };
 
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
+void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin);
 void LoadTheme(Theme* pTheme, Theme* pDefaultTheme);
 void SaveTheme(const Theme* pTheme, const Theme* pDefaultTheme);
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName);

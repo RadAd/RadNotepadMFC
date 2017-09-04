@@ -53,8 +53,8 @@ protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnUpdateLine(CCmdUI* pCmdUI);
     afx_msg void OnUpdateInsert(CCmdUI* pCmdUI);
-    afx_msg void OnViewMarker(UINT nID);
-    afx_msg void OnUpdateViewMarker(CCmdUI *pCmdUI);
+    afx_msg void OnViewMargin(UINT nID);
+    afx_msg void OnUpdateViewMargin(CCmdUI *pCmdUI);
     afx_msg void OnViewWhitespace();
     afx_msg void OnUpdateViewWhitespace(CCmdUI *pCmdUI);
     afx_msg void OnViewEndOfLine();

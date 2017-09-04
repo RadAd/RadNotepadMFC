@@ -142,7 +142,7 @@ static inline void ApplyMarker(CScintillaCtrl& rCtrl, const Marker& marker)
     rCtrl.MarkerSetBack(marker.id, marker.back);
 }
 
-static inline void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin)
+void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin)
 {
     int w = 0;
     if (margin.show)

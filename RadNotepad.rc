@@ -190,10 +190,6 @@ BEGIN
         END
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
-        MENUITEM "Line Numbers",                ID_VIEW_LINENUMBERS
-        MENUITEM "Bookmarks",                   ID_VIEW_BOOKMARKS
-        MENUITEM "Folds",                       ID_VIEW_FOLDS
-        MENUITEM SEPARATOR
         POPUP "Line Endings"
         BEGIN
             MENUITEM "Windows (CRLF)",              ID_LINEENDINGS_WINDOWS
@@ -205,6 +201,14 @@ BEGIN
         POPUP "Scheme"
         BEGIN
             MENUITEM "None",                        ID_VIEW_SCHEMENONE
+        END
+        POPUP "Margins"
+        BEGIN
+            MENUITEM "<Margin 1>",                  ID_MARGINS_1
+            MENUITEM "<Margin 2>",                  ID_MARGINS_2
+            MENUITEM "<Margin 3>",                  ID_MARGINS_3
+            MENUITEM "<Margin 4>",                  ID_MARGINS_4
+            MENUITEM "<Margin 5>",                  ID_MARGINS_5
         END
         MENUITEM "White Space",                 ID_VIEW_WHITESPACE
         MENUITEM "End of Line",                 ID_VIEW_ENDOFLINE

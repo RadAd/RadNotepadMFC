@@ -40,8 +40,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CRadNotepadView::OnUpdateLine)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CRadNotepadView::OnUpdateInsert)
     ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CRadNotepadView::OnFilePrintPreview)
-    ON_COMMAND_RANGE(ID_VIEW_LINENUMBERS, ID_VIEW_FOLDS, &CRadNotepadView::OnViewMarker)
-    ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_LINENUMBERS, ID_VIEW_FOLDS, &CRadNotepadView::OnUpdateViewMarker)
+    ON_COMMAND_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CRadNotepadView::OnViewMargin)
+    ON_UPDATE_COMMAND_UI_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CRadNotepadView::OnUpdateViewMargin)
     ON_COMMAND(ID_VIEW_WHITESPACE, &CRadNotepadView::OnViewWhitespace)
     ON_UPDATE_COMMAND_UI(ID_VIEW_WHITESPACE, &CRadNotepadView::OnUpdateViewWhitespace)
     ON_COMMAND(ID_VIEW_ENDOFLINE, &CRadNotepadView::OnViewEndOfLine)
@@ -356,26 +356,31 @@ void CRadNotepadView::OnInitialUpdate()
 #endif
 }
 
-void CRadNotepadView::OnViewMarker(UINT nID)
+void CRadNotepadView::OnViewMargin(UINT nID)
 {
-    /* TODO Need to define menu from theme
-    eMargin nMarker = static_cast<eMargin>(nID - ID_VIEW_LINENUMBERS);
-    CScintillaCtrl& rCtrl = GetCtrl();
-    int nMarginWidth = rCtrl.GetMarginWidthN(nMarker);
-    if (nMarginWidth)
-        rCtrl.SetMarginWidthN(nMarker, 0);
-    else
-        rCtrl.SetMarginWidthN(nMarker, GetWidth(rCtrl, nMarker));
-    */
+    Theme* pTheme = &theApp.m_Settings.user;
+    int i = nID - ID_MARGINS_1;
+    if (i >= 0 && i < pTheme->vecMargin.size())
+    {
+        Margin& margin = pTheme->vecMargin[i];
+        margin.show = !margin.show;
+        CScintillaCtrl& rCtrl = GetCtrl();
+        ApplyMargin(rCtrl, margin);
+    }
 }
 
-void CRadNotepadView::OnUpdateViewMarker(CCmdUI *pCmdUI)
+void CRadNotepadView::OnUpdateViewMargin(CCmdUI *pCmdUI)
 {
-    /* TODO Need to define menu from theme
-    eMargin nMarker = static_cast<eMargin>(pCmdUI->m_nID - ID_VIEW_LINENUMBERS);
-    CScintillaCtrl& rCtrl = GetCtrl();
-    pCmdUI->SetCheck(rCtrl.GetMarginWidthN(nMarker) != 0);
-    */
+    const Theme* pTheme = &theApp.m_Settings.user;
+    int i = pCmdUI->m_nID - ID_MARGINS_1;
+    if (i >= 0 && i < pTheme->vecMargin.size())
+    {
+        const Margin& margin = pTheme->vecMargin[i];
+        pCmdUI->SetText(margin.name);
+        pCmdUI->SetCheck(margin.show);
+    }
+    else if (pCmdUI->m_pMenu != nullptr)
+        pCmdUI->m_pMenu->RemoveMenu(pCmdUI->m_nID, MF_BYCOMMAND);
 }
 
 

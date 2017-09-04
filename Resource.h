@@ -54,9 +54,6 @@
 #define IDR_EXTMAP                      314
 #define IDC_LINE                        1000
 #define ID_FILE_REVERT                  32784
-#define ID_VIEW_LINENUMBERS             32785
-#define ID_VIEW_BOOKMARKS               32786
-#define ID_VIEW_FOLDS                   32787
 #define ID_FILE_CLOSEALL                32788
 #define ID_FILE_SAVEALL                 32789
 #define ID_VIEW_WHITESPACE              32790
@@ -91,15 +88,21 @@
 #define ID_SYNC                         32846
 #define ID_EDIT_RENAME                  32848
 #define ID_EDIT_VIEW                    32852
+#define ID_VIEW_MARGINS                 32855
+#define ID_MARGINS_1                    32856
+#define ID_MARGINS_2                    32857
+#define ID_MARGINS_3                    32858
+#define ID_MARGINS_4                    32859
+#define ID_MARGINS_5                    32860
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        316
-#define _APS_NEXT_COMMAND_VALUE         32855
+#define _APS_NEXT_COMMAND_VALUE         32861
 #define _APS_NEXT_CONTROL_VALUE         1000
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
