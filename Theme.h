@@ -79,37 +79,17 @@ struct GroupStyle
     }
 };
 
-enum FoldType
-{
-    MT_ARROW,
-    MT_PLUSMINUS,
-    MT_CIRCLE,
-    MT_BOX
-};
-
 struct ThemeEditor
 {
-    COLORREF cCaretFG = COLOR_NONE;
     int nCaretStyle = CARETSTYLE_LINE;
     int nCaretWidth = 1;
+    COLORREF cCaretFG = COLOR_NONE;
 
     bool bUseTabs = FALSE;
     int nTabWidth = 4;
     int nIndentGuideType = SC_IV_LOOKBOTH;
     bool bHighlightMatchingBraces = TRUE;
     bool bAutoIndent = TRUE;
-
-    bool bShowLineNumbers = FALSE;
-
-    bool bShowBookmarks = TRUE;
-    int nBookmarkType = SC_MARK_BOOKMARK;
-    COLORREF cBookmarkFG = COLOR_LT_CYAN;
-    COLORREF cBookmarkBG = COLOR_BLACK;
-
-    bool bShowFolds = FALSE;
-    FoldType nFoldType = MT_BOX;
-    COLORREF cFoldFG = COLOR_LT_CYAN;
-    COLORREF cFoldBG = COLOR_BLACK;
 };
 
 
@@ -194,6 +174,58 @@ struct KeywordClass
     }
 };
 
+struct Margin
+{
+    CString name;
+    int id;
+    BOOL show;
+    int width;
+    CString width_text;
+    BOOL sensitive;
+    int type;
+    int mask;
+
+    bool operator==(const Margin& other) const
+    {
+        return name == other.name
+            && id == other.id
+            && show == other.show
+            && width == other.width
+            && width_text == other.width_text
+            && sensitive == other.sensitive
+            && type == other.type
+            && mask == other.mask;
+    }
+
+    bool operator!=(const Margin& other) const
+    {
+        return !(*this == other);
+    }
+};
+
+struct Marker
+{
+    CString name;
+    int id;
+    int type;
+    COLORREF fore;
+    COLORREF back;
+
+    bool operator==(const Marker& other) const
+    {
+        return name == other.name
+            && id == other.id
+            && type == other.type
+            && fore == other.fore
+            && back == other.back;
+    }
+
+    bool operator!=(const Marker& other) const
+    {
+        return !(*this == other);
+    }
+};
+
 struct Theme
 {
     ThemeItem tDefault;
@@ -201,6 +233,8 @@ struct Theme
     std::vector<StyleClass> vecStyleClass;
     std::vector<Style> vecBase;
     std::vector<KeywordClass> vecKeywordClass;
+    std::vector<Margin> vecMargin;
+    std::vector<Marker> vecMarker;
     std::map<CString, CString> mapExt;
     std::map<CString, CString> mapExtFilter;
     std::vector<Language> vecLanguage;
@@ -211,6 +245,8 @@ struct Theme
             && vecStyleClass == other.vecStyleClass
             && vecBase == other.vecBase
             //&& vecKeywordClass == other.vecKeywordClass   // Not needed, could be slow
+            && vecMargin == other.vecMargin
+            && vecMarker == other.vecMarker
             && mapExt == other.mapExt
             //&& mapExtFilter == other.mapExtFilter // Not needed as its just a cache of mapExt
             && vecLanguage == other.vecLanguage;

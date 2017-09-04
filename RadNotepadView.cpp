@@ -28,22 +28,6 @@
 #define ID_VIEW_FIRSTSCHEME             33100
 #define ID_VIEW_LASTSCHEME              33199
 
-enum Margin
-{
-    MARGIN_LINENUMBERS,
-    MARGIN_SYMBOLS,
-    MARGIN_FOLDS,
-};
-
-int GetWidth(CScintillaCtrl& rCtrl, Margin m)
-{
-    switch (m)
-    {
-    case MARGIN_LINENUMBERS: return rCtrl.TextWidth(STYLE_LINENUMBER, "99999");
-    default: return 16;
-    }
-}
-
 // CRadNotepadView
 
 IMPLEMENT_DYNCREATE(CRadNotepadView, CScintillaView)
@@ -335,36 +319,6 @@ void CRadNotepadView::OnInitialUpdate()
 
     Apply(rCtrl, m_pLanguage, pTheme);
 
-    //Setup folding
-    rCtrl.SetMarginWidthN(MARGIN_FOLDS, pTheme->editor.bShowFolds ? GetWidth(rCtrl, MARGIN_FOLDS) : 0);
-    rCtrl.SetMarginSensitiveN(MARGIN_FOLDS, TRUE);
-    rCtrl.SetMarginTypeN(MARGIN_FOLDS, SC_MARGIN_SYMBOL);
-    rCtrl.SetMarginMaskN(MARGIN_FOLDS, SC_MASK_FOLDERS);
-
-    rCtrl.SetMarginWidthN(MARGIN_LINENUMBERS, pTheme->editor.bShowLineNumbers ? GetWidth(rCtrl, MARGIN_LINENUMBERS) : 0);
-
-    rCtrl.SetMarginWidthN(MARGIN_SYMBOLS, pTheme->editor.bShowBookmarks ? GetWidth(rCtrl, MARGIN_SYMBOLS) : 0);
-    DefineMarker(RAD_MARKER_BOOKMARK, pTheme->editor.nBookmarkType, pTheme->editor.cBookmarkFG, pTheme->editor.cBookmarkBG);
-
-    //Setup markers
-    int MTMarker[] = {
-        SC_MARKNUM_FOLDEROPEN,
-        SC_MARKNUM_FOLDER,
-        SC_MARKNUM_FOLDERSUB,
-        SC_MARKNUM_FOLDERTAIL,
-        SC_MARKNUM_FOLDEREND,
-        SC_MARKNUM_FOLDEROPENMID,
-        SC_MARKNUM_FOLDERMIDTAIL,
-    };
-    int MT[][7] = {
-        { SC_MARK_ARROWDOWN,   SC_MARK_ARROW,      SC_MARK_EMPTY, SC_MARK_EMPTY,        SC_MARK_EMPTY,               SC_MARK_EMPTY,                SC_MARK_EMPTY },
-        { SC_MARK_MINUS,       SC_MARK_PLUS,       SC_MARK_EMPTY, SC_MARK_EMPTY,        SC_MARK_EMPTY,               SC_MARK_EMPTY,                SC_MARK_EMPTY },
-        { SC_MARK_CIRCLEMINUS, SC_MARK_CIRCLEPLUS, SC_MARK_VLINE, SC_MARK_LCORNERCURVE, SC_MARK_CIRCLEPLUSCONNECTED, SC_MARK_CIRCLEMINUSCONNECTED, SC_MARK_TCORNERCURVE },
-        { SC_MARK_BOXMINUS,    SC_MARK_BOXPLUS,    SC_MARK_VLINE, SC_MARK_LCORNER,      SC_MARK_BOXPLUSCONNECTED,    SC_MARK_BOXMINUSCONNECTED,    SC_MARK_TCORNER },
-    };
-    for (int i = 0; i < ARRAYSIZE(MTMarker); ++i)
-        DefineMarker(MTMarker[i], MT[pTheme->editor.nFoldType][i], pTheme->editor.cFoldFG, pTheme->editor.cFoldBG);
-
     rCtrl.SetUseTabs(pTheme->editor.bUseTabs);
     rCtrl.SetTabWidth(pTheme->editor.nTabWidth);
 
@@ -402,33 +356,26 @@ void CRadNotepadView::OnInitialUpdate()
 #endif
 }
 
-void CRadNotepadView::DefineMarker(int marker, int markerType, COLORREF fore, COLORREF back)
-{
-    CScintillaCtrl& rCtrl = GetCtrl();
-
-    rCtrl.MarkerDefine(marker, markerType);
-    rCtrl.MarkerSetFore(marker, fore);
-    rCtrl.MarkerSetBack(marker, back);
-}
-
-
 void CRadNotepadView::OnViewMarker(UINT nID)
 {
-    Margin nMarker = static_cast<Margin>(nID - ID_VIEW_LINENUMBERS);
+    /* TODO Need to define menu from theme
+    eMargin nMarker = static_cast<eMargin>(nID - ID_VIEW_LINENUMBERS);
     CScintillaCtrl& rCtrl = GetCtrl();
     int nMarginWidth = rCtrl.GetMarginWidthN(nMarker);
     if (nMarginWidth)
         rCtrl.SetMarginWidthN(nMarker, 0);
     else
         rCtrl.SetMarginWidthN(nMarker, GetWidth(rCtrl, nMarker));
+    */
 }
-
 
 void CRadNotepadView::OnUpdateViewMarker(CCmdUI *pCmdUI)
 {
-    Margin nMarker = static_cast<Margin>(pCmdUI->m_nID - ID_VIEW_LINENUMBERS);
+    /* TODO Need to define menu from theme
+    eMargin nMarker = static_cast<eMargin>(pCmdUI->m_nID - ID_VIEW_LINENUMBERS);
     CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetMarginWidthN(nMarker) != 0);
+    */
 }
 
 

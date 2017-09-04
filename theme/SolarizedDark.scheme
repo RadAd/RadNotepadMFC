@@ -1,0 +1,97 @@
+<Scheme>
+  <!-- <override-colours caret="839496" indentGuides="eee8d5" markAll="dc322f" selBack="d33682" smartHighlight="d33682" templateField="268bd2"></override-colours> -->
+  <style-classes>
+    <style-class fore="93a1a1" name="attribute"/>
+    <style-class fore="93a1a1" name="boxcomment"/>
+    <style-class fore="d33682" name="bracematch"/>
+    <style-class fore="dc322f" name="bracemismatch"/>
+    <style-class fore="2aa198" name="character"/>
+    <style-class fore="268bd2" name="class"/>
+    <style-class fore="93a1a1" italic="true" name="comment"/>
+    <style-class fore="839496" italic="true" name="commentbox"/>
+    <style-class fore="839496" name="commentdoc"/>
+    <style-class fore="93a1a1" italic="true" name="commentline"/>
+    <style-class bold="true" fore="4a413a" name="controlchars"/>
+    <style-class back="002b36" fore="839496" name="default"/>
+    <style-class fore="dc322f" name="error"/>
+    <style-class fore="268bd2" name="function"/>
+    <style-class fore="d38234" name="identifier"/>
+    <style-class bold="true" fore="859900" name="keyword"/>
+    <style-class fore="586e75" name="keyword2"/>
+    <style-class back="073642" fore="93a1a1" name="linenumbers"/>
+    <style-class fore="2aa198" name="number"/>
+    <style-class fore="b58900" name="operator"/>
+    <style-class fore="cb4b16" name="preprocessor"/>
+    <style-class fore="2aa198" name="string"/>
+    <style-class bold="true" fore="268bd2" name="tag"/>
+    <style-class fore="268bd2" name="type"/>
+    <style-class fore="dc322f" name="unknownattribute"/>
+  </style-classes>
+  <language name="cpp" ovtabs="false" usetabs="false">
+    <use-styles>
+      <style fore="268bd2" key="11" />
+      <style fore="2aa198" key="8" />
+      <style fore="859900" key="16" />
+      <style fore="dc322f" key="17" />
+    </use-styles>
+  </language>
+  <language name="php">
+    <use-styles>
+      <group name="PHP">
+        <style fore="268bd2" key="123" />
+      </group>
+      <group name="HTML">
+        <style fore="dc322f" key="19" />
+      </group>
+    </use-styles>
+  </language>
+  <language name="web">
+    <use-styles>
+      <style fore="dc322f" key="2" />
+      <style fore="93a1a1" key="8" />
+      <style fore="cb4b16" key="10" />
+      <style fore="dc322f" key="18" />
+      <group name="SGML">
+        <style fore="93a1a1" italic="true" key="21" />
+        <style italic="true" key="22" />
+        <style italic="true" key="23" />
+        <style italic="true" key="24" />
+        <style italic="true" key="25" />
+        <style fore="dc322f" italic="true" key="26" />
+        <style fore="268bd2" italic="true" key="27" />
+        <style italic="true" key="28" />
+        <style italic="true" key="29" />
+        <style italic="true" key="31" />
+      </group>
+      <group name="JavaScript">
+        <style fore="6c71c4" key="52" />
+      </group>
+      <group name="PHP">
+        <style fore="268bd2" key="123" />
+      </group>
+    </use-styles>
+  </language>
+  <language name="xml">
+    <use-styles>
+      <style fore="dc322f" italic="true" key="2" />
+      <style italic="true" key="4" />
+      <style fore="93a1a1" key="8" />
+      <style fore="cb4b16" key="10" />
+      <style fore="cb4b16" key="17" />
+      <style fore="dc322f" key="18" />
+      <style italic="true" key="19" />
+      <group name="SGML">
+        <style italic="true" key="21" />
+        <style italic="true" key="22" />
+        <style italic="true" key="23" />
+        <style italic="true" key="24" />
+        <style italic="true" key="25" />
+        <style italic="true" key="26" />
+        <style italic="true" key="27" />
+        <style italic="true" key="28" />
+        <style italic="true" key="29" />
+        <style italic="true" key="31" />
+      </group>
+    </use-styles>
+  </language>
+</Scheme>

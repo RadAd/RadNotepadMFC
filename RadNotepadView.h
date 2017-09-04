@@ -41,7 +41,6 @@ public:
 #endif
 
 protected:
-    void DefineMarker(int marker, int markerType, COLORREF fore, COLORREF back);
     const Language* m_pLanguage;
     BOOL m_bHighlightMatchingBraces;
     BOOL m_bAutoIndent;

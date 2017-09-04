@@ -10,7 +10,7 @@
             do end_unwind_protect endfor endif endswitch endfunction until
             unwind_protect unwind_protect_cleanup
         </keyword-class>
-        </keyword-classes>
+    </keyword-classes>
 
     <base-language name="matlabbase">
         <use-styles>

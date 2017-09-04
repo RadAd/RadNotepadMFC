@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme>
+  <markers>
+    <marker key="31" name="Folder Open" type="14"/>
+    <marker key="30" name="Folder" type="12"/>
+    <marker key="29" name="Folder Sub" type="9"/>
+    <marker key="28" name="Folder Tail" type="10"/>
+    <marker key="25" name="Folder End" type="13"/>
+    <marker key="26" name="Folder Open Mid" type="15"/>
+    <marker key="27" name="Folder Mid Tail" type="11"/>
+  </markers>
+</Scheme>

@@ -601,6 +601,7 @@ void CPropertiesWnd::InitPropList()
             m_wndPropList.AddProperty(pGroup);
         }
 
+#if 0
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
             pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &pTheme->editor.bShowLineNumbers));
@@ -626,6 +627,7 @@ void CPropertiesWnd::InitPropList()
 
             m_wndPropList.AddProperty(pGroup);
         }
+#endif
 
         {
             CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));

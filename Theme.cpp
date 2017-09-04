@@ -135,6 +135,31 @@ static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const T
     ApplyThemeItem(rCtrl, style.id, style.theme);
 }
 
+static inline void ApplyMarker(CScintillaCtrl& rCtrl, const Marker& marker)
+{
+    rCtrl.MarkerDefine(marker.id, marker.type);
+    rCtrl.MarkerSetFore(marker.id, marker.fore);
+    rCtrl.MarkerSetBack(marker.id, marker.back);
+}
+
+static inline void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin)
+{
+    int w = 0;
+    if (margin.show)
+    {
+        if (!margin.width_text.IsEmpty())
+            w = rCtrl.TextWidth(STYLE_LINENUMBER, margin.width_text);
+        else
+            w = margin.width;
+    }
+    rCtrl.SetMarginWidthN(margin.id, w);
+    rCtrl.SetMarginSensitiveN(margin.id, margin.sensitive);
+    if (margin.type >= 0)
+        rCtrl.SetMarginTypeN(margin.id, margin.type);
+    if (margin.mask != 0)
+        rCtrl.SetMarginMaskN(margin.id, margin.mask);
+}
+
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme)
 {
     if (pLanguage != nullptr)
@@ -146,6 +171,10 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
     rCtrl.StyleClearAll();
     for (const Style& style : pTheme->vecBase)
         ApplyStyle(rCtrl, style, pTheme);
+    for (const Marker& marker : pTheme->vecMarker)
+        ApplyMarker(rCtrl, marker);
+    for (const Margin& margin : pTheme->vecMargin)
+        ApplyMargin(rCtrl, margin);
 
     if (pLanguage != nullptr)
     {
@@ -461,6 +490,158 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
     }
 }
 
+void ProcessMargins(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Margin>& vecMargins)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"margin")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t key = GetAttribute(pXMLChildNode, _T("key"));
+                _bstr_t show = GetAttribute(pXMLChildNode, _T("show"));
+                _bstr_t width = GetAttribute(pXMLChildNode, _T("width"));
+                _bstr_t width_text = GetAttribute(pXMLChildNode, _T("width-text"));
+                _bstr_t sensitive = GetAttribute(pXMLChildNode, _T("sensitive"));
+                _bstr_t stype = GetAttribute(pXMLChildNode, _T("type"));
+                _bstr_t mask = GetAttribute(pXMLChildNode, _T("mask"));
+
+                if (isnull(key))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing key: %s"), (LPCTSTR) name);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else
+                {
+                    if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                    {
+                        CString msg;
+                        msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                    }
+                    // TODO Check for no other attributes
+
+                    int nKey = _wtoi(key);
+                    Margin* pMargin = GetKey(vecMargins, nKey);
+                    if (pMargin == nullptr)
+                    {
+                        if (isnull(name) || ((LPCTSTR) name)[0] == '\0')
+                        {
+                            CString msg;
+                            msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                        }
+                        vecMargins.push_back({ name, nKey });
+                        pMargin = &vecMargins.back();
+                        pMargin->type = -1;
+                    }
+
+                    if (!isnull(name))
+                        pMargin->name = (LPCTSTR) name;
+                    if (!isnull(show))
+                        pMargin->show = show == _T("true");
+                    if (!isnull(width))
+                        pMargin->width = _wtoi(width);
+                    if (!isnull(width_text))
+                        pMargin->width_text = (LPCTSTR) width_text;
+                    if (!isnull(sensitive))
+                        pMargin->sensitive = sensitive == _T("true");
+                    if (!isnull(stype))
+                        pMargin->type = _wtoi(stype);
+                    if (!isnull(mask))
+                        pMargin->mask = wcstoul(mask, nullptr, 16);
+                }
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
+        }
+    }
+}
+
+void ProcessMarkers(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Marker>& vecMarkers)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"marker")
+            {
+                _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
+                _bstr_t key = GetAttribute(pXMLChildNode, _T("key"));
+                _bstr_t stype = GetAttribute(pXMLChildNode, _T("type"));
+                _bstr_t fore = GetAttribute(pXMLChildNode, _T("fore"));
+                _bstr_t back = GetAttribute(pXMLChildNode, _T("back"));
+
+                if (isnull(key))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing key: %s"), (LPCTSTR) name);
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else
+                {
+                    if (!IsEmpty(pXMLChildNode, NODE_ELEMENT))
+                    {
+                        CString msg;
+                        msg.Format(_T("Extra elements: %s"), (LPCTSTR) bstrName);
+                        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                    }
+                    // TODO Check for no other attributes
+
+                    int nKey = _wtoi(key);
+                    Marker* pMarker = GetKey(vecMarkers, nKey);
+                    if (pMarker == nullptr)
+                    {
+                        if (isnull(name) || ((LPCTSTR) name)[0] == '\0')
+                        {
+                            CString msg;
+                            msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
+                            AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                        }
+                        vecMarkers.push_back({ name, nKey });
+                        pMarker = &vecMarkers.back();
+                    }
+
+                    if (!isnull(name))
+                        pMarker->name = (LPCTSTR) name;
+                    if (!isnull(stype))
+                        pMarker->type = _wtoi(stype);
+                    if (!isnull(fore))
+                        pMarker->fore = ToColor(fore);
+                    if (!isnull(back))
+                        pMarker->back = ToColor(back);
+                }
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
+        }
+    }
+}
+
 void ProcessKeywordClassesInclude(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, KeywordClass* pKeywordClass)
 {
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
@@ -736,6 +917,14 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
             else if (bstrName == L"keyword-classes")
             {
                 ProcessKeywordClasses(pXMLChildNode, pTheme);
+            }
+            else if (bstrName == L"margins")
+            {
+                ProcessMargins(pXMLChildNode, pTheme->vecMargin);
+            }
+            else if (bstrName == L"markers")
+            {
+                ProcessMarkers(pXMLChildNode, pTheme->vecMarker);
             }
             else if (bstrName == L"base-language")
             {
@@ -1020,6 +1209,56 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
     }
 }
 
+void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<Margin>& vecMargin, const std::vector<Margin>& vecDefaultMargin)
+{
+    for (const Margin& m : vecMargin)
+    {
+        // ignore name
+        const Margin* om = GetKey(vecDefaultMargin, m.id);
+        if (om != nullptr && m != *om)
+        {
+            MSXML2::IXMLDOMElementPtr pMargin = pDoc->createElement(L"margin");
+            pParent->insertBefore(pMargin, vtnull);
+
+            pMargin->setAttribute(_T("key"), m.id);
+            if (m.show != om->show)
+                pMargin->setAttribute(_T("show"), m.show);
+            if (m.show != om->show)
+                pMargin->setAttribute(_T("width"), m.width);
+            if (m.show != om->show)
+                pMargin->setAttribute(_T("width-text"), m.width_text.GetString());
+            if (m.show != om->show)
+                pMargin->setAttribute(_T("sensitive"), m.sensitive);
+            if (m.show != om->show)
+                pMargin->setAttribute(_T("type"), m.type);
+            if (m.show != om->show)
+                pMargin->setAttribute(_T("mask"), m.mask);  // TODO Convert to hex string
+        }
+    }
+}
+
+void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<Marker>& vecMarker, const std::vector<Marker>& vecDefaultMarker)
+{
+    for (const Marker& m : vecMarker)
+    {
+        // ignore name
+        const Marker* om = GetKey(vecDefaultMarker, m.id);
+        if (om != nullptr && m != *om)
+        {
+            MSXML2::IXMLDOMElementPtr pMarker = pDoc->createElement(L"marker");
+            pParent->insertBefore(pMarker, vtnull);
+
+            pMarker->setAttribute(_T("key"), m.id);
+            if (m.type != om->type)
+                pMarker->setAttribute(_T("type"), m.type);
+            if (m.fore != om->fore)
+                pMarker->setAttribute(_T("fore"), ToBStr(m.fore));
+            if (m.back != om->back)
+                pMarker->setAttribute(_T("back"), ToBStr(m.back));
+        }
+    }
+}
+
 void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<StyleClass>& vecStyle, const std::vector<StyleClass>& vecDefaultStyle)
 {
     for (const StyleClass& sc : vecStyle)
@@ -1074,6 +1313,10 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
         pRootNode->insertBefore(pStyleClasses, vtnull);
         MSXML2::IXMLDOMElementPtr pBaseOptions = pDoc->createElement(L"base-options");
         pRootNode->insertBefore(pBaseOptions, vtnull);
+        MSXML2::IXMLDOMElementPtr pMargins = pDoc->createElement(L"margins");
+        pRootNode->insertBefore(pMargins, vtnull);
+        MSXML2::IXMLDOMElementPtr pMarkers = pDoc->createElement(L"markers");
+        pRootNode->insertBefore(pMarkers, vtnull);
 
         if (pTheme->tDefault != pDefaultTheme->tDefault)
         {
@@ -1087,6 +1330,8 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
         SaveTheme(pDoc, pStyleClasses, pTheme->vecStyleClass, pDefaultTheme->vecStyleClass);
         SaveTheme(pDoc, pBaseOptions, pTheme->vecBase, pDefaultTheme->vecBase);
         // ignore vecKeywordClass
+        SaveTheme(pDoc, pMargins, pTheme->vecMargin, pDefaultTheme->vecMargin);
+        SaveTheme(pDoc, pBaseOptions, pTheme->vecMarker, pDefaultTheme->vecMarker);
         // ignore mapExt, mapExtFilter
         for (const Language& l : pTheme->vecLanguage)
         {
