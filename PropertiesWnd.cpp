@@ -578,7 +578,7 @@ void CPropertiesWnd::InitPropList()
         pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, strLineEnding, ARRAYSIZE(strLineEnding)));
         m_wndPropList.AddProperty(pGroup);
     }
-    else if (i == 1) // Editor
+    else if (i == 1)    // Editor
     {
         Theme* pTheme = &m_pSettings->user;
         {
@@ -601,33 +601,14 @@ void CPropertiesWnd::InitPropList()
             m_wndPropList.AddProperty(pGroup);
         }
 
-#if 0
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
-            pGroup->AddSubItem(CreateProperty(_T("Line Numbers"), &pTheme->editor.bShowLineNumbers));
+            for (Margin& margin : pTheme->vecMargin)
             {
-                CMFCPropertyGridProperty* pParent = pGroup;
-                CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Bookmarks"), 0, TRUE);
-                pGroup->AddSubItem(CreateProperty(_T("Enabled"), &pTheme->editor.bShowBookmarks));
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nBookmarkType, 0, 31));
-                pGroup->AddSubItem(CreateProperty(_T("Background"), &pTheme->editor.cBookmarkBG, nullptr, nullptr));
-                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cBookmarkFG, nullptr, nullptr));
-                pParent->AddSubItem(pGroup);
+                pGroup->AddSubItem(CreateProperty(margin.name, &margin.show));
             }
-            {
-                CMFCPropertyGridProperty* pParent = pGroup;
-                CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Fold Marker"), 0, TRUE);
-                pGroup->AddSubItem(CreateProperty(_T("Enabled"), &pTheme->editor.bShowFolds));
-                LPCTSTR strFoldStyle[] = { _T("Arrow"), _T("Plus/Minus"), _T("Circle"), _T("Box") };
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nFoldType, strFoldStyle, ARRAYSIZE(strFoldStyle)));
-                pGroup->AddSubItem(CreateProperty(_T("Background"), &pTheme->editor.cFoldBG, nullptr, nullptr));
-                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cFoldFG, nullptr, nullptr));
-                pParent->AddSubItem(pGroup);
-            }
-
             m_wndPropList.AddProperty(pGroup);
         }
-#endif
 
         {
             CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));

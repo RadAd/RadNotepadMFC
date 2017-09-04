@@ -178,7 +178,7 @@ struct Margin
 {
     CString name;
     int id;
-    BOOL show;
+    bool show;
     int width;
     CString width_text;
     BOOL sensitive;

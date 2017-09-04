@@ -1185,11 +1185,11 @@ void SaveTheme(MSXML2::IXMLDOMElementPtr pNode, const ThemeItem& ti, const Theme
     if (ti.font.lfWeight != dti.font.lfWeight)
         pNode->setAttribute(_T("bold"), ti.font.lfWeight == FW_BOLD);
     if (ti.font.lfItalic != dti.font.lfItalic)
-        pNode->setAttribute(_T("italic"), ti.font.lfItalic);
+        pNode->setAttribute(_T("italic"), ti.font.lfItalic ? _T("true") : _T("false"));
     if (ti.eolfilled != dti.eolfilled)
-        pNode->setAttribute(_T("eolfilled"), ti.eolfilled);
+        pNode->setAttribute(_T("eolfilled"), ti.eolfilled ? _T("true") : _T("false"));
     if (ti.hotspot != dti.hotspot)
-        pNode->setAttribute(_T("hotspot"), ti.hotspot);
+        pNode->setAttribute(_T("hotspot"), ti.hotspot ? _T("true") : _T("false"));
 }
 
 void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<Style>& vecStyle, const std::vector<Style>& vecDefaultStyle)
@@ -1222,17 +1222,17 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
 
             pMargin->setAttribute(_T("key"), m.id);
             if (m.show != om->show)
-                pMargin->setAttribute(_T("show"), m.show);
-            if (m.show != om->show)
+                pMargin->setAttribute(_T("show"), m.show ? _T("true") : _T("false"));
+            if (m.width != om->width)
                 pMargin->setAttribute(_T("width"), m.width);
-            if (m.show != om->show)
+            if (m.width_text != om->width_text)
                 pMargin->setAttribute(_T("width-text"), m.width_text.GetString());
-            if (m.show != om->show)
-                pMargin->setAttribute(_T("sensitive"), m.sensitive);
-            if (m.show != om->show)
+            if (m.sensitive != om->sensitive)
+                pMargin->setAttribute(_T("sensitive"), m.sensitive ? _T("true") : _T("false"));
+            if (m.type != om->type)
                 pMargin->setAttribute(_T("type"), m.type);
-            if (m.show != om->show)
-                pMargin->setAttribute(_T("mask"), m.mask);  // TODO Convert to hex string
+            if (m.mask != om->mask)
+                pMargin->setAttribute(_T("show"), m.mask);  // TODO Convert to hex string
         }
     }
 }
@@ -1354,6 +1354,10 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
                 pRootNode->removeChild(pLanguage);
         }
 
+        if (IsEmpty(pMarkers, NODE_ELEMENT))
+            pRootNode->removeChild(pMarkers);
+        if (IsEmpty(pMargins, NODE_ELEMENT))
+            pRootNode->removeChild(pMargins);
         if (IsEmpty(pStyleClasses, NODE_ELEMENT))
             pRootNode->removeChild(pStyleClasses);
         if (IsEmpty(pBaseOptions, NODE_ELEMENT))
