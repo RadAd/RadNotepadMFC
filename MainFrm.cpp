@@ -630,7 +630,7 @@ void CMainFrame::ChildMDINextWindow(CWnd* /*pWndMDIChild*/, BOOL bIsPrev)
     else
     {
         ++m_PrevNext;
-        if (m_PrevNext >= m_MDIStack.size())
+        if (m_PrevNext >= (int) m_MDIStack.size())
             m_PrevNext = 0;
     }
 

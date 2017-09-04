@@ -420,7 +420,7 @@ END
 STRINGTABLE
 BEGIN
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
-    ID_INDICATOR_LINE       "Line: %ld, Col: %ld, Character: %ld"
+    ID_INDICATOR_LINE       "Line: %ld, Col: %ld, Char: %ld, Sel: %ld"
     IDS_FILE_REVERT         "File has changed. Revert?"
 END
 

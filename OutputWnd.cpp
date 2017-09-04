@@ -6,7 +6,6 @@
 #include "RadNotepad.h"
 #include "RadNotepadDoc.h"
 #include "Theme.h"
-#include <SciLexer.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

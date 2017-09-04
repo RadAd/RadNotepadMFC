@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme>
+  <editor>
+    <caret style="1" width="1" fore="-1"/>
+    <tabs use="true" width="4" />
+    <indent-guide type="3" />
+    <whitespace show="false" type="1" size="1" draw="0" />
+    <braces highlight="true" />
+    <indent auto="true" />
+  </editor>
   <margins>
     <margin key="0" name="Line Numbers" show="false" width-text="99999"/>
     <margin key="1" name="Bookmarks" show="true" width="16"/>

@@ -918,6 +918,10 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
             {
                 ProcessKeywordClasses(pXMLChildNode, pTheme);
             }
+            else if (bstrName == L"editor")
+            {
+                // TODO ProcessEditor(pXMLChildNode, pTheme->editor);
+            }
             else if (bstrName == L"margins")
             {
                 ProcessMargins(pXMLChildNode, pTheme->vecMargin);
@@ -1331,7 +1335,7 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
         SaveTheme(pDoc, pBaseOptions, pTheme->vecBase, pDefaultTheme->vecBase);
         // ignore vecKeywordClass
         SaveTheme(pDoc, pMargins, pTheme->vecMargin, pDefaultTheme->vecMargin);
-        SaveTheme(pDoc, pBaseOptions, pTheme->vecMarker, pDefaultTheme->vecMarker);
+        SaveTheme(pDoc, pMarkers, pTheme->vecMarker, pDefaultTheme->vecMarker);
         // ignore mapExt, mapExtFilter
         for (const Language& l : pTheme->vecLanguage)
         {

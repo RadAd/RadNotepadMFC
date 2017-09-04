@@ -21,6 +21,7 @@
 // TODO
 // Look into replacing scintilla scrollbars with splitter scrollbars (maybe just the vertical one)
 // Replace tabs with spaces or spaces with tabs
+// Support to comment out selection
 
 #define WM_CHECKUPDATE (WM_USER + 1)
 
@@ -198,12 +199,14 @@ void CRadNotepadView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 void CRadNotepadView::OnUpdateLine(CCmdUI* pCmdUI)
 {
     CScintillaCtrl& rCtrl = GetCtrl();
-    Sci_Position nPos = rCtrl.GetCurrentPos();
-    int nLine = rCtrl.LineFromPosition(nPos);
-    int nColumn = rCtrl.GetColumn(nPos);
+    const Sci_Position nPos = rCtrl.GetCurrentPos();
+    const int nLine = rCtrl.LineFromPosition(nPos);
+    const int nLineStart = rCtrl.PositionFromLine(nLine);
+    const int nColumn = rCtrl.GetColumn(nPos);
+    const Sci_Position nAnchor = rCtrl.GetAnchor();
 
     CString sLine;
-    sLine.Format(ID_INDICATOR_LINE, nLine + 1, nColumn + 1, nPos + 1);
+    sLine.Format(ID_INDICATOR_LINE, nLine + 1, nColumn + 1, nPos - nLineStart + 1, abs(nAnchor - nPos));
     pCmdUI->SetText(sLine);
     pCmdUI->Enable();
 }
@@ -360,7 +363,7 @@ void CRadNotepadView::OnInitialUpdate()
 void CRadNotepadView::OnViewMargin(UINT nID)
 {
     Theme* pTheme = &theApp.m_Settings.user;
-    int i = nID - ID_MARGINS_1;
+    size_t i = nID - ID_MARGINS_1;
     if (i >= 0 && i < pTheme->vecMargin.size())
     {
         Margin& margin = pTheme->vecMargin[i];
@@ -373,7 +376,7 @@ void CRadNotepadView::OnViewMargin(UINT nID)
 void CRadNotepadView::OnUpdateViewMargin(CCmdUI *pCmdUI)
 {
     const Theme* pTheme = &theApp.m_Settings.user;
-    int i = pCmdUI->m_nID - ID_MARGINS_1;
+    size_t i = pCmdUI->m_nID - ID_MARGINS_1;
     if (i >= 0 && i < pTheme->vecMargin.size())
     {
         const Margin& margin = pTheme->vecMargin[i];

@@ -16,8 +16,7 @@ static char THIS_FILE[]=__FILE__;
 // TODO
 // A CMFCPropertyGridColorProperty which knows common color names
 // Selecting and pasting into edit color (and maybe others) appends text instead
-// A button to reset user settings
-// Add "Language: " to front of language settings
+// Need a tri-state bool property (ie to refer to default)
 
 #define ID_OBJECT_COMBO 100
 
@@ -617,6 +616,19 @@ void CPropertiesWnd::InitPropList()
                     pGroup1->AddSubItem(CreateProperty(sc.description, &sc.theme, &pTheme->tDefault, nullptr));
             }
             m_wndPropList.AddProperty(pGroup1);
+        }
+
+        {
+            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Markers"));
+            for (Marker& marker : pTheme->vecMarker)
+            {
+                CMFCPropertyGridProperty* pMarkerGroup = new CMFCPropertyGridProperty(marker.name, 0, TRUE);
+                pMarkerGroup->AddSubItem(CreateProperty(_T("Type"), &marker.type, SC_MARK_CIRCLE, SC_MARK_BOOKMARK));
+                pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, nullptr, nullptr));
+                pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, nullptr, nullptr));
+                pGroup->AddSubItem(pMarkerGroup);
+            }
+            m_wndPropList.AddProperty(pGroup);
         }
     }
 
