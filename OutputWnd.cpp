@@ -126,6 +126,7 @@ COutputList* COutputWnd::Get(LPCTSTR pOutput, BOOL bCreate)
             delete pOutputList;
             return nullptr;      // fail to create
         }
+        pOutputList->SetOwner(this);
         m_wndTabs.AddTab(pOutputList, pOutput, (UINT) 0);
     }
     return pOutputList;
@@ -309,6 +310,7 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 BOOL COutputWnd::PreTranslateMessage(MSG* pMsg)
 {
+    // TODO Move this to an accelerator
     if (pMsg->message == WM_KEYUP && pMsg->wParam == VK_ESCAPE)
     {
         CMDIFrameWndEx* pMainWnd = DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd());

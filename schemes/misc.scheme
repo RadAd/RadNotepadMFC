@@ -73,7 +73,7 @@
 			<style name="Python error" key="1" class="error" hotspot="true" />
 			<style name="gcc error" key="2" class="error" hotspot="true" />
 			<style name="Microsoft error" key="3" class="error" hotspot="true" />
-			<style name="command or return status" key="4" class="comment" hotspot="true" />
+			<style name="command or return status" key="4" class="comment" />
 			<style name="Borland message" key="5" class="error" hotspot="true" />
 			<style name="Perl message" key="6" class="error" hotspot="true" />
 			<style name=".NET tracebacks" key="7" class="error" hotspot="true" />
@@ -86,7 +86,7 @@
 				<style name="message (---)" key="13" fore="7f0000" />
 			</group>
 			<style name="PHP error" key="14" class="error" hotspot="true" />
-			
+
 			<!-- this is the style used by the container-based error lexer. It may in the future
 			clash with that used by scintilla so will need updating then. -->
 			<style name="Custom error" key="20" class="error" hotspot="true" />
