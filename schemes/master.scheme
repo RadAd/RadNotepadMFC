@@ -9,19 +9,19 @@
     <indent auto="true" />
   </editor>
   <margins>
-    <margin key="0" name="Line Numbers" show="false" width-text="99999"/>
-    <margin key="1" name="Bookmarks" show="true" width="16"/>
-    <margin key="2" name="Folds" show="false" width="16" sensitive="true" type="0" mask="fe000000"/>
+    <margin key="0" name="Line Numbers" show="false" width-text="99999" />
+    <margin key="1" name="Bookmarks" show="true" width="16" />
+    <margin key="2" name="Folds" show="false" width="16" sensitive="true" type="0" mask="fe000000" />
   </margins>
   <markers>
-    <marker key="31" name="Folder Open" type="14" fore="000000" back="00ffff"/>
-    <marker key="30" name="Folder" type="12" fore="000000" back="00ffff"/>
-    <marker key="29" name="Folder Sub" type="9" fore="000000" back="00ffff"/>
-    <marker key="28" name="Folder Tail" type="10" fore="000000" back="00ffff"/>
-    <marker key="25" name="Folder End" type="13" fore="000000" back="00ffff"/>
-    <marker key="26" name="Folder Open Mid" type="15" fore="000000" back="00ffff"/>
-    <marker key="27" name="Folder Mid Tail" type="11" fore="000000" back="00ffff"/>
-    <marker key="2" name="Bookmark" type="31" fore="000000" back="00ffff"/>
+    <marker key="31" name="Folder Open" type="14" fore="000000" back="00ffff" />
+    <marker key="30" name="Folder" type="12" fore="000000" back="00ffff" />
+    <marker key="29" name="Folder Sub" type="9" fore="000000" back="00ffff" />
+    <marker key="28" name="Folder Tail" type="10" fore="000000" back="00ffff" />
+    <marker key="25" name="Folder End" type="13" fore="000000" back="00ffff" />
+    <marker key="26" name="Folder Open Mid" type="15" fore="000000" back="00ffff" />
+    <marker key="27" name="Folder Mid Tail" type="11" fore="000000" back="00ffff" />
+    <marker key="2" name="Bookmark" type="31" fore="000000" back="00ffff" />
   </markers>
 	<style-classes>
 		<!-- All styles inherit the default style. Font fore and back colours are

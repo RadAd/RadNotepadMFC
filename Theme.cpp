@@ -140,11 +140,14 @@ void AddExt(Theme* pTheme, const CString& ext, const CString& lexer)
     filter += ext;
 }
 
-static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const Theme* pTheme)
+static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const Style* pBaseStyle, const Theme* pTheme)
 {
-    const ThemeItem* pThemeItem = GetThemeItem(style.sclass, pTheme);
+    CString sclass = Merge(style.sclass, pn(pBaseStyle, sclass), CString(), CString());
+    const ThemeItem* pThemeItem = GetThemeItem(sclass, pTheme);
     if (pThemeItem != nullptr)
         ApplyThemeItem(rCtrl, style.id, *pThemeItem);
+    if (pBaseStyle != nullptr)
+        ApplyThemeItem(rCtrl, style.id, pBaseStyle->theme);
     ApplyThemeItem(rCtrl, style.id, style.theme);
 }
 
@@ -155,23 +158,31 @@ static inline void ApplyMarker(CScintillaCtrl& rCtrl, const Marker& marker, cons
     rCtrl.MarkerSetBack(marker.id, Merge(marker.back, pn(pBaseMarker, back), COLOR_NONE, COLOR_LT_MAGENTA));
 }
 
+int GetMarginWidth(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin)
+{
+    CString width_text = Merge(margin.width_text, pn(pBaseMargin, width_text), CString(), CString());
+    if (!width_text.IsEmpty())
+        return rCtrl.TextWidth(STYLE_LINENUMBER, width_text);
+    else
+        return Merge(margin.width, pn(pBaseMargin, width), 0, 16);
+}
+
 void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin)
 {
     if (Merge(margin.show, pn(pBaseMargin, show), B3_UNDEFINED, B3_FALSE) == B3_TRUE)
     {
-        int w = 0;
-        CString width_text = Merge(margin.width_text, pn(pBaseMargin, width_text), CString(), CString());
-        if (!width_text.IsEmpty())
-            w = rCtrl.TextWidth(STYLE_LINENUMBER, width_text);
-        else
-            w = Merge(margin.width, pn(pBaseMargin, width), 0, 16);
+        int w = GetMarginWidth(rCtrl, margin, pBaseMargin);
         rCtrl.SetMarginWidthN(margin.id, w);
     }
     else
         rCtrl.SetMarginWidthN(margin.id, 0);
     rCtrl.SetMarginSensitiveN(margin.id, Merge(margin.sensitive, pn(pBaseMargin, sensitive), B3_UNDEFINED, B3_FALSE) == B3_TRUE);
-    rCtrl.SetMarginTypeN(margin.id, Merge(margin.type, pn(pBaseMargin, type), -1, 0));
-    rCtrl.SetMarginMaskN(margin.id, Merge(margin.mask, pn(pBaseMargin, mask), 0, 0));
+    int type = Merge(margin.type, pn(pBaseMargin, type), -1, -1);
+    if (type >= 0)
+        rCtrl.SetMarginTypeN(margin.id, type);
+    int mask = Merge(margin.mask, pn(pBaseMargin, mask), 0, 0);
+    if (mask != 0)
+        rCtrl.SetMarginMaskN(margin.id, mask);
 }
 
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme)
@@ -183,8 +194,6 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
 
     ApplyThemeItem(rCtrl, STYLE_DEFAULT, pTheme->tDefault);
     rCtrl.StyleClearAll();
-    for (const Style& style : pTheme->vecBase)
-        ApplyStyle(rCtrl, style, pTheme);
 
     if (pLanguage == nullptr)
     {
@@ -192,9 +201,10 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
             ApplyMargin(rCtrl, margin, nullptr);
         for (const Marker& marker : pTheme->vecMarker)
             ApplyMarker(rCtrl, marker, nullptr);
+        for (const Style& style : pTheme->vecBase)
+            ApplyStyle(rCtrl, style, nullptr, pTheme);
     }
-
-    if (pLanguage != nullptr)
+    else
     {
         if (!pLanguage->strWordChars.IsEmpty())
             rCtrl.SetWordChars(pLanguage->strWordChars);
@@ -212,16 +222,21 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
         for (const auto& prop : pLanguage->mapProperties)
             rCtrl.SetProperty(prop.first, prop.second);
         for (const Style& style : pLanguage->vecStyle)
-            ApplyStyle(rCtrl, style, pTheme);
+            ApplyStyle(rCtrl, style, nullptr, pTheme);
         for (const GroupStyle& groupstyle : pLanguage->vecGroupStyle)
         {
             for (const Style& style : groupstyle.vecStyle)
-                ApplyStyle(rCtrl, style, pTheme);
+                ApplyStyle(rCtrl, style, nullptr, pTheme);
         }
         for (const Margin& margin : pLanguage->vecMargin)
             ApplyMargin(rCtrl, margin, GetKey(pTheme->vecMargin, margin.id));
         for (const Marker& marker : pLanguage->vecMarker)
             ApplyMarker(rCtrl, marker, GetKey(pTheme->vecMarker, marker.id));
+        for (const Style& style : pLanguage->vecBase)
+        {
+            const Style* pBaseStyle = GetKey(pTheme->vecBase, style.id);
+            ApplyStyle(rCtrl, style, pBaseStyle, pTheme);
+        }
     }
 }
 
@@ -457,7 +472,7 @@ void ProcessStyles(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Style>& vecStyle
                                 msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
                                 AfxMessageBox(msg, MB_ICONERROR | MB_OK);
                             }
-                            vecStyles.push_back({ name, nKey, sclass, rThemeItem });
+                            vecStyles.push_back(Style(name, nKey, sclass, rThemeItem));
                         }
                         else
                         {
@@ -564,7 +579,9 @@ void ProcessMargins(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Margin>& vecMar
                         }
                         vecMargins.push_back(Margin(name, nKey));
                         pMargin = &vecMargins.back();
+                        pMargin->width = 0; // TODO Why is this needed ???
                         pMargin->type = -1;
+                        pMargin->mask = 0; // TODO Why is this needed ???
                     }
 
                     if (!isnull(name))
@@ -1205,8 +1222,12 @@ void LoadTheme(Theme* pTheme, Theme* pDefaultTheme)
 
     for (Language& rLanguage : pTheme->vecLanguage)
     {
-        MergeOnKey(rLanguage.vecMargin, pTheme->vecMargin);
-        MergeOnKey(rLanguage.vecMarker, pTheme->vecMarker);
+        if (!rLanguage.internal)
+        {
+            MergeOnKey(rLanguage.vecBase, pTheme->vecBase);
+            MergeOnKey(rLanguage.vecMargin, pTheme->vecMargin);
+            MergeOnKey(rLanguage.vecMarker, pTheme->vecMarker);
+        }
     }
     *pDefaultTheme = *pTheme;
 
@@ -1396,6 +1417,8 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
             pRootNode->insertBefore(pLanguage, vtnull);
             MSXML2::IXMLDOMElementPtr pUseStyles = pDoc->createElement(L"use-styles");
             pLanguage->insertBefore(pUseStyles, vtnull);
+            MSXML2::IXMLDOMElementPtr pLangBaseOptions = pDoc->createElement(L"base-options");
+            pLanguage->insertBefore(pLangBaseOptions, vtnull);
             MSXML2::IXMLDOMElementPtr pLangMargins = pDoc->createElement(L"margins");
             pLanguage->insertBefore(pLangMargins, vtnull);
             MSXML2::IXMLDOMElementPtr pLangMarkers = pDoc->createElement(L"markers");
@@ -1407,6 +1430,7 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
                 // ignore title and lexer
                 SaveTheme(pDoc, pUseStyles, l.vecStyle, ol->vecStyle);
                 SaveTheme(pDoc, pUseStyles, l.vecGroupStyle, ol->vecGroupStyle);
+                SaveTheme(pDoc, pLangBaseOptions, l.vecBase, ol->vecBase);
                 SaveTheme(pDoc, pLangMargins, l.vecMargin, ol->vecMargin);
                 SaveTheme(pDoc, pLangMarkers, l.vecMarker, ol->vecMarker);
             }
@@ -1414,6 +1438,8 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
                 pLanguage->removeChild(pLangMarkers);
             if (IsEmpty(pLangMargins, NODE_ELEMENT))
                 pLanguage->removeChild(pLangMargins);
+            if (IsEmpty(pLangBaseOptions, NODE_ELEMENT))
+                pLanguage->removeChild(pLangBaseOptions);
             if (IsEmpty(pUseStyles, NODE_ELEMENT))
                 pLanguage->removeChild(pUseStyles);
             if (IsEmpty(pLanguage, NODE_ELEMENT))

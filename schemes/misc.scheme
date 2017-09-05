@@ -67,7 +67,13 @@
 	</language>
 	<language name="output" title="Output" internal="true">
 		<lexer name="errorlist" />
-		<use-styles>
+			<margins>
+				<margin key="1" name="Current" show="true" />
+			</margins>
+			<markers>
+				<marker key="3" name="Current" type="4" fore="000000" back="00ffff" />
+			</markers>
+			<use-styles>
 			<style name="Default" key="32" size="9" />
 			<style name="Whitespace" key="0" />
 			<style name="Python error" key="1" class="error" hotspot="true" />

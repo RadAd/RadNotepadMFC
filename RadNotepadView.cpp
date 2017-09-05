@@ -23,6 +23,17 @@
 // Replace tabs with spaces or spaces with tabs
 // Support to comment out selection
 
+template<class T>
+static inline typename T::pointer GetKey(T& vec, int id)
+{
+    for (T::reference v : vec)
+    {
+        if (v.id == id)
+            return &v;
+    }
+    return nullptr;
+}
+
 #define WM_CHECKUPDATE (WM_USER + 1)
 
 #define RAD_MARKER_BOOKMARK 2
@@ -364,12 +375,20 @@ void CRadNotepadView::OnViewMargin(UINT nID)
 {
     Theme* pTheme = &theApp.m_Settings.user;
     size_t i = nID - ID_MARGINS_1;
-    if (i >= 0 && i < pTheme->vecMargin.size())
+    const std::vector<Margin>& vecMargin = m_pLanguage == nullptr ? pTheme->vecMargin : m_pLanguage->vecMargin;
+    if (i >= 0 && i < vecMargin.size())
     {
-        Margin& margin = pTheme->vecMargin[i];
-        margin.show = margin.show == B3_TRUE ? B3_FALSE : B3_TRUE;
         CScintillaCtrl& rCtrl = GetCtrl();
-        ApplyMargin(rCtrl, margin, nullptr);
+        const Margin& margin = vecMargin[i];
+        bool show = rCtrl.GetMarginWidthN(margin.id) > 0;
+        show = !show;
+        int width = 0;
+        if (show)
+        {
+            const Margin* pBaseMargin = m_pLanguage == nullptr ? GetKey(pTheme->vecMargin, margin.id) : nullptr;
+            width = GetMarginWidth(rCtrl, margin, pBaseMargin);
+        }
+        rCtrl.SetMarginWidthN(margin.id, width);
     }
 }
 
@@ -377,11 +396,14 @@ void CRadNotepadView::OnUpdateViewMargin(CCmdUI *pCmdUI)
 {
     const Theme* pTheme = &theApp.m_Settings.user;
     size_t i = pCmdUI->m_nID - ID_MARGINS_1;
-    if (i >= 0 && i < pTheme->vecMargin.size())
+    const std::vector<Margin>& vecMargin = m_pLanguage == nullptr ? pTheme->vecMargin : m_pLanguage->vecMargin;
+    if (i >= 0 && i < vecMargin.size())
     {
-        const Margin& margin = pTheme->vecMargin[i];
+        CScintillaCtrl& rCtrl = GetCtrl();
+        const Margin& margin = vecMargin[i];
         pCmdUI->SetText(margin.name);
-        pCmdUI->SetCheck(margin.show);
+        bool show = rCtrl.GetMarginWidthN(margin.id) > 0;
+        pCmdUI->SetCheck(show);
     }
     else if (pCmdUI->m_pMenu != nullptr)
         pCmdUI->m_pMenu->RemoveMenu(pCmdUI->m_nID, MF_BYCOMMAND);
@@ -626,7 +648,6 @@ void CRadNotepadView::OnSchemeNone()
 
 void CRadNotepadView::OnUpdateSchemeNone(CCmdUI *pCmdUI)
 {
-    // TODO Sort
     if (pCmdUI->m_pSubMenu != nullptr)
     {
         for (int i = ID_VIEW_FIRSTSCHEME; i < ID_VIEW_LASTSCHEME; ++i)

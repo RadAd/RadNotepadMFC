@@ -50,6 +50,14 @@ struct ThemeItem
 
 struct Style
 {
+    Style(LPCTSTR name, int id, LPCTSTR sclass = nullptr, const ThemeItem& theme = ThemeItem())
+        : name(name)
+        , id(id)
+        , sclass(sclass)
+        , theme(theme)
+    {
+    }
+
     CString name;
     int id;
     CString sclass;
@@ -110,11 +118,11 @@ struct Margin
     CString name;
     int id;
     Bool3 show = B3_UNDEFINED;
-    int width;
+    int width = 0;
     CString width_text;
     Bool3 sensitive = B3_UNDEFINED;
     int type = -1;
-    int mask;
+    int mask = 0;
 
     bool operator==(const Margin& other) const
     {
@@ -181,6 +189,7 @@ struct Language
     std::map<CString, CString> mapProperties;
     std::vector<Style> vecStyle;
     std::vector<GroupStyle> vecGroupStyle;
+    std::vector<Style> vecBase;
     std::vector<Margin> vecMargin;
     std::vector<Marker> vecMarker;
     struct { CString name; CString sclass; } vecKeywords[KEYWORDSET_MAX];
@@ -193,6 +202,7 @@ struct Language
             && mapProperties == other.mapProperties
             && vecStyle == other.vecStyle
             && vecGroupStyle == other.vecGroupStyle
+            && vecBase == other.vecBase
             && vecMargin == other.vecMargin
             && vecMarker == other.vecMarker;
         //&& vecKeywords == other.vecKeywords;
@@ -287,3 +297,4 @@ void SaveTheme(const Theme* pTheme, const Theme* pDefaultTheme);
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName);
 const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt);
 const StyleClass* GetStyleClass(const Theme* pTheme, LPCTSTR strName);
+int GetMarginWidth(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin);
