@@ -109,11 +109,11 @@ struct Margin
 
     CString name;
     int id;
-    Bool3 show;
+    Bool3 show = B3_UNDEFINED;
     int width;
     CString width_text;
-    BOOL sensitive;
-    int type;
+    Bool3 sensitive = B3_UNDEFINED;
+    int type = -1;
     int mask;
 
     bool operator==(const Margin& other) const
@@ -144,9 +144,9 @@ struct Marker
 
     CString name;
     int id;
-    int type;
-    COLORREF fore;
-    COLORREF back;
+    int type = -1;
+    COLORREF fore = COLOR_NONE;
+    COLORREF back = COLOR_NONE;
 
     bool operator==(const Marker& other) const
     {
@@ -181,6 +181,8 @@ struct Language
     std::map<CString, CString> mapProperties;
     std::vector<Style> vecStyle;
     std::vector<GroupStyle> vecGroupStyle;
+    std::vector<Margin> vecMargin;
+    std::vector<Marker> vecMarker;
     struct { CString name; CString sclass; } vecKeywords[KEYWORDSET_MAX];
 
     bool operator==(const Language& other) const
@@ -190,8 +192,10 @@ struct Language
             && lexer == other.lexer
             && mapProperties == other.mapProperties
             && vecStyle == other.vecStyle
-            && vecGroupStyle == other.vecGroupStyle;
-            //&& vecKeywords == other.vecKeywords;
+            && vecGroupStyle == other.vecGroupStyle
+            && vecMargin == other.vecMargin
+            && vecMarker == other.vecMarker;
+        //&& vecKeywords == other.vecKeywords;
     }
 
     bool operator!=(const Language& other) const
@@ -277,7 +281,7 @@ struct Theme
 };
 
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
-void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin);
+void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin);
 void LoadTheme(Theme* pTheme, Theme* pDefaultTheme);
 void SaveTheme(const Theme* pTheme, const Theme* pDefaultTheme);
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName);

@@ -2,6 +2,19 @@
 #include "Theme.h"
 #include <SciLexer.h>
 
+#define pn(x, y) ((x) == nullptr ? nullptr : &(x)->y)
+
+template<class T>
+static T Merge(const T& a, const T* b, const T& n, const T& d)
+{
+    if (a != n)
+        return a;
+    else if (b != nullptr && *b != n)
+        return *b;
+    else
+        return d;
+}
+
 static inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
 {
     LOGFONT lf = {};
@@ -135,29 +148,30 @@ static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const T
     ApplyThemeItem(rCtrl, style.id, style.theme);
 }
 
-static inline void ApplyMarker(CScintillaCtrl& rCtrl, const Marker& marker)
+static inline void ApplyMarker(CScintillaCtrl& rCtrl, const Marker& marker, const Marker* pBaseMarker)
 {
-    rCtrl.MarkerDefine(marker.id, marker.type);
-    rCtrl.MarkerSetFore(marker.id, marker.fore);
-    rCtrl.MarkerSetBack(marker.id, marker.back);
+    rCtrl.MarkerDefine(marker.id, Merge(marker.type, pn(pBaseMarker, type), -1, 0));
+    rCtrl.MarkerSetFore(marker.id, Merge(marker.fore, pn(pBaseMarker, fore), COLOR_NONE, COLOR_LT_MAGENTA));
+    rCtrl.MarkerSetBack(marker.id, Merge(marker.back, pn(pBaseMarker, back), COLOR_NONE, COLOR_LT_MAGENTA));
 }
 
-void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin)
+void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin)
 {
-    int w = 0;
-    if (margin.show)
+    if (Merge(margin.show, pn(pBaseMargin, show), B3_UNDEFINED, B3_FALSE) == B3_TRUE)
     {
-        if (!margin.width_text.IsEmpty())
-            w = rCtrl.TextWidth(STYLE_LINENUMBER, margin.width_text);
+        int w = 0;
+        CString width_text = Merge(margin.width_text, pn(pBaseMargin, width_text), CString(), CString());
+        if (!width_text.IsEmpty())
+            w = rCtrl.TextWidth(STYLE_LINENUMBER, width_text);
         else
-            w = margin.width;
+            w = Merge(margin.width, pn(pBaseMargin, width), 0, 16);
+        rCtrl.SetMarginWidthN(margin.id, w);
     }
-    rCtrl.SetMarginWidthN(margin.id, w);
-    rCtrl.SetMarginSensitiveN(margin.id, margin.sensitive);
-    if (margin.type >= 0)
-        rCtrl.SetMarginTypeN(margin.id, margin.type);
-    if (margin.mask != 0)
-        rCtrl.SetMarginMaskN(margin.id, margin.mask);
+    else
+        rCtrl.SetMarginWidthN(margin.id, 0);
+    rCtrl.SetMarginSensitiveN(margin.id, Merge(margin.sensitive, pn(pBaseMargin, sensitive), B3_UNDEFINED, B3_FALSE) == B3_TRUE);
+    rCtrl.SetMarginTypeN(margin.id, Merge(margin.type, pn(pBaseMargin, type), -1, 0));
+    rCtrl.SetMarginMaskN(margin.id, Merge(margin.mask, pn(pBaseMargin, mask), 0, 0));
 }
 
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme)
@@ -171,10 +185,14 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
     rCtrl.StyleClearAll();
     for (const Style& style : pTheme->vecBase)
         ApplyStyle(rCtrl, style, pTheme);
-    for (const Marker& marker : pTheme->vecMarker)
-        ApplyMarker(rCtrl, marker);
-    for (const Margin& margin : pTheme->vecMargin)
-        ApplyMargin(rCtrl, margin);
+
+    if (pLanguage == nullptr)
+    {
+        for (const Margin& margin : pTheme->vecMargin)
+            ApplyMargin(rCtrl, margin, nullptr);
+        for (const Marker& marker : pTheme->vecMarker)
+            ApplyMarker(rCtrl, marker, nullptr);
+    }
 
     if (pLanguage != nullptr)
     {
@@ -200,6 +218,10 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
             for (const Style& style : groupstyle.vecStyle)
                 ApplyStyle(rCtrl, style, pTheme);
         }
+        for (const Margin& margin : pLanguage->vecMargin)
+            ApplyMargin(rCtrl, margin, GetKey(pTheme->vecMargin, margin.id));
+        for (const Marker& marker : pLanguage->vecMarker)
+            ApplyMarker(rCtrl, marker, GetKey(pTheme->vecMarker, marker.id));
     }
 }
 
@@ -554,7 +576,7 @@ void ProcessMargins(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Margin>& vecMar
                     if (!isnull(width_text))
                         pMargin->width_text = (LPCTSTR) width_text;
                     if (!isnull(sensitive))
-                        pMargin->sensitive = sensitive == _T("true");
+                        pMargin->sensitive = sensitive == _T("true") ? B3_TRUE : B3_FALSE;
                     if (!isnull(stype))
                         pMargin->type = _wtoi(stype);
                     if (!isnull(mask))
@@ -857,6 +879,14 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
             {
                 ProcessKeywords(pXMLChildNode, pLanguage);
             }
+            else if (bstrName == L"margins")
+            {
+                ProcessMargins(pXMLChildNode, pLanguage->vecMargin);
+            }
+            else if (bstrName == L"markers")
+            {
+                ProcessMarkers(pXMLChildNode, pLanguage->vecMarker);
+            }
             else if (bstrName == L"property")
             {
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
@@ -1124,6 +1154,23 @@ BOOL CALLBACK EnumResExtMapProc(
 
 #include "Resource.h"
 
+template <class T>
+static void MergeOnKey(std::vector<T>& vecMerge, std::vector<T>& vecDefault)
+{
+    std::vector<T> vecTemp;
+    vecTemp.swap(vecMerge);
+    for (const T& v : vecDefault)
+        vecMerge.push_back(T(v.name, v.id));
+    for (const T& v : vecTemp)
+    {
+        T* pV = GetKey(vecDefault, v.id);
+        if (pV != nullptr)
+            *pV = v;
+        else
+            vecMerge.push_back(v);
+    }
+}
+
 void LoadTheme(Theme* pTheme, Theme* pDefaultTheme)
 {
     std::vector<Language> vecBaseLanguage;
@@ -1156,6 +1203,11 @@ void LoadTheme(Theme* pTheme, Theme* pDefaultTheme)
     }
 #endif
 
+    for (Language& rLanguage : pTheme->vecLanguage)
+    {
+        MergeOnKey(rLanguage.vecMargin, pTheme->vecMargin);
+        MergeOnKey(rLanguage.vecMarker, pTheme->vecMarker);
+    }
     *pDefaultTheme = *pTheme;
 
     if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath)))
@@ -1225,17 +1277,17 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
             pParent->insertBefore(pMargin, vtnull);
 
             pMargin->setAttribute(_T("key"), m.id);
-            if (m.show != om->show)
-                pMargin->setAttribute(_T("show"), m.show ? _T("true") : _T("false"));
-            if (m.width != om->width)
+            if (m.show != B3_UNDEFINED && m.show != om->show)
+                pMargin->setAttribute(_T("show"), m.show == B3_TRUE ? _T("true") : _T("false"));
+            if (m.width != 0 && m.width != om->width)
                 pMargin->setAttribute(_T("width"), m.width);
-            if (m.width_text != om->width_text)
+            if (! m.width_text.IsEmpty() && m.width_text != om->width_text)
                 pMargin->setAttribute(_T("width-text"), m.width_text.GetString());
-            if (m.sensitive != om->sensitive)
-                pMargin->setAttribute(_T("sensitive"), m.sensitive ? _T("true") : _T("false"));
-            if (m.type != om->type)
+            if (m.sensitive != B3_UNDEFINED && m.sensitive != om->sensitive)
+                pMargin->setAttribute(_T("sensitive"), m.sensitive == B3_TRUE ? _T("true") : _T("false"));
+            if (m.type != -1 && m.type != om->type)
                 pMargin->setAttribute(_T("type"), m.type);
-            if (m.mask != om->mask)
+            if (om->mask != 0 && m.mask != om->mask)
                 pMargin->setAttribute(_T("show"), m.mask);  // TODO Convert to hex string
         }
     }
@@ -1344,6 +1396,10 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
             pRootNode->insertBefore(pLanguage, vtnull);
             MSXML2::IXMLDOMElementPtr pUseStyles = pDoc->createElement(L"use-styles");
             pLanguage->insertBefore(pUseStyles, vtnull);
+            MSXML2::IXMLDOMElementPtr pLangMargins = pDoc->createElement(L"margins");
+            pLanguage->insertBefore(pLangMargins, vtnull);
+            MSXML2::IXMLDOMElementPtr pLangMarkers = pDoc->createElement(L"markers");
+            pLanguage->insertBefore(pLangMarkers, vtnull);
             const Language* ol = Get(pDefaultTheme->vecLanguage, l.name);
             if (ol != nullptr)
             {
@@ -1351,7 +1407,13 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
                 // ignore title and lexer
                 SaveTheme(pDoc, pUseStyles, l.vecStyle, ol->vecStyle);
                 SaveTheme(pDoc, pUseStyles, l.vecGroupStyle, ol->vecGroupStyle);
+                SaveTheme(pDoc, pLangMargins, l.vecMargin, ol->vecMargin);
+                SaveTheme(pDoc, pLangMarkers, l.vecMarker, ol->vecMarker);
             }
+            if (IsEmpty(pLangMarkers, NODE_ELEMENT))
+                pLanguage->removeChild(pLangMarkers);
+            if (IsEmpty(pLangMargins, NODE_ELEMENT))
+                pLanguage->removeChild(pLangMargins);
             if (IsEmpty(pUseStyles, NODE_ELEMENT))
                 pLanguage->removeChild(pUseStyles);
             if (IsEmpty(pLanguage, NODE_ELEMENT))
