@@ -16,21 +16,10 @@ static char THIS_FILE[]=__FILE__;
 // TODO
 // A CMFCPropertyGridColorProperty which knows common color names
 // Selecting and pasting into edit color (and maybe others) appends text instead
+// CMFCPropertyGridProperty for int with a default value
+// Add something to theme item to say which properties are used
 
 #define ID_OBJECT_COMBO 100
-
-template<class T>
-static inline typename T::pointer GetKey(T& vec, int id)
-{
-    for (T::reference v : vec)
-    {
-        if (v.id == id)
-            return &v;
-    }
-    return nullptr;
-}
-
-#define pn(x, y) ((x) == nullptr ? nullptr : &(x)->y)
 
 enum PropType
 {
@@ -639,9 +628,7 @@ void CPropertiesWnd::InitPropList()
                 for (Style& s : pLanguage->vecBase)
                 {
                     const Style* os = GetKey(pTheme->vecBase, s.id);
-                    CString sclass = s.sclass;  // TODO Merge
-                    if (s.sclass.IsEmpty() && os != nullptr)
-                        sclass = os->sclass;
+                    CString sclass = Merge(s.sclass, pn(os, sclass), CString(), CString());
                     const StyleClass* osc = GetStyleClass(pTheme, sclass);
                     pGroup->AddSubItem(CreateProperty(s.name, &s.theme, pn(os, theme), pn(osc, theme), &pTheme->tDefault));
                 }
@@ -650,13 +637,15 @@ void CPropertiesWnd::InitPropList()
             m_wndPropList.AddProperty(pGroup);
         }
 
+        if (!pLanguage->vecMarker.empty())
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Markers"));
             for (Marker& marker : pLanguage->vecMarker)
             {
                 const Marker* pBaseMarker = GetKey(pTheme->vecMarker, marker.id);
                 CMFCPropertyGridProperty* pMarkerGroup = new CMFCPropertyGridProperty(marker.name, 0, TRUE);
-                pMarkerGroup->AddSubItem(CreateProperty(_T("Type"), &marker.type, SC_MARK_CIRCLE, SC_MARK_BOOKMARK)); // TODO Use base
+                pMarkerGroup->AllowEdit(FALSE);
+                pMarkerGroup->AddSubItem(CreateProperty(_T("Type"), &marker.type, /*SC_MARK_CIRCLE*/ -1, SC_MARK_BOOKMARK));
                 pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, pn(pBaseMarker, fore), nullptr, nullptr));
                 pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, pn(pBaseMarker, back), nullptr, nullptr));
                 pGroup->AddSubItem(pMarkerGroup);
@@ -682,6 +671,7 @@ void CPropertiesWnd::InitPropList()
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
+                pGroup->AllowEdit(FALSE);
                 pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cCaretFG, &m_pSettings->user.tDefault.fore, nullptr, nullptr));
                 LPCTSTR strCaretStyle[] = { _T("Invisible"), _T("Line"), _T("Block") };
                 pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nCaretStyle, strCaretStyle, ARRAYSIZE(strCaretStyle)));
@@ -727,11 +717,13 @@ void CPropertiesWnd::InitPropList()
             m_wndPropList.AddProperty(pGroup1);
         }
 
+        if (!pTheme->vecMarker.empty())
         {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Markers"));
             for (Marker& marker : pTheme->vecMarker)
             {
                 CMFCPropertyGridProperty* pMarkerGroup = new CMFCPropertyGridProperty(marker.name, 0, TRUE);
+                pMarkerGroup->AllowEdit(FALSE);
                 pMarkerGroup->AddSubItem(CreateProperty(_T("Type"), &marker.type, SC_MARK_CIRCLE, SC_MARK_BOOKMARK));
                 pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, nullptr, nullptr, nullptr));
                 pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, nullptr, nullptr, nullptr));
@@ -834,7 +826,7 @@ static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
     for (int i = 0; i < pProp->GetSubItemsCount(); ++i)
         Refresh(pProp->GetSubItem(i), propdef);
     Property* prop = (Property*) pProp->GetData();
-    if (prop != nullptr && prop->nType == propdef->nType)
+    if (prop != nullptr && propdef != nullptr && prop->nType == propdef->nType)
     {
         switch (prop->nType)
         {

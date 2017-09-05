@@ -23,17 +23,6 @@
 // Replace tabs with spaces or spaces with tabs
 // Support to comment out selection
 
-template<class T>
-static inline typename T::pointer GetKey(T& vec, int id)
-{
-    for (T::reference v : vec)
-    {
-        if (v.id == id)
-            return &v;
-    }
-    return nullptr;
-}
-
 #define WM_CHECKUPDATE (WM_USER + 1)
 
 #define RAD_MARKER_BOOKMARK 2

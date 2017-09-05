@@ -298,3 +298,27 @@ const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName);
 const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt);
 const StyleClass* GetStyleClass(const Theme* pTheme, LPCTSTR strName);
 int GetMarginWidth(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin);
+
+#define pn(x, y) ((x) == nullptr ? nullptr : &(x)->y)
+
+template<class T>
+static inline typename T::pointer GetKey(T& vec, int id)
+{
+    for (T::reference v : vec)
+    {
+        if (v.id == id)
+            return &v;
+    }
+    return nullptr;
+}
+
+template<class T>
+static T Merge(const T& a, const T* b, const T& n, const T& d)
+{
+    if (a != n)
+        return a;
+    else if (b != nullptr && *b != n)
+        return *b;
+    else
+        return d;
+}

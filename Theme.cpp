@@ -2,19 +2,7 @@
 #include "Theme.h"
 #include <SciLexer.h>
 
-#define pn(x, y) ((x) == nullptr ? nullptr : &(x)->y)
-
-template<class T>
-static T Merge(const T& a, const T* b, const T& n, const T& d)
-{
-    if (a != n)
-        return a;
-    else if (b != nullptr && *b != n)
-        return *b;
-    else
-        return d;
-}
-
+#if 0
 static inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
 {
     LOGFONT lf = {};
@@ -24,6 +12,7 @@ static inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
     lf.lfWeight = bold ? FW_BOLD : FW_NORMAL;
     return lf;
 }
+#endif
 
 template<class T>
 static inline typename T::const_pointer Get(const T& vec, LPCTSTR name)
@@ -51,17 +40,6 @@ template<class T>
 static inline typename T::const_pointer GetKey(const T& vec, int id)
 {
     for (T::const_reference v : vec)
-    {
-        if (v.id == id)
-            return &v;
-    }
-    return nullptr;
-}
-
-template<class T>
-static inline typename T::pointer GetKey(T& vec, int id)
-{
-    for (T::reference v : vec)
     {
         if (v.id == id)
             return &v;
