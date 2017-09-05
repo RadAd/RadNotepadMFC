@@ -367,7 +367,7 @@ void CRadNotepadView::OnViewMargin(UINT nID)
     if (i >= 0 && i < pTheme->vecMargin.size())
     {
         Margin& margin = pTheme->vecMargin[i];
-        margin.show = !margin.show;
+        margin.show = margin.show == B3_TRUE ? B3_FALSE : B3_TRUE;
         CScintillaCtrl& rCtrl = GetCtrl();
         ApplyMargin(rCtrl, margin);
     }

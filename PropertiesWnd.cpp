@@ -16,7 +16,6 @@ static char THIS_FILE[]=__FILE__;
 // TODO
 // A CMFCPropertyGridColorProperty which knows common color names
 // Selecting and pasting into edit color (and maybe others) appends text instead
-// Need a tri-state bool property (ie to refer to default)
 
 #define ID_OBJECT_COMBO 100
 
@@ -53,9 +52,11 @@ struct Property
     }
 
     template <class E>
-    Property(E* i, LPCTSTR* /*items*/)
+    Property(E* i, E* j, const int* values)
         : nType(PROP_INDEX)
         , valInt(reinterpret_cast<INT*>(i))
+        , defInt1(reinterpret_cast<INT*>(j))
+        , vecValues(values)
     {
     }
 
@@ -86,11 +87,13 @@ struct Property
     };
     union
     {
+        INT* defInt1;
         const COLORREF* defColor1;
         const LOGFONT* defFont1;
     };
     union
     {
+        const int* vecValues;
         const COLORREF* defColor2;
         const LOGFONT* defFont2;
     };
@@ -118,7 +121,7 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, UINT* pInt, UIN
 CMFCPropertyGridColorProperty* CreateProperty(const CString& strName, COLORREF* pColor, const COLORREF* pDefaultColor1, const COLORREF* pDefaultColor2)
 {
     CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) new Property(pColor, pDefaultColor1, pDefaultColor2));
-    if (pDefaultColor1 != nullptr)
+    if (pDefaultColor1 != nullptr && *pDefaultColor1 != COLOR_NONE)
         p->EnableAutomaticButton(_T("Default"), *pDefaultColor1);
     else if (pDefaultColor2 != nullptr)
         p->EnableAutomaticButton(_T("Default"), *pDefaultColor2);
@@ -138,10 +141,48 @@ CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pF
 template <class E>
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, LPCTSTR* items, int nItemCount)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items[*pIndex], nullptr, (DWORD_PTR) new Property(pIndex, items));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items[*pIndex], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, nullptr));
     for (int i = 0; i < nItemCount; ++i)
         p->AddOption(items[i]);
     p->AllowEdit(FALSE);
+    return p;
+}
+
+static inline int GetIndex(int find, const int* values, int nItemCount)
+{
+    for (int i = 0; i < nItemCount; ++i)
+        if (values[i] == find)
+            return i;
+    ASSERT(FALSE);
+    return -1;
+}
+
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, Bool3* pBase)
+{
+    CMFCPropertyGridProperty* p = nullptr;
+    if (pBase != nullptr)
+    {
+        LPCTSTR items[] = { _T("Default"), _T("True"), _T("False") };
+        static const int values[] = { B3_UNDEFINED, B3_TRUE, B3_FALSE };
+        // TODO Need to also pass in values
+        const int nItemCount = ARRAYSIZE(items);
+        Bool3 v = pValue != nullptr ? *pValue : B3_UNDEFINED;
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(v, values, nItemCount)], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
+        for (int i = 0; i < nItemCount; ++i)
+            p->AddOption(items[i]);
+        p->AllowEdit(FALSE);
+    }
+    else
+    {
+        LPCTSTR items[] = { _T("True"), _T("False") };
+        static const int values[] = { B3_TRUE, B3_FALSE };
+        const int nItemCount = ARRAYSIZE(items);
+        Bool3 v = *pValue;
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(v, values, nItemCount)], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
+        for (int i = 0; i < nItemCount; ++i)
+            p->AddOption(items[i]);
+        p->AllowEdit(FALSE);
+    }
     return p;
 }
 
@@ -321,7 +362,12 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         break;
 
     case PROP_INDEX:
-        *prop->valInt = GetOptionIndex(pProp);
+        {
+            int i = GetOptionIndex(pProp);
+            if (prop->vecValues != nullptr)
+                i = prop->vecValues[i];
+            *prop->valInt = i;
+        }
         break;
 
     case PROP_COLOR:
@@ -602,7 +648,7 @@ void CPropertiesWnd::InitPropList()
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
             for (Margin& margin : pTheme->vecMargin)
             {
-                pGroup->AddSubItem(CreateProperty(margin.name, &margin.show));
+                pGroup->AddSubItem(CreateProperty(margin.name, &margin.show, nullptr));
             }
             m_wndPropList.AddProperty(pGroup);
         }

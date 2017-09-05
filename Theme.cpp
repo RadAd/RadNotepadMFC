@@ -540,7 +540,7 @@ void ProcessMargins(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Margin>& vecMar
                             msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
                             AfxMessageBox(msg, MB_ICONERROR | MB_OK);
                         }
-                        vecMargins.push_back({ name, nKey });
+                        vecMargins.push_back(Margin(name, nKey));
                         pMargin = &vecMargins.back();
                         pMargin->type = -1;
                     }
@@ -548,7 +548,7 @@ void ProcessMargins(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Margin>& vecMar
                     if (!isnull(name))
                         pMargin->name = (LPCTSTR) name;
                     if (!isnull(show))
-                        pMargin->show = show == _T("true");
+                        pMargin->show = show == _T("true") ? B3_TRUE : B3_FALSE;
                     if (!isnull(width))
                         pMargin->width = _wtoi(width);
                     if (!isnull(width_text))
@@ -618,7 +618,7 @@ void ProcessMarkers(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Marker>& vecMar
                             msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
                             AfxMessageBox(msg, MB_ICONERROR | MB_OK);
                         }
-                        vecMarkers.push_back({ name, nKey });
+                        vecMarkers.push_back(Marker(name, nKey));
                         pMarker = &vecMarkers.back();
                     }
 

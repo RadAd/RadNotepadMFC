@@ -13,6 +13,13 @@
 #define COLOR_LT_MAGENTA    RGB(0x80, 0x00, 0x80)
 #define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
 
+enum Bool3
+{
+    B3_UNDEFINED = -1,
+    B3_FALSE,
+    B3_TRUE,
+};
+
 struct ThemeItem
 {
     ThemeItem(COLORREF fore = COLOR_NONE, COLORREF back = COLOR_NONE, LOGFONT font = {})
@@ -92,6 +99,69 @@ struct ThemeEditor
     bool bAutoIndent = TRUE;
 };
 
+struct Margin
+{
+    Margin(LPCTSTR name, int id)
+        : name(name)
+        , id(id)
+    {
+    }
+
+    CString name;
+    int id;
+    Bool3 show;
+    int width;
+    CString width_text;
+    BOOL sensitive;
+    int type;
+    int mask;
+
+    bool operator==(const Margin& other) const
+    {
+        return name == other.name
+            && id == other.id
+            && show == other.show
+            && width == other.width
+            && width_text == other.width_text
+            && sensitive == other.sensitive
+            && type == other.type
+            && mask == other.mask;
+    }
+
+    bool operator!=(const Margin& other) const
+    {
+        return !(*this == other);
+    }
+};
+
+struct Marker
+{
+    Marker(LPCTSTR name, int id)
+        : name(name)
+        , id(id)
+    {
+    }
+
+    CString name;
+    int id;
+    int type;
+    COLORREF fore;
+    COLORREF back;
+
+    bool operator==(const Marker& other) const
+    {
+        return name == other.name
+            && id == other.id
+            && type == other.type
+            && fore == other.fore
+            && back == other.back;
+    }
+
+    bool operator!=(const Marker& other) const
+    {
+        return !(*this == other);
+    }
+};
 
 struct Language
 {
@@ -169,58 +239,6 @@ struct KeywordClass
     }
 
     bool operator!=(const KeywordClass& other) const
-    {
-        return !(*this == other);
-    }
-};
-
-struct Margin
-{
-    CString name;
-    int id;
-    bool show;
-    int width;
-    CString width_text;
-    BOOL sensitive;
-    int type;
-    int mask;
-
-    bool operator==(const Margin& other) const
-    {
-        return name == other.name
-            && id == other.id
-            && show == other.show
-            && width == other.width
-            && width_text == other.width_text
-            && sensitive == other.sensitive
-            && type == other.type
-            && mask == other.mask;
-    }
-
-    bool operator!=(const Margin& other) const
-    {
-        return !(*this == other);
-    }
-};
-
-struct Marker
-{
-    CString name;
-    int id;
-    int type;
-    COLORREF fore;
-    COLORREF back;
-
-    bool operator==(const Marker& other) const
-    {
-        return name == other.name
-            && id == other.id
-            && type == other.type
-            && fore == other.fore
-            && back == other.back;
-    }
-
-    bool operator!=(const Marker& other) const
     {
         return !(*this == other);
     }
