@@ -20,6 +20,7 @@ static char THIS_FILE[]=__FILE__;
 // Add something to theme item to say which properties are used
 
 #define ID_OBJECT_COMBO 100
+#define DEF_LENGTH 3
 
 enum PropType
 {
@@ -55,27 +56,27 @@ struct Property
     Property(E* i, const E* j, const int* values)
         : nType(PROP_INDEX)
         , valInt(reinterpret_cast<INT*>(i))
-        , defInt1(reinterpret_cast<const INT*>(j))
+        , defInt { reinterpret_cast<const INT*>(j) }
         , vecValues(values)
     {
     }
 
-    Property(COLORREF* c, const COLORREF* def1, const COLORREF* def2, const COLORREF* def3)
+    Property(COLORREF* c, const std::initializer_list<const COLORREF*>& def)
         : nType(PROP_COLOR)
         , valColor(c)
-        , defColor1(def1)
-        , defColor2(def2)
-        , defColor3(def3)
+        , defColor {}
     {
+        ASSERT(def.size() <= DEF_LENGTH);
+        std::copy(def.begin(), def.end(), defColor);
     }
 
-    Property(LOGFONT* f, const LOGFONT* def1, const LOGFONT* def2, const LOGFONT* def3)
+    Property(LOGFONT* f, const std::initializer_list<const LOGFONT*>& def)
         : nType(PROP_FONT)
         , valFont(f)
-        , defFont1(def1)
-        , defFont2(def2)
-        , defFont3(def3)
+        , defFont {}
     {
+        ASSERT(def.size() <= DEF_LENGTH);
+        std::copy(def.begin(), def.end(), defFont);
     }
 
     PropType nType;
@@ -89,21 +90,11 @@ struct Property
     };
     union
     {
-        const INT* defInt1;
-        const COLORREF* defColor1;
-        const LOGFONT* defFont1;
+        const INT* defInt[DEF_LENGTH];
+        const COLORREF* defColor[DEF_LENGTH];
+        const LOGFONT* defFont[DEF_LENGTH];
     };
-    union
-    {
-        const int* vecValues;
-        const COLORREF* defColor2;
-        const LOGFONT* defFont2;
-    };
-    union
-    {
-        const COLORREF* defColor3;
-        const LOGFONT* defFont3;
-    };
+    const int* vecValues;
 };
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, bool* pBool)
@@ -125,22 +116,24 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, UINT* pInt, UIN
     return p;
 }
 
-CMFCPropertyGridColorProperty* CreateProperty(const CString& strName, COLORREF* pColor, const COLORREF* pDefaultColor1, const COLORREF* pDefaultColor2, const COLORREF* pDefaultColor3)
+CMFCPropertyGridColorProperty* CreateProperty(const CString& strName, COLORREF* pColor, const std::initializer_list<const COLORREF*>& def)
 {
-    CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) new Property(pColor, pDefaultColor1, pDefaultColor2, pDefaultColor3));
-    if (pDefaultColor1 != nullptr && *pDefaultColor1 != COLOR_NONE)
-        p->EnableAutomaticButton(_T("Default"), *pDefaultColor1);
-    else if (pDefaultColor2 != nullptr && *pDefaultColor2 != COLOR_NONE)
-        p->EnableAutomaticButton(_T("Default"), *pDefaultColor2);
-    else if (pDefaultColor3 != nullptr && *pDefaultColor3 != COLOR_NONE)
-        p->EnableAutomaticButton(_T("Default"), *pDefaultColor3);
+    CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) new Property(pColor, def));
+    for (const COLORREF* pDefaultColor : def)
+    {
+        if (pDefaultColor != nullptr && *pDefaultColor != COLOR_NONE)
+        {
+            p->EnableAutomaticButton(_T("Default"), *pDefaultColor);
+            break;
+        }
+    }
     p->EnableOtherButton(_T("More Colors..."));
     return p;
 }
 
-CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pFont, const LOGFONT* pFontDef1, const LOGFONT* pFontDef2, const LOGFONT* pFontDef3)
+CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pFont, const std::initializer_list<const LOGFONT*>& def)
 {
-    CMFCPropertyGridFontProperty* p = new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) new Property(pFont, pFontDef1, pFontDef2, pFontDef3));
+    CMFCPropertyGridFontProperty* p = new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) new Property(pFont, def));
     PLOGFONT f = p->GetLogFont();
     if (f->lfFaceName[0] == _T('\0'))
         wcscpy_s(f->lfFaceName, _T("Default"));
@@ -212,14 +205,14 @@ int GetOptionIndex(CMFCPropertyGridProperty* pProp)
 class CMFCThemeProperty : public CMFCPropertyGridProperty
 {
 public:
+    // TODO How to transform std::initializer_list<const ThemeItem*> into std::initializer_list<const COLORREF*>
+    //CMFCThemeProperty(const CString& strGroupName, ThemeItem* pTheme, const std::initializer_list<const ThemeItem*>& pDefaultTheme)
     CMFCThemeProperty(const CString& strGroupName, ThemeItem* pTheme, const ThemeItem* pDefaultTheme1, const ThemeItem* pDefaultTheme2, const ThemeItem* pDefaultTheme3)
         : CMFCPropertyGridProperty(strGroupName, 0, TRUE)
-        , m_pDefaultTheme1(pDefaultTheme1)
-        , m_pDefaultTheme2(pDefaultTheme2)
-        , m_pDefaultTheme3(pDefaultTheme3)
-        , m_pBackground(CreateProperty(_T("Background"), &pTheme->back, pn(pDefaultTheme1, back), pn(pDefaultTheme2, back), pn(pDefaultTheme3, back)))
-        , m_pForeground(CreateProperty(_T("Foreground"), &pTheme->fore, pn(pDefaultTheme1, fore), pn(pDefaultTheme2, fore), pn(pDefaultTheme3, fore)))
-        , m_pFont(CreateProperty(_T("Font"), &pTheme->font, pn(pDefaultTheme1, font), pn(pDefaultTheme2, font), pn(pDefaultTheme3, font)))
+        , m_pDefaultTheme { pDefaultTheme1, pDefaultTheme2, pDefaultTheme3 }
+        , m_pBackground(CreateProperty(_T("Background"), &pTheme->back, { pn(pDefaultTheme1, back), pn(pDefaultTheme2, back), pn(pDefaultTheme3, back) }))
+        , m_pForeground(CreateProperty(_T("Foreground"), &pTheme->fore, { pn(pDefaultTheme1, fore), pn(pDefaultTheme2, fore), pn(pDefaultTheme3, fore) }))
+        , m_pFont(CreateProperty(_T("Font"), &pTheme->font, { pn(pDefaultTheme1, font), pn(pDefaultTheme2, font), pn(pDefaultTheme3, font) }))
     {
         AddSubItem(m_pBackground);
         AddSubItem(m_pForeground);
@@ -248,30 +241,36 @@ public:
         LOGFONT f = *m_pFont->GetLogFont();
         if (f.lfFaceName[0] == _T('\0') || wcscmp(f.lfFaceName, _T("Default")) == 0)
         {
-            if (m_pDefaultTheme1 != nullptr && (m_pDefaultTheme1->font.lfFaceName[0] != _T('\0') || wcscmp(m_pDefaultTheme1->font.lfFaceName, _T("Default")) != 0))
-                wcscpy_s(f.lfFaceName, m_pDefaultTheme1->font.lfFaceName);
-            else if (m_pDefaultTheme2 != nullptr && (m_pDefaultTheme2->font.lfFaceName[0] != _T('\0') || wcscmp(m_pDefaultTheme2->font.lfFaceName, _T("Default")) != 0))
-                wcscpy_s(f.lfFaceName, m_pDefaultTheme2->font.lfFaceName);
-            else if (m_pDefaultTheme3 != nullptr && (m_pDefaultTheme3->font.lfFaceName[0] != _T('\0') || wcscmp(m_pDefaultTheme3->font.lfFaceName, _T("Default")) != 0))
-                wcscpy_s(f.lfFaceName, m_pDefaultTheme3->font.lfFaceName);
+            for (const ThemeItem* pDefaultTheme : m_pDefaultTheme)
+            {
+                if (pDefaultTheme != nullptr && (pDefaultTheme->font.lfFaceName[0] != _T('\0') || wcscmp(pDefaultTheme->font.lfFaceName, _T("Default")) != 0))
+                {
+                    wcscpy_s(f.lfFaceName, pDefaultTheme->font.lfFaceName);
+                    break;
+                }
+            }
         }
         if (f.lfHeight == 0)
         {
-            if (m_pDefaultTheme1 != nullptr && m_pDefaultTheme1->font.lfHeight != 0)
-                f.lfHeight = m_pDefaultTheme1->font.lfHeight;
-            else if (m_pDefaultTheme2 != nullptr && m_pDefaultTheme2->font.lfHeight != 0)
-                f.lfHeight = m_pDefaultTheme2->font.lfHeight;
-            else if (m_pDefaultTheme3 != nullptr && m_pDefaultTheme3->font.lfHeight != 0)
-                f.lfHeight = m_pDefaultTheme3->font.lfHeight;
+            for (const ThemeItem* pDefaultTheme : m_pDefaultTheme)
+            {
+                if (pDefaultTheme != nullptr && pDefaultTheme->font.lfHeight != 0)
+                {
+                    f.lfHeight = pDefaultTheme->font.lfHeight;
+                    break;
+                }
+            }
         }
         if (f.lfWeight == 0)
         {
-            if (m_pDefaultTheme1 != nullptr && m_pDefaultTheme1->font.lfWeight != 0)
-                f.lfWeight = m_pDefaultTheme1->font.lfWeight;
-            else if (m_pDefaultTheme2 != nullptr && m_pDefaultTheme2->font.lfWeight != 0)
-                f.lfWeight = m_pDefaultTheme2->font.lfWeight;
-            else if (m_pDefaultTheme3 != nullptr && m_pDefaultTheme3->font.lfWeight != 0)
-                f.lfWeight = m_pDefaultTheme3->font.lfWeight;
+            for (const ThemeItem* pDefaultTheme : m_pDefaultTheme)
+            {
+                if (pDefaultTheme != nullptr && pDefaultTheme->font.lfWeight != 0)
+                {
+                    f.lfWeight = pDefaultTheme->font.lfWeight;
+                    break;
+                }
+            }
         }
         // TODO What to do with italic and underline
         CFont font;
@@ -320,30 +319,38 @@ public:
     COLORREF GetBackgroundColor() const
     {
         COLORREF c = m_pBackground->GetColor();
-        if (c == (COLORREF) -1 && m_pDefaultTheme1 != nullptr && m_pDefaultTheme1->back != (COLORREF) -1)
-            c = m_pDefaultTheme1->back;
-        else if (c == (COLORREF) -1 && m_pDefaultTheme2 != nullptr && m_pDefaultTheme2->back != (COLORREF) -1)
-            c = m_pDefaultTheme2->back;
-        else if (c == (COLORREF) -1 && m_pDefaultTheme3 != nullptr && m_pDefaultTheme3->back != (COLORREF) -1)
-            c = m_pDefaultTheme3->back;
+        if (c == (COLORREF) -1)
+        {
+            for (const ThemeItem* pDefaultTheme : m_pDefaultTheme)
+            {
+                if (pDefaultTheme != nullptr && pDefaultTheme->back != (COLORREF) -1)
+                {
+                    c = pDefaultTheme->back;
+                    break;
+                }
+            }
+        }
         return c;
     }
 
     COLORREF GetForegroundColor() const
     {
         COLORREF c = m_pForeground->GetColor();
-        if (c == (COLORREF) -1 && m_pDefaultTheme1 != nullptr && m_pDefaultTheme1->fore != (COLORREF) -1)
-            c = m_pDefaultTheme1->fore;
-        else if (c == (COLORREF) -1 && m_pDefaultTheme2 != nullptr && m_pDefaultTheme2->fore != (COLORREF) -1)
-            c = m_pDefaultTheme2->fore;
-        else if (c == (COLORREF) -1 && m_pDefaultTheme3 != nullptr && m_pDefaultTheme3->fore != (COLORREF) -1)
-            c = m_pDefaultTheme3->fore;
+        if (c == (COLORREF) -1)
+        {
+            for (const ThemeItem* pDefaultTheme : m_pDefaultTheme)
+            {
+                if (pDefaultTheme != nullptr && pDefaultTheme->fore != (COLORREF) -1)
+                {
+                    c = pDefaultTheme->fore;
+                    break;
+                }
+            }
+        }
         return c;
     }
 private:
-    const ThemeItem* m_pDefaultTheme1;
-    const ThemeItem* m_pDefaultTheme2;
-    const ThemeItem* m_pDefaultTheme3;
+    const ThemeItem* m_pDefaultTheme[DEF_LENGTH];
     CMFCPropertyGridColorProperty* m_pBackground;
     CMFCPropertyGridColorProperty* m_pForeground;
     CMFCPropertyGridFontProperty* m_pFont;
@@ -394,18 +401,30 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         {
             CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
             PLOGFONT f = p->GetLogFont();
-            if (prop->defFont1 != nullptr && wcscmp(prop->defFont1->lfFaceName, f->lfFaceName) == 0)
-                wcscpy_s(f->lfFaceName, _T("Default"));
-            else if (prop->defFont2 != nullptr && wcscmp(prop->defFont2->lfFaceName, f->lfFaceName) == 0)
-                wcscpy_s(f->lfFaceName, _T("Default"));
-            if (prop->defFont1 != nullptr && prop->defFont1->lfHeight == f->lfHeight)
-                f->lfHeight = 0;
-            else if (prop->defFont2 != nullptr && prop->defFont2->lfHeight == f->lfHeight)
-                f->lfHeight = 0;
-            if (prop->defFont1 != nullptr && prop->defFont1->lfWeight == f->lfWeight)
-                f->lfWeight = 0;
-            else if (prop->defFont2 != nullptr && prop->defFont2->lfWeight == f->lfWeight)
-                f->lfWeight = 0;
+            for (const LOGFONT* defFont : prop->defFont)
+            {
+                if (defFont != nullptr && wcscmp(defFont->lfFaceName, f->lfFaceName) == 0)
+                {
+                    wcscpy_s(f->lfFaceName, _T("Default"));
+                    break;
+                }
+            }
+            for (const LOGFONT* defFont : prop->defFont)
+            {
+                if (defFont != nullptr && defFont->lfHeight == f->lfHeight)
+                {
+                    f->lfHeight = 0;
+                    break;
+                }
+            }
+            for (const LOGFONT* defFont : prop->defFont)
+            {
+                if (defFont != nullptr && defFont->lfWeight == f->lfWeight)
+                {
+                    f->lfWeight = 0;
+                    break;
+                }
+            }
             // TODO What to do with italic and underline
             *prop->valFont = *f;
         }
@@ -646,8 +665,8 @@ void CPropertiesWnd::InitPropList()
                 CMFCPropertyGridProperty* pMarkerGroup = new CMFCPropertyGridProperty(marker.name, 0, TRUE);
                 pMarkerGroup->AllowEdit(FALSE);
                 pMarkerGroup->AddSubItem(CreateProperty(_T("Type"), &marker.type, /*SC_MARK_CIRCLE*/ -1, SC_MARK_BOOKMARK));
-                pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, pn(pBaseMarker, fore), nullptr, nullptr));
-                pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, pn(pBaseMarker, back), nullptr, nullptr));
+                pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, { pn(pBaseMarker, fore) }));
+                pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, { pn(pBaseMarker, back) }));
                 pGroup->AddSubItem(pMarkerGroup);
             }
             m_wndPropList.AddProperty(pGroup);
@@ -672,7 +691,7 @@ void CPropertiesWnd::InitPropList()
                 CMFCPropertyGridProperty* pParent = pGroup;
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
                 pGroup->AllowEdit(FALSE);
-                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cCaretFG, &m_pSettings->user.tDefault.fore, nullptr, nullptr));
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cCaretFG, { &m_pSettings->user.tDefault.fore }));
                 LPCTSTR strCaretStyle[] = { _T("Invisible"), _T("Line"), _T("Block") };
                 pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nCaretStyle, strCaretStyle, ARRAYSIZE(strCaretStyle)));
                 pGroup->AddSubItem(CreateProperty(_T("Width"), &pTheme->editor.nCaretWidth, 1, 4));
@@ -725,8 +744,8 @@ void CPropertiesWnd::InitPropList()
                 CMFCPropertyGridProperty* pMarkerGroup = new CMFCPropertyGridProperty(marker.name, 0, TRUE);
                 pMarkerGroup->AllowEdit(FALSE);
                 pMarkerGroup->AddSubItem(CreateProperty(_T("Type"), &marker.type, SC_MARK_CIRCLE, SC_MARK_BOOKMARK));
-                pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, nullptr, nullptr, nullptr));
-                pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, nullptr, nullptr, nullptr));
+                pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, {} ));
+                pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, {} ));
                 pGroup->AddSubItem(pMarkerGroup);
             }
             m_wndPropList.AddProperty(pGroup);
@@ -840,31 +859,27 @@ static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
             break;
 
         case PROP_COLOR:
-            if (prop->defColor1 == propdef->valColor)
+            for (const COLORREF* defColor : prop->defColor)
             {
-                CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
-                p->EnableAutomaticButton(_T("Default"), *prop->defColor1);
-                pProp->Redraw();
-            }
-            else if (prop->defColor2 == propdef->valColor)
-            {
-                CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
-                p->EnableAutomaticButton(_T("Default"), *prop->defColor2);
-                pProp->Redraw();
-            }
-            else if (prop->defColor3 == propdef->valColor)
-            {
-                CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
-                p->EnableAutomaticButton(_T("Default"), *prop->defColor3);
-                pProp->Redraw();
+                if (defColor == propdef->valColor)
+                {
+                    CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
+                    p->EnableAutomaticButton(_T("Default"), *defColor);
+                    pProp->Redraw();
+                    break;
+                }
             }
             break;
 
         case PROP_FONT:
-            if (prop->defFont1 == propdef->valFont)
-                pProp->Redraw();
-            else if (prop->defFont2 == propdef->valFont)
-                pProp->Redraw();
+            for (const LOGFONT* defFont : prop->defFont)
+            {
+                if (defFont == propdef->valFont)
+                {
+                    pProp->Redraw();
+                    break;
+                }
+            }
             break;
 
         default:
