@@ -218,13 +218,16 @@ struct Language
         return name == other.name
             && title == other.title
             && lexer == other.lexer
+            && internal == other.internal
+            && strWordChars == other.strWordChars
+            && editor == other.editor
             && mapProperties == other.mapProperties
             && vecStyle == other.vecStyle
             && vecGroupStyle == other.vecGroupStyle
             && vecBase == other.vecBase
             && vecMargin == other.vecMargin
             && vecMarker == other.vecMarker;
-        //&& vecKeywords == other.vecKeywords;
+            //&& vecKeywords == other.vecKeywords;
     }
 
     bool operator!=(const Language& other) const
@@ -293,6 +296,7 @@ struct Theme
     bool operator==(const Theme& other) const
     {
         return tDefault == other.tDefault
+            && editor == other.editor
             && vecStyleClass == other.vecStyleClass
             && vecBase == other.vecBase
             //&& vecKeywordClass == other.vecKeywordClass   // Not needed, could be slow

@@ -378,7 +378,7 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         break;
 
     case PROP_INT:
-        ASSERT(pProp->GetValue().vt == VT_INT);
+        ASSERT(pProp->GetValue().vt == VT_INT || pProp->GetValue().vt == VT_I4);
         *prop->valInt = pProp->GetValue().intVal;
         break;
 
@@ -702,7 +702,7 @@ void CPropertiesWnd::InitPropList()
     {
         CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
         pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
-        pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
+        pGroup->AddSubItem(CreateProperty(_T("Number of Recently Used Files"), &m_pSettings->nMaxMRU, 1, 10));
         pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, { _T("ANSI"), _T("UTF-16"), _T("UTF-16 BE"), _T("UTF-8") }));
         pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") }));
         m_wndPropList.AddProperty(pGroup);

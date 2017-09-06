@@ -1621,10 +1621,10 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
                 if (l.editor != ol->editor)
                 {
                     MSXML2::IXMLDOMElementPtr pEditor = pDoc->createElement(L"editor");
-                    pRootNode->insertBefore(pEditor, vtnull);
+                    pLanguage->insertBefore(pEditor, vtnull);
                     SaveTheme(pDoc, pEditor, l.editor, ol->editor);
                     if (IsEmpty(pEditor, NODE_ELEMENT))
-                        pRootNode->removeChild(pEditor);
+                        pLanguage->removeChild(pEditor);
                 }
                 {
                     MSXML2::IXMLDOMElementPtr pLangMargins = pDoc->createElement(L"margins");
