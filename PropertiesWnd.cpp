@@ -163,7 +163,7 @@ template <class E>
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items, const std::initializer_list<int>& values)
 {
     ASSERT(items.size() == values.size());
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[GetIndex(*pIndex, values.begin(), values.size())], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, values.begin()));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[GetIndex(*pIndex, values.begin(), (int) values.size())], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, values.begin()));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -630,11 +630,11 @@ void CPropertiesWnd::InitPropList()
                 pGroup->AddSubItem(CreateProperty(_T("Width"), &pLanguage->editor.nCaretWidth, 0, 4));
                 pParent->AddSubItem(pGroup);
             }
-            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pLanguage->editor.bUseTabs, &pTheme->editor.bUseTabs));
+            if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pLanguage->editor.bUseTabs, &pTheme->editor.bUseTabs));
             pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &pLanguage->editor.nTabWidth, 0, 100));
-            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pLanguage->editor.nIndentGuideType, { _T("Default"), _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }, { -1, SC_IV_NONE, SC_IV_REAL, SC_IV_LOOKFORWARD, SC_IV_LOOKBOTH }));
-            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pLanguage->editor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces));
-            pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pLanguage->editor.bAutoIndent, &pTheme->editor.bAutoIndent));
+            if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pLanguage->editor.nIndentGuideType, { _T("Default"), _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }, { -1, SC_IV_NONE, SC_IV_REAL, SC_IV_LOOKFORWARD, SC_IV_LOOKBOTH }));
+            if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pLanguage->editor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces));
+            if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pLanguage->editor.bAutoIndent, &pTheme->editor.bAutoIndent));
             m_wndPropList.AddProperty(pGroup);
         }
 

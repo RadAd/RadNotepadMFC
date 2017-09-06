@@ -12,6 +12,7 @@ enum Encoding
 
 struct Settings
 {
+    // TODO Move into Theme
     bool bEmptyFileOnStartup = TRUE;
     UINT nMaxMRU = 10;
     Encoding DefaultEncoding = BOM_ANSI;

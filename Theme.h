@@ -26,26 +26,31 @@ struct ThemeItem
         : fore(fore)
         , back(back)
         , font(font)
-        , eolfilled(FALSE)
-        , hotspot(FALSE)
+        , eolfilled(B3_UNDEFINED)
+        , hotspot(B3_UNDEFINED)
     {
-    }
-
-    bool operator==(const ThemeItem& other) const
-    {
-        return memcmp(this, &other, sizeof(ThemeItem)) == 0;
-    }
-
-    bool operator!=(const ThemeItem& other) const
-    {
-        return memcmp(this, &other, sizeof(ThemeItem)) != 0;
     }
 
     COLORREF fore;
     COLORREF back;
-    LOGFONT font;
-    BOOL eolfilled;
-    BOOL hotspot;
+    LOGFONT font; // TODO Maybe just capture the bits Im interested in
+    Bool3 eolfilled;
+    Bool3 hotspot;
+    // TODO add flags to say which parts are applicable
+
+    bool operator==(const ThemeItem& other) const
+    {
+        return fore == other.fore
+            && back == other.back
+            && memcmp(&font, &other.font, sizeof(LOGFONT)) == 0
+            && eolfilled == other.eolfilled
+            && hotspot == other.hotspot;
+    }
+
+    bool operator!=(const ThemeItem& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 struct Style
@@ -172,6 +177,7 @@ struct Marker
     CString name;
     int id;
     int type = -1;
+    // TODO Use a class and themeitem
     COLORREF fore = COLOR_NONE;
     COLORREF back = COLOR_NONE;
 

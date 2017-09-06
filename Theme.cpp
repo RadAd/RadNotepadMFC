@@ -83,10 +83,10 @@ static inline void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const Theme
         rCtrl.StyleSetItalic(nStyle, TRUE);
     if (rTheme.font.lfUnderline)
         rCtrl.StyleSetUnderline(nStyle, TRUE);
-    if (rTheme.eolfilled)
-        rCtrl.StyleSetEOLFilled(nStyle, TRUE);
-    if (rTheme.hotspot)
-        rCtrl.StyleSetHotSpot(nStyle, TRUE);
+    if (rTheme.eolfilled != B3_UNDEFINED)
+        rCtrl.StyleSetEOLFilled(nStyle, rTheme.eolfilled == B3_TRUE);
+    if (rTheme.hotspot != B3_UNDEFINED)
+        rCtrl.StyleSetHotSpot(nStyle, rTheme.hotspot == B3_TRUE);
 }
 
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName)
@@ -343,9 +343,9 @@ void LoadThemeItem(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeItem& rThemeItem)
             else if (bstrName == _T("italic"))
                 rThemeItem.font.lfItalic = pXMLChildNode->text == _T("true");
             else if (bstrName == _T("hotspot"))
-                rThemeItem.hotspot = pXMLChildNode->text == _T("true");
+                rThemeItem.hotspot = pXMLChildNode->text == _T("true") ? B3_TRUE : B3_FALSE;
             else if (bstrName == _T("eolfilled"))
-                rThemeItem.eolfilled = pXMLChildNode->text == _T("true");
+                rThemeItem.eolfilled = pXMLChildNode->text == _T("true") ? B3_TRUE : B3_FALSE;
             else
             {
                 CString msg;
@@ -990,6 +990,10 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
             {
                 ProcessKeywords(pXMLChildNode, pLanguage);
             }
+            else if (bstrName == L"base-options")
+            {
+                ProcessStyles(pXMLChildNode, pLanguage->vecBase, nullptr);
+            }
             else if (bstrName == L"editor")
             {
                 ProcessEditor(pXMLChildNode, pLanguage->editor);
@@ -1361,10 +1365,10 @@ void SaveTheme(MSXML2::IXMLDOMElementPtr pNode, const ThemeItem& ti, const Theme
         pNode->setAttribute(_T("bold"), ti.font.lfWeight == FW_BOLD);
     if (ti.font.lfItalic != dti.font.lfItalic)
         pNode->setAttribute(_T("italic"), ti.font.lfItalic ? _T("true") : _T("false"));
-    if (ti.eolfilled != dti.eolfilled)
-        pNode->setAttribute(_T("eolfilled"), ti.eolfilled ? _T("true") : _T("false"));
-    if (ti.hotspot != dti.hotspot)
-        pNode->setAttribute(_T("hotspot"), ti.hotspot ? _T("true") : _T("false"));
+    if (ti.eolfilled != B3_UNDEFINED && ti.eolfilled != dti.eolfilled)
+        pNode->setAttribute(_T("eolfilled"), ti.eolfilled == B3_TRUE ? _T("true") : _T("false"));
+    if (ti.hotspot != B3_UNDEFINED && ti.hotspot != dti.hotspot)
+        pNode->setAttribute(_T("hotspot"), ti.hotspot == B3_TRUE ? _T("true") : _T("false"));
 }
 
 void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<Style>& vecStyle, const std::vector<Style>& vecDefaultStyle)
