@@ -323,23 +323,12 @@ void CRadNotepadView::OnInitialUpdate()
 
     Apply(rCtrl, m_pLanguage, pTheme);
 
-    rCtrl.SetUseTabs(pTheme->editor.bUseTabs);
-    rCtrl.SetTabWidth(pTheme->editor.nTabWidth);
-
-    if (pTheme->editor.cCaretFG != COLOR_NONE)
-        rCtrl.SetCaretFore(pTheme->editor.cCaretFG);
-    else
-        rCtrl.SetCaretFore(pTheme->tDefault.fore);
-    rCtrl.SetCaretStyle(pTheme->editor.nCaretStyle);
-    rCtrl.SetCaretWidth(pTheme->editor.nCaretWidth);
-
     rCtrl.SetEOLMode(pDoc->GetLineEndingMode());
 
-    rCtrl.SetIndentationGuides(pTheme->editor.nIndentGuideType);
-    //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
+    const ThemeEditor& pThemeEditor = m_pLanguage != nullptr ? m_pLanguage->editor : pTheme->editor;
 
-    m_bHighlightMatchingBraces = pTheme->editor.bHighlightMatchingBraces;
-    m_bAutoIndent = pTheme->editor.bAutoIndent;
+    m_bHighlightMatchingBraces = Merge(pThemeEditor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces, B3_UNDEFINED, B3_FALSE) == B3_TRUE;
+    m_bAutoIndent = Merge(pThemeEditor.bAutoIndent, &pTheme->editor.bAutoIndent, B3_UNDEFINED, B3_FALSE) == B3_TRUE;
 
     rCtrl.ClearCmdKey('[' | (SCMOD_CTRL << 16));
     rCtrl.ClearCmdKey('[' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));

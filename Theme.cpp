@@ -118,6 +118,19 @@ void AddExt(Theme* pTheme, const CString& ext, const CString& lexer)
     filter += ext;
 }
 
+static inline void ApplyEditor(CScintillaCtrl& rCtrl, const ThemeEditor& rThemeEditor, const ThemeEditor* pBaseThemeEditor, const Theme* pTheme)
+{
+    rCtrl.SetCaretFore(Merge(rThemeEditor.cCaretFG, pn(pBaseThemeEditor, cCaretFG), COLOR_NONE, pTheme->tDefault.fore));
+    rCtrl.SetCaretStyle(Merge(rThemeEditor.nCaretStyle, pn(pBaseThemeEditor, nCaretStyle), -1, CARETSTYLE_LINE));
+    rCtrl.SetCaretWidth(Merge(rThemeEditor.nCaretWidth, pn(pBaseThemeEditor, nCaretWidth), 0, 1));
+
+    rCtrl.SetUseTabs(Merge(rThemeEditor.bUseTabs, pn(pBaseThemeEditor, bUseTabs), B3_UNDEFINED, B3_FALSE) == B3_TRUE);
+    rCtrl.SetTabWidth(Merge(rThemeEditor.nTabWidth, pn(pBaseThemeEditor, nTabWidth), 0, 4));
+
+    rCtrl.SetIndentationGuides(Merge(rThemeEditor.nIndentGuideType, pn(pBaseThemeEditor, nIndentGuideType), -1, SC_IV_LOOKBOTH));
+    //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
+}
+
 static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const Style* pBaseStyle, const Theme* pTheme)
 {
     CString sclass = Merge(style.sclass, pn(pBaseStyle, sclass), CString(), CString());
@@ -175,6 +188,7 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
 
     if (pLanguage == nullptr)
     {
+        ApplyEditor(rCtrl, pTheme->editor, nullptr, pTheme);
         for (const Margin& margin : pTheme->vecMargin)
             ApplyMargin(rCtrl, margin, nullptr);
         for (const Marker& marker : pTheme->vecMarker)
@@ -184,6 +198,7 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
     }
     else
     {
+        ApplyEditor(rCtrl, pLanguage->editor, &pTheme->editor, pTheme);
         if (!pLanguage->strWordChars.IsEmpty())
             rCtrl.SetWordChars(pLanguage->strWordChars);
         else
@@ -238,15 +253,35 @@ inline _bstr_t GetAttribute(MSXML2::IXMLDOMNode* pXMLNode, LPCWSTR name)
 inline int IsEmpty(MSXML2::IXMLDOMNode* pXMLNode, DOMNodeType findtype)
 {
     int count = 0;
-    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
-    long length = pXMLChildren->Getlength();
-    for (int i = 0; i < length; ++i)
+    if (findtype == NODE_ELEMENT)
     {
-        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
-        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+        MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+        long length = pXMLChildren->Getlength();
+        for (int i = 0; i < length; ++i)
+        {
+            MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+            MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
 
-        if (type == findtype)
-            ++count;
+            if (type == findtype)
+                ++count;
+        }
+    }
+    else if (findtype == NODE_ATTRIBUTE)
+    {
+        MSXML2::IXMLDOMNamedNodeMapPtr pXMLAttributes(pXMLNode->Getattributes());
+        long length = pXMLAttributes->Getlength();
+        for (int i = 0; i < length; ++i)
+        {
+            MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLAttributes->Getitem(i));
+            MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+            if (type == findtype)
+                ++count;
+        }
+    }
+    else
+    {
+        ASSERT(FALSE);
     }
     return count == 0;
 }
@@ -772,6 +807,87 @@ void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
     }
 }
 
+void ProcessEditor(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeEditor& rThemeEditor)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == _T("caret"))
+            {
+                _bstr_t style = GetAttribute(pXMLChildNode, _T("style"));
+                _bstr_t width = GetAttribute(pXMLChildNode, _T("width"));
+                _bstr_t fore = GetAttribute(pXMLChildNode, _T("fore"));
+
+                if (!isnull(style))
+                    rThemeEditor.nCaretStyle = _wtoi(style);
+                if (!isnull(width))
+                    rThemeEditor.nCaretWidth = _wtoi(width);
+                if (!isnull(fore))
+                    rThemeEditor.cCaretFG = ToColor(fore);
+            }
+            else if (bstrName == _T("tabs"))
+            {
+                _bstr_t use = GetAttribute(pXMLChildNode, _T("use"));
+                _bstr_t width = GetAttribute(pXMLChildNode, _T("width"));
+
+                if (!isnull(use))
+                    rThemeEditor.bUseTabs = use == _T("true") ? B3_TRUE : B3_FALSE;
+                if (!isnull(width))
+                    rThemeEditor.nTabWidth = _wtoi(width);
+            }
+            else if (bstrName == _T("indent-guide"))
+            {
+                _bstr_t stype = GetAttribute(pXMLChildNode, _T("type"));
+
+                if (!isnull(stype))
+                    rThemeEditor.nIndentGuideType = _wtoi(stype);
+            }
+            else if (bstrName == _T("whitespace"))
+            {
+                _bstr_t show = GetAttribute(pXMLChildNode, _T("show"));
+                _bstr_t stype = GetAttribute(pXMLChildNode, _T("type"));
+                _bstr_t size = GetAttribute(pXMLChildNode, _T("size"));
+                _bstr_t draw = GetAttribute(pXMLChildNode, _T("draw"));
+
+#if 0   // TODO
+                if (!isnull(show))
+                    rThemeEditor. = show == _T("true") ? B3_TRUE : B3_FALSE;
+                if (!isnull(stype))
+                    rThemeEditor. = _wtoi(stype);
+#endif
+            }
+            else if (bstrName == _T("braces"))
+            {
+                _bstr_t highlight = GetAttribute(pXMLChildNode, _T("highlight"));
+
+                if (!isnull(highlight))
+                    rThemeEditor.bHighlightMatchingBraces = highlight == _T("true") ? B3_TRUE : B3_FALSE;
+            }
+            else if (bstrName == _T("indent"))
+            {
+                _bstr_t sauto = GetAttribute(pXMLChildNode, _T("auto"));
+
+                if (!isnull(sauto))
+                    rThemeEditor.bAutoIndent = sauto == _T("true") ? B3_TRUE : B3_FALSE;
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
+        }
+    }
+}
+
 void ProcessKeywords(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
 {
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
@@ -874,6 +990,10 @@ void ProcessLanguage(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
             {
                 ProcessKeywords(pXMLChildNode, pLanguage);
             }
+            else if (bstrName == L"editor")
+            {
+                ProcessEditor(pXMLChildNode, pLanguage->editor);
+            }
             else if (bstrName == L"margins")
             {
                 ProcessMargins(pXMLChildNode, pLanguage->vecMargin);
@@ -945,7 +1065,7 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
             }
             else if (bstrName == L"editor")
             {
-                // TODO ProcessEditor(pXMLChildNode, pTheme->editor);
+                ProcessEditor(pXMLChildNode, pTheme->editor);
             }
             else if (bstrName == L"margins")
             {
@@ -1264,6 +1384,66 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
     }
 }
 
+void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const ThemeEditor& rThemeEditor, const ThemeEditor& rDefaultThemeEditor)
+{
+    {
+        MSXML2::IXMLDOMElementPtr pCaret = pDoc->createElement(L"caret");
+        pParent->insertBefore(pCaret, vtnull);
+
+        if (rThemeEditor.nCaretStyle != rDefaultThemeEditor.nCaretStyle)
+            pCaret->setAttribute(_T("style"), rThemeEditor.nCaretStyle);
+        if (rThemeEditor.nCaretWidth != rDefaultThemeEditor.nCaretWidth)
+            pCaret->setAttribute(_T("width"), rThemeEditor.nCaretWidth);
+        if (rThemeEditor.cCaretFG != rDefaultThemeEditor.cCaretFG)
+            pCaret->setAttribute(_T("fore"), ToBStr(rThemeEditor.cCaretFG));
+
+        if (IsEmpty(pCaret, NODE_ATTRIBUTE))
+            pParent->removeChild(pCaret);
+    }
+    {
+        MSXML2::IXMLDOMElementPtr pTabs = pDoc->createElement(L"tabs");
+        pParent->insertBefore(pTabs, vtnull);
+
+        if (rThemeEditor.bUseTabs != B3_UNDEFINED && rThemeEditor.bUseTabs != rDefaultThemeEditor.bUseTabs)
+            pTabs->setAttribute(_T("use"), rThemeEditor.bUseTabs == B3_TRUE ? _T("true") : _T("false"));
+        if (rThemeEditor.nTabWidth != rDefaultThemeEditor.nTabWidth)
+            pTabs->setAttribute(_T("width"), rThemeEditor.nTabWidth);
+
+        if (IsEmpty(pTabs, NODE_ATTRIBUTE))
+            pParent->removeChild(pTabs);
+    }
+    {
+        MSXML2::IXMLDOMElementPtr pIndentGuide = pDoc->createElement(L"indent-guide");
+        pParent->insertBefore(pIndentGuide, vtnull);
+
+        if (rThemeEditor.nIndentGuideType != rDefaultThemeEditor.nIndentGuideType)
+            pIndentGuide->setAttribute(_T("type"), rThemeEditor.nIndentGuideType);
+
+        if (IsEmpty(pIndentGuide, NODE_ATTRIBUTE))
+            pParent->removeChild(pIndentGuide);
+    }
+    {
+        MSXML2::IXMLDOMElementPtr pBraces = pDoc->createElement(L"braces");
+        pParent->insertBefore(pBraces, vtnull);
+
+        if (rThemeEditor.bHighlightMatchingBraces != B3_UNDEFINED && rThemeEditor.bHighlightMatchingBraces != rDefaultThemeEditor.bHighlightMatchingBraces)
+            pBraces->setAttribute(_T("highlight"), rThemeEditor.bHighlightMatchingBraces == B3_TRUE ? _T("true") : _T("false"));
+
+        if (IsEmpty(pBraces, NODE_ATTRIBUTE))
+            pParent->removeChild(pBraces);
+    }
+    {
+        MSXML2::IXMLDOMElementPtr pIndent = pDoc->createElement(L"indent");
+        pParent->insertBefore(pIndent, vtnull);
+
+        if (rThemeEditor.bAutoIndent != rDefaultThemeEditor.bAutoIndent)
+            pIndent->setAttribute(_T("auto"), rThemeEditor.bAutoIndent);
+
+        if (IsEmpty(pIndent, NODE_ATTRIBUTE))
+            pParent->removeChild(pIndent);
+    }
+}
+
 void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<Margin>& vecMargin, const std::vector<Margin>& vecDefaultMargin)
 {
     for (const Margin& m : vecMargin)
@@ -1364,74 +1544,107 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
         pDoc->insertBefore(pProcInstr, vtnull);
         MSXML2::IXMLDOMElementPtr pRootNode = pDoc->createElement(L"Scheme");
         pDoc->insertBefore(pRootNode, vtnull);
-        MSXML2::IXMLDOMElementPtr pStyleClasses = pDoc->createElement(L"style-classes");
-        pRootNode->insertBefore(pStyleClasses, vtnull);
-        MSXML2::IXMLDOMElementPtr pBaseOptions = pDoc->createElement(L"base-options");
-        pRootNode->insertBefore(pBaseOptions, vtnull);
-        MSXML2::IXMLDOMElementPtr pMargins = pDoc->createElement(L"margins");
-        pRootNode->insertBefore(pMargins, vtnull);
-        MSXML2::IXMLDOMElementPtr pMarkers = pDoc->createElement(L"markers");
-        pRootNode->insertBefore(pMarkers, vtnull);
 
-        if (pTheme->tDefault != pDefaultTheme->tDefault)
         {
-            MSXML2::IXMLDOMElementPtr pStyleClass = pDoc->createElement(L"style-class");
-            pStyleClasses->insertBefore(pStyleClass, vtnull);
+            MSXML2::IXMLDOMElementPtr pStyleClasses = pDoc->createElement(L"style-classes");
+            pRootNode->insertBefore(pStyleClasses, vtnull);
+            if (pTheme->tDefault != pDefaultTheme->tDefault)
+            {
+                MSXML2::IXMLDOMElementPtr pStyleClass = pDoc->createElement(L"style-class");
+                pStyleClasses->insertBefore(pStyleClass, vtnull);
 
-            _bstr_t name = L"default";
-            pStyleClass->setAttribute(_T("name"), name);
-            SaveTheme(pStyleClass, pTheme->tDefault, pDefaultTheme->tDefault);
+                _bstr_t name = L"default";
+                pStyleClass->setAttribute(_T("name"), name);
+                SaveTheme(pStyleClass, pTheme->tDefault, pDefaultTheme->tDefault);
+            }
+            SaveTheme(pDoc, pStyleClasses, pTheme->vecStyleClass, pDefaultTheme->vecStyleClass);
+            if (IsEmpty(pStyleClasses, NODE_ELEMENT))
+                pRootNode->removeChild(pStyleClasses);
         }
-        SaveTheme(pDoc, pStyleClasses, pTheme->vecStyleClass, pDefaultTheme->vecStyleClass);
-        SaveTheme(pDoc, pBaseOptions, pTheme->vecBase, pDefaultTheme->vecBase);
+        {
+            MSXML2::IXMLDOMElementPtr pBaseOptions = pDoc->createElement(L"base-options");
+            pRootNode->insertBefore(pBaseOptions, vtnull);
+            SaveTheme(pDoc, pBaseOptions, pTheme->vecBase, pDefaultTheme->vecBase);
+            if (IsEmpty(pBaseOptions, NODE_ELEMENT))
+                pRootNode->removeChild(pBaseOptions);
+        }
         // ignore vecKeywordClass
-        SaveTheme(pDoc, pMargins, pTheme->vecMargin, pDefaultTheme->vecMargin);
-        SaveTheme(pDoc, pMarkers, pTheme->vecMarker, pDefaultTheme->vecMarker);
+        if (pTheme->editor != pDefaultTheme->editor)
+        {
+            MSXML2::IXMLDOMElementPtr pEditor = pDoc->createElement(L"editor");
+            pRootNode->insertBefore(pEditor, vtnull);
+            SaveTheme(pDoc, pEditor, pTheme->editor, pDefaultTheme->editor);
+            if (IsEmpty(pEditor, NODE_ELEMENT))
+                pRootNode->removeChild(pEditor);
+        }
+        {
+            MSXML2::IXMLDOMElementPtr pMargins = pDoc->createElement(L"margins");
+            pRootNode->insertBefore(pMargins, vtnull);
+            SaveTheme(pDoc, pMargins, pTheme->vecMargin, pDefaultTheme->vecMargin);
+            if (IsEmpty(pMargins, NODE_ELEMENT))
+                pRootNode->removeChild(pMargins);
+        }
+        {
+            MSXML2::IXMLDOMElementPtr pMarkers = pDoc->createElement(L"markers");
+            pRootNode->insertBefore(pMarkers, vtnull);
+            SaveTheme(pDoc, pMarkers, pTheme->vecMarker, pDefaultTheme->vecMarker);
+            if (IsEmpty(pMarkers, NODE_ELEMENT))
+                pRootNode->removeChild(pMarkers);
+        }
         // ignore mapExt, mapExtFilter
         for (const Language& l : pTheme->vecLanguage)
         {
-            MSXML2::IXMLDOMElementPtr pLanguage = pDoc->createElement(L"language");
-            pLanguage->setAttribute(_T("name"), l.name.GetString());
-            pRootNode->insertBefore(pLanguage, vtnull);
-            MSXML2::IXMLDOMElementPtr pUseStyles = pDoc->createElement(L"use-styles");
-            pLanguage->insertBefore(pUseStyles, vtnull);
-            MSXML2::IXMLDOMElementPtr pLangBaseOptions = pDoc->createElement(L"base-options");
-            pLanguage->insertBefore(pLangBaseOptions, vtnull);
-            MSXML2::IXMLDOMElementPtr pLangMargins = pDoc->createElement(L"margins");
-            pLanguage->insertBefore(pLangMargins, vtnull);
-            MSXML2::IXMLDOMElementPtr pLangMarkers = pDoc->createElement(L"markers");
-            pLanguage->insertBefore(pLangMarkers, vtnull);
             const Language* ol = Get(pDefaultTheme->vecLanguage, l.name);
             if (ol != nullptr)
             {
+                MSXML2::IXMLDOMElementPtr pLanguage = pDoc->createElement(L"language");
+                pLanguage->setAttribute(_T("name"), l.name.GetString());
+                pRootNode->insertBefore(pLanguage, vtnull);
+
                 // ignore mapProperties, vecKeywords
                 // ignore title and lexer
-                SaveTheme(pDoc, pUseStyles, l.vecStyle, ol->vecStyle);
-                SaveTheme(pDoc, pUseStyles, l.vecGroupStyle, ol->vecGroupStyle);
-                SaveTheme(pDoc, pLangBaseOptions, l.vecBase, ol->vecBase);
-                SaveTheme(pDoc, pLangMargins, l.vecMargin, ol->vecMargin);
-                SaveTheme(pDoc, pLangMarkers, l.vecMarker, ol->vecMarker);
-            }
-            if (IsEmpty(pLangMarkers, NODE_ELEMENT))
-                pLanguage->removeChild(pLangMarkers);
-            if (IsEmpty(pLangMargins, NODE_ELEMENT))
-                pLanguage->removeChild(pLangMargins);
-            if (IsEmpty(pLangBaseOptions, NODE_ELEMENT))
-                pLanguage->removeChild(pLangBaseOptions);
-            if (IsEmpty(pUseStyles, NODE_ELEMENT))
-                pLanguage->removeChild(pUseStyles);
-            if (IsEmpty(pLanguage, NODE_ELEMENT))
-                pRootNode->removeChild(pLanguage);
-        }
+                {
+                    MSXML2::IXMLDOMElementPtr pUseStyles = pDoc->createElement(L"use-styles");
+                    pLanguage->insertBefore(pUseStyles, vtnull);
+                    SaveTheme(pDoc, pUseStyles, l.vecStyle, ol->vecStyle);
+                    SaveTheme(pDoc, pUseStyles, l.vecGroupStyle, ol->vecGroupStyle);
+                    if (IsEmpty(pUseStyles, NODE_ELEMENT))
+                        pLanguage->removeChild(pUseStyles);
+                }
+                {
+                    MSXML2::IXMLDOMElementPtr pLangBaseOptions = pDoc->createElement(L"base-options");
+                    pLanguage->insertBefore(pLangBaseOptions, vtnull);
+                    SaveTheme(pDoc, pLangBaseOptions, l.vecBase, ol->vecBase);
+                    if (IsEmpty(pLangBaseOptions, NODE_ELEMENT))
+                        pLanguage->removeChild(pLangBaseOptions);
+                }
+                if (l.editor != ol->editor)
+                {
+                    MSXML2::IXMLDOMElementPtr pEditor = pDoc->createElement(L"editor");
+                    pRootNode->insertBefore(pEditor, vtnull);
+                    SaveTheme(pDoc, pEditor, l.editor, ol->editor);
+                    if (IsEmpty(pEditor, NODE_ELEMENT))
+                        pRootNode->removeChild(pEditor);
+                }
+                {
+                    MSXML2::IXMLDOMElementPtr pLangMargins = pDoc->createElement(L"margins");
+                    pLanguage->insertBefore(pLangMargins, vtnull);
+                    SaveTheme(pDoc, pLangMargins, l.vecMargin, ol->vecMargin);
+                    if (IsEmpty(pLangMargins, NODE_ELEMENT))
+                        pLanguage->removeChild(pLangMargins);
+                }
+                {
+                    MSXML2::IXMLDOMElementPtr pLangMarkers = pDoc->createElement(L"markers");
+                    pLanguage->insertBefore(pLangMarkers, vtnull);
+                    SaveTheme(pDoc, pLangMarkers, l.vecMarker, ol->vecMarker);
+                    if (IsEmpty(pLangMarkers, NODE_ELEMENT))
+                        pLanguage->removeChild(pLangMarkers);
+                }
 
-        if (IsEmpty(pMarkers, NODE_ELEMENT))
-            pRootNode->removeChild(pMarkers);
-        if (IsEmpty(pMargins, NODE_ELEMENT))
-            pRootNode->removeChild(pMargins);
-        if (IsEmpty(pStyleClasses, NODE_ELEMENT))
-            pRootNode->removeChild(pStyleClasses);
-        if (IsEmpty(pBaseOptions, NODE_ELEMENT))
-            pRootNode->removeChild(pBaseOptions);
+                if (IsEmpty(pLanguage, NODE_ELEMENT))
+                    pRootNode->removeChild(pLanguage);
+            }
+        }
 
         // TODO Save formatted
         //if (!IsEmpty(pRootNode))

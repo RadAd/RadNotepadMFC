@@ -96,15 +96,34 @@ struct GroupStyle
 
 struct ThemeEditor
 {
-    int nCaretStyle = CARETSTYLE_LINE;
-    int nCaretWidth = 1;
+    int nCaretStyle = -1;
+    int nCaretWidth = 0;
     COLORREF cCaretFG = COLOR_NONE;
 
-    bool bUseTabs = FALSE;
-    int nTabWidth = 4;
-    int nIndentGuideType = SC_IV_LOOKBOTH;
-    bool bHighlightMatchingBraces = TRUE;
-    bool bAutoIndent = TRUE;
+    Bool3 bUseTabs = B3_UNDEFINED;
+    int nTabWidth = 0;
+    int nIndentGuideType = -1;
+    Bool3 bHighlightMatchingBraces = B3_UNDEFINED;
+    Bool3 bAutoIndent = B3_UNDEFINED;
+
+    // Add view whitespace, eol, word wrap
+
+    bool operator==(const ThemeEditor& other) const
+    {
+        return nCaretStyle == other.nCaretStyle
+            && nCaretWidth == other.nCaretWidth
+            && cCaretFG == other.cCaretFG
+            && bUseTabs == other.bUseTabs
+            && nTabWidth == other.nTabWidth
+            && nIndentGuideType == other.nIndentGuideType
+            && bHighlightMatchingBraces == other.bHighlightMatchingBraces
+            && bAutoIndent == other.bAutoIndent;
+    }
+
+    bool operator!=(const ThemeEditor& other) const
+    {
+        return !(*this == other);
+    }
 };
 
 struct Margin

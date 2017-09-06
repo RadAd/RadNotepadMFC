@@ -159,6 +159,17 @@ static inline int GetIndex(int find, const int* values, int size)
     return -1;
 }
 
+template <class E>
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items, const std::initializer_list<int>& values)
+{
+    ASSERT(items.size() == values.size());
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[GetIndex(*pIndex, values.begin(), values.size())], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, values.begin()));
+    for (LPCTSTR i : items)
+        p->AddOption(i);
+    p->AllowEdit(FALSE);
+    return p;
+}
+
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, const Bool3* pBase)
 {
     CMFCPropertyGridProperty* p = nullptr;
@@ -609,6 +620,25 @@ void CPropertiesWnd::InitPropList()
     {
         Theme* pTheme = &m_pSettings->user;
         {
+            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
+            {
+                CMFCPropertyGridProperty* pParent = pGroup;
+                CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
+                pGroup->AllowEdit(FALSE);
+                pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pLanguage->editor.cCaretFG, { &pTheme->editor.cCaretFG, &m_pSettings->user.tDefault.fore }));
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &pLanguage->editor.nCaretStyle, { _T("Default"), _T("Invisible"), _T("Line"), _T("Block") }, { -1, CARETSTYLE_INVISIBLE, CARETSTYLE_LINE, CARETSTYLE_BLOCK }));
+                pGroup->AddSubItem(CreateProperty(_T("Width"), &pLanguage->editor.nCaretWidth, 0, 4));
+                pParent->AddSubItem(pGroup);
+            }
+            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pLanguage->editor.bUseTabs, &pTheme->editor.bUseTabs));
+            pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &pLanguage->editor.nTabWidth, 0, 100));
+            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pLanguage->editor.nIndentGuideType, { _T("Default"), _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }, { -1, SC_IV_NONE, SC_IV_REAL, SC_IV_LOOKFORWARD, SC_IV_LOOKBOTH }));
+            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pLanguage->editor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces));
+            pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pLanguage->editor.bAutoIndent, &pTheme->editor.bAutoIndent));
+            m_wndPropList.AddProperty(pGroup);
+        }
+
+        {
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Margins"));
             for (Margin& margin : pLanguage->vecMargin)
             {
@@ -691,11 +721,11 @@ void CPropertiesWnd::InitPropList()
                 pGroup->AddSubItem(CreateProperty(_T("Width"), &pTheme->editor.nCaretWidth, 1, 4));
                 pParent->AddSubItem(pGroup);
             }
-            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pTheme->editor.bUseTabs));
+            pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pTheme->editor.bUseTabs, nullptr));
             pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &pTheme->editor.nTabWidth, 1, 100));
             pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pTheme->editor.nIndentGuideType, { _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }));
-            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pTheme->editor.bHighlightMatchingBraces));
-            pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pTheme->editor.bAutoIndent));
+            pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pTheme->editor.bHighlightMatchingBraces, nullptr));
+            pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pTheme->editor.bAutoIndent, nullptr));
             m_wndPropList.AddProperty(pGroup);
         }
 

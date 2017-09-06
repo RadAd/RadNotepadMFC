@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme>
   <editor>
-    <caret style="1" width="1" fore="-1"/>
-    <tabs use="true" width="4" />
+    <caret style="1" width="1" />
+    <tabs use="false" width="4" />
     <indent-guide type="3" />
     <whitespace show="false" type="1" size="1" draw="0" />
     <braces highlight="true" />
