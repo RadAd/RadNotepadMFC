@@ -141,18 +141,18 @@ CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pF
 }
 
 template <class E>
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, LPCTSTR* items, int nItemCount)
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items[*pIndex], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, nullptr));
-    for (int i = 0; i < nItemCount; ++i)
-        p->AddOption(items[i]);
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[*pIndex], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, nullptr));
+    for (LPCTSTR i : items)
+        p->AddOption(i);
     p->AllowEdit(FALSE);
     return p;
 }
 
-static inline int GetIndex(int find, const int* values, int nItemCount)
+static inline int GetIndex(int find, const int* values, int size)
 {
-    for (int i = 0; i < nItemCount; ++i)
+    for (int i = 0; i < size; ++i)
         if (values[i] == find)
             return i;
     ASSERT(FALSE);
@@ -166,22 +166,18 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     {
         LPCTSTR items[] = { _T("Default"), _T("True"), _T("False") };
         static const int values[] = { B3_UNDEFINED, B3_TRUE, B3_FALSE };
-        const int nItemCount = ARRAYSIZE(items);
-        Bool3 v = pValue != nullptr ? *pValue : B3_UNDEFINED;
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(v, values, nItemCount)], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
-        for (int i = 0; i < nItemCount; ++i)
-            p->AddOption(items[i]);
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values, ARRAYSIZE(values))], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
+        for (LPCTSTR item : items)
+            p->AddOption(item);
         p->AllowEdit(FALSE);
     }
     else
     {
         LPCTSTR items[] = { _T("True"), _T("False") };
         static const int values[] = { B3_TRUE, B3_FALSE };
-        const int nItemCount = ARRAYSIZE(items);
-        Bool3 v = *pValue;
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(v, values, nItemCount)], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
-        for (int i = 0; i < nItemCount; ++i)
-            p->AddOption(items[i]);
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values, ARRAYSIZE(values))], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
+        for (LPCTSTR item : items)
+            p->AddOption(item);
         p->AllowEdit(FALSE);
     }
     return p;
@@ -677,9 +673,8 @@ void CPropertiesWnd::InitPropList()
         CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
         pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
         pGroup->AddSubItem(CreateProperty(_T("Number of Recetly Used Files"), &m_pSettings->nMaxMRU, 1, 10));
-        pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, strEncoding, ARRAYSIZE(strEncoding)));
-        LPCTSTR strLineEnding[] = { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") };
-        pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, strLineEnding, ARRAYSIZE(strLineEnding)));
+        pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, { _T("ANSI"), _T("UTF-16"), _T("UTF-16 BE"), _T("UTF-8") }));
+        pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") }));
         m_wndPropList.AddProperty(pGroup);
     }
     else if (i == 1)    // Editor
@@ -692,15 +687,13 @@ void CPropertiesWnd::InitPropList()
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
                 pGroup->AllowEdit(FALSE);
                 pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cCaretFG, { &m_pSettings->user.tDefault.fore }));
-                LPCTSTR strCaretStyle[] = { _T("Invisible"), _T("Line"), _T("Block") };
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nCaretStyle, strCaretStyle, ARRAYSIZE(strCaretStyle)));
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nCaretStyle, { _T("Invisible"), _T("Line"), _T("Block") }));
                 pGroup->AddSubItem(CreateProperty(_T("Width"), &pTheme->editor.nCaretWidth, 1, 4));
                 pParent->AddSubItem(pGroup);
             }
             pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pTheme->editor.bUseTabs));
             pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &pTheme->editor.nTabWidth, 1, 100));
-            LPCTSTR strIndentGuideStyle[] = { _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") };
-            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pTheme->editor.nIndentGuideType, strIndentGuideStyle, ARRAYSIZE(strIndentGuideStyle)));
+            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pTheme->editor.nIndentGuideType, { _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }));
             pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pTheme->editor.bHighlightMatchingBraces));
             pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pTheme->editor.bAutoIndent));
             m_wndPropList.AddProperty(pGroup);

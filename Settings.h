@@ -10,8 +10,6 @@ enum Encoding
     BOM_UTF8,
 };
 
-static LPCTSTR strEncoding[] = { _T("ANSI"), _T("UTF-16"), _T("UTF-16 BE"), _T("UTF-8") };
-
 struct Settings
 {
     bool bEmptyFileOnStartup = TRUE;
