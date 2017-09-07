@@ -17,6 +17,8 @@ static char THIS_FILE[] = __FILE__;
 // Allow a choice of lexer - maybe use the tab name for the lexer
 // Search for next/prev error
 
+#define RAD_MARKER_CURRENT 3
+
 /////////////////////////////////////////////////////////////////////////////
 // COutputBar
 
@@ -252,6 +254,9 @@ void COutputList::OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult)
     int nLine = LineFromPosition(pSCNotification->position);
     CString strLine = GetLine(nLine);
     strLine.Trim();
+
+    MarkerDeleteAll(RAD_MARKER_CURRENT);
+    MarkerAdd(nLine, RAD_MARKER_CURRENT);
 
     // TODO Better file, line number extraction
     // Look for format: {file}({line})

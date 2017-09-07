@@ -22,6 +22,7 @@
 // Look into replacing scintilla scrollbars with splitter scrollbars (maybe just the vertical one)
 // Replace tabs with spaces or spaces with tabs
 // Support to comment out selection
+// Replace "b" with "ab" causes infintie loop
 
 #define WM_CHECKUPDATE (WM_USER + 1)
 
