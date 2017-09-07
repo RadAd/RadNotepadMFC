@@ -635,6 +635,12 @@ void CPropertiesWnd::InitPropList()
             if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pLanguage->editor.nIndentGuideType, { _T("Default"), _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }, { -1, SC_IV_NONE, SC_IV_REAL, SC_IV_LOOKFORWARD, SC_IV_LOOKBOTH }));
             if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pLanguage->editor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces));
             if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pLanguage->editor.bAutoIndent, &pTheme->editor.bAutoIndent));
+            pGroup->AddSubItem(CreateProperty(_T("Show Whitespace"), &pLanguage->editor.bShowWhitespace, &pTheme->editor.bShowWhitespace));
+            // TODO pGroup->AddSubItem(CreateProperty(_T("Whitespace"), &pLanguage->editor.nWhitespaceMode, &pTheme->editor.nWhitespaceMode));
+            // TODO pGroup->AddSubItem(CreateProperty(_T("Tab"), &pLanguage->editor.nTabDrawMode, &pTheme->editor.nTabDrawMode));
+            // TODO pGroup->AddSubItem(CreateProperty(_T("Whitespace Size"), &pLanguage->editor.nWhitespaceSize, &pTheme->editor.nWhitespaceSize));
+            pGroup->AddSubItem(CreateProperty(_T("Show EOL"), &pLanguage->editor.bShowEOL, &pTheme->editor.bShowEOL));
+            pGroup->AddSubItem(CreateProperty(_T("Word Wrap"), &pLanguage->editor.bWordWrap, &pTheme->editor.bWordWrap));
             m_wndPropList.AddProperty(pGroup);
         }
 
@@ -726,6 +732,12 @@ void CPropertiesWnd::InitPropList()
             pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pTheme->editor.nIndentGuideType, { _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }));
             pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pTheme->editor.bHighlightMatchingBraces, nullptr));
             pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pTheme->editor.bAutoIndent, nullptr));
+            pGroup->AddSubItem(CreateProperty(_T("Show Whitespace"), &pTheme->editor.bShowWhitespace, nullptr));
+            // TODO pGroup->AddSubItem(CreateProperty(_T("Whitespace"), &pTheme->editor.nWhitespaceMode, nullptr));
+            // TODO pGroup->AddSubItem(CreateProperty(_T("Tab"), &pTheme->editor.nTabDrawMode, nullptr));
+            // TODO pGroup->AddSubItem(CreateProperty(_T("Whitespace Size"), &pTheme->editor.nWhitespaceSize, nullptr));
+            pGroup->AddSubItem(CreateProperty(_T("Show EOL"), &pTheme->editor.bShowEOL, nullptr));
+            pGroup->AddSubItem(CreateProperty(_T("Word Wrap"), &pTheme->editor.bWordWrap, nullptr));
             m_wndPropList.AddProperty(pGroup);
         }
 

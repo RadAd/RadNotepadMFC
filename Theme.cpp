@@ -129,6 +129,14 @@ static inline void ApplyEditor(CScintillaCtrl& rCtrl, const ThemeEditor& rThemeE
 
     rCtrl.SetIndentationGuides(Merge(rThemeEditor.nIndentGuideType, pn(pBaseThemeEditor, nIndentGuideType), -1, SC_IV_LOOKBOTH));
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
+
+    bool bShowWS = Merge(rThemeEditor.bShowWhitespace, pn(pBaseThemeEditor, bShowWhitespace), B3_UNDEFINED, B3_FALSE) == B3_TRUE;
+    rCtrl.SetViewWS(bShowWS ? Merge(rThemeEditor.nWhitespaceMode, pn(pBaseThemeEditor, nWhitespaceMode), 0, SCWS_VISIBLEALWAYS)  : SCWS_INVISIBLE);
+    rCtrl.SetViewEOL(Merge(rThemeEditor.bShowEOL, pn(pBaseThemeEditor, bShowEOL), B3_UNDEFINED, B3_FALSE) == B3_TRUE);
+    rCtrl.SetWhitespaceSize(Merge(rThemeEditor.nWhitespaceSize, pn(pBaseThemeEditor, nWhitespaceSize), 0, 1));
+    rCtrl.SetTabDrawMode(Merge(rThemeEditor.nTabDrawMode, pn(pBaseThemeEditor, nTabDrawMode), 0, SCTD_LONGARROW));
+
+    rCtrl.SetWrapMode(Merge(rThemeEditor.bWordWrap, pn(pBaseThemeEditor, bWordWrap), B3_UNDEFINED, B3_FALSE) == B3_TRUE ? SC_WRAP_WORD : SC_WRAP_NONE);
 }
 
 static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const Style* pBaseStyle, const Theme* pTheme)
@@ -856,13 +864,18 @@ void ProcessEditor(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeEditor& rThemeEditor)
                 _bstr_t stype = GetAttribute(pXMLChildNode, _T("type"));
                 _bstr_t size = GetAttribute(pXMLChildNode, _T("size"));
                 _bstr_t draw = GetAttribute(pXMLChildNode, _T("draw"));
+                _bstr_t eol = GetAttribute(pXMLChildNode, _T("eol"));
 
-#if 0   // TODO
                 if (!isnull(show))
-                    rThemeEditor. = show == _T("true") ? B3_TRUE : B3_FALSE;
+                    rThemeEditor.bShowWhitespace = show == _T("true") ? B3_TRUE : B3_FALSE;
+                if (!isnull(eol))
+                    rThemeEditor.bShowEOL = show == _T("true") ? B3_TRUE : B3_FALSE;
                 if (!isnull(stype))
-                    rThemeEditor. = _wtoi(stype);
-#endif
+                    rThemeEditor.nWhitespaceMode = _wtoi(stype);
+                if (!isnull(size))
+                    rThemeEditor.nWhitespaceSize = _wtoi(size);
+                if (!isnull(draw))
+                    rThemeEditor.nTabDrawMode = _wtoi(draw);
             }
             else if (bstrName == _T("braces"))
             {
@@ -877,6 +890,13 @@ void ProcessEditor(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeEditor& rThemeEditor)
 
                 if (!isnull(sauto))
                     rThemeEditor.bAutoIndent = sauto == _T("true") ? B3_TRUE : B3_FALSE;
+            }
+            else if (bstrName == _T("wrap"))
+            {
+                _bstr_t sauto = GetAttribute(pXMLChildNode, _T("enabled"));
+
+                if (!isnull(sauto))
+                    rThemeEditor.bWordWrap = sauto == _T("true") ? B3_TRUE : B3_FALSE;
             }
             else
             {
@@ -1427,6 +1447,24 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
             pParent->removeChild(pIndentGuide);
     }
     {
+        MSXML2::IXMLDOMElementPtr pWhitespace = pDoc->createElement(L"whitespace");
+        pParent->insertBefore(pWhitespace, vtnull);
+
+        if (rThemeEditor.bShowWhitespace != B3_UNDEFINED && rThemeEditor.bShowWhitespace != rDefaultThemeEditor.bShowWhitespace)
+            pWhitespace->setAttribute(_T("show"), rThemeEditor.bShowWhitespace == B3_TRUE ? _T("true") : _T("false"));
+        if (rThemeEditor.bShowEOL != B3_UNDEFINED && rThemeEditor.bShowEOL != rDefaultThemeEditor.bShowWhitespace)
+            pWhitespace->setAttribute(_T("eol"), rThemeEditor.bShowEOL == B3_TRUE ? _T("true") : _T("false"));
+        if (rThemeEditor.nWhitespaceMode != rDefaultThemeEditor.nWhitespaceMode)
+            pWhitespace->setAttribute(_T("type"), rDefaultThemeEditor.nWhitespaceMode);
+        if (rThemeEditor.nWhitespaceSize != rDefaultThemeEditor.nWhitespaceSize)
+            pWhitespace->setAttribute(_T("size"), rDefaultThemeEditor.nWhitespaceSize);
+        if (rThemeEditor.nTabDrawMode != rDefaultThemeEditor.nTabDrawMode)
+            pWhitespace->setAttribute(_T("draw"), rDefaultThemeEditor.nTabDrawMode);
+
+        if (IsEmpty(pWhitespace, NODE_ATTRIBUTE))
+            pParent->removeChild(pWhitespace);
+    }
+    {
         MSXML2::IXMLDOMElementPtr pBraces = pDoc->createElement(L"braces");
         pParent->insertBefore(pBraces, vtnull);
 
@@ -1445,6 +1483,16 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
 
         if (IsEmpty(pIndent, NODE_ATTRIBUTE))
             pParent->removeChild(pIndent);
+    }
+    {
+        MSXML2::IXMLDOMElementPtr pWordWrap = pDoc->createElement(L"wordwrap");
+        pParent->insertBefore(pWordWrap, vtnull);
+
+        if (rThemeEditor.bWordWrap != rDefaultThemeEditor.bWordWrap)
+            pWordWrap->setAttribute(_T("auto"), rThemeEditor.bWordWrap);
+
+        if (IsEmpty(pWordWrap, NODE_ATTRIBUTE))
+            pParent->removeChild(pWordWrap);
     }
 }
 

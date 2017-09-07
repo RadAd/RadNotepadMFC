@@ -111,6 +111,15 @@ struct ThemeEditor
     Bool3 bHighlightMatchingBraces = B3_UNDEFINED;
     Bool3 bAutoIndent = B3_UNDEFINED;
 
+    Bool3 bShowWhitespace = B3_UNDEFINED;
+    Bool3 bShowEOL = B3_UNDEFINED;
+    int nWhitespaceMode = 0;
+    int nTabDrawMode = 0;
+    int nWhitespaceSize = 0;
+    // TODO WhiteSpaceFore, WhiteSpaceBack
+
+    Bool3 bWordWrap = B3_UNDEFINED;
+
     // Add view whitespace, eol, word wrap
 
     bool operator==(const ThemeEditor& other) const
@@ -122,7 +131,13 @@ struct ThemeEditor
             && nTabWidth == other.nTabWidth
             && nIndentGuideType == other.nIndentGuideType
             && bHighlightMatchingBraces == other.bHighlightMatchingBraces
-            && bAutoIndent == other.bAutoIndent;
+            && bAutoIndent == other.bAutoIndent
+            && bShowWhitespace == other.bShowWhitespace
+            && bShowEOL == other.bShowEOL
+            && nWhitespaceMode == other.nWhitespaceMode
+            && nTabDrawMode == other.nTabDrawMode
+            && nWhitespaceSize == other.nWhitespaceSize
+            && bWordWrap == other.bWordWrap;
     }
 
     bool operator!=(const ThemeEditor& other) const
