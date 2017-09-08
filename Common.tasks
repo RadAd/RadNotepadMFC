@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="DownloadFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <Address ParameterType="System.String" Required="true"/>
+      <FileName ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Code Type="Class" Language="cs">
+        <![CDATA[
+            using Microsoft.Build.Utilities;
+            using Microsoft.Build.Framework;
+            using System;
+            using System.Threading;
+            using System.IO;
+            using System.Net;
+
+            public class DownloadFile : Task, ICancelableTask
+            {
+                String _Address;
+                String _FileName;
+                WebClient client = new WebClient();
+                Exception error;
+                bool cancelled = false;
+                
+                public string Address
+                {
+                    get 
+                    {
+                        return _Address;
+                    }
+
+                    set
+                    {
+                        _Address = value;
+                    }
+                }
+
+                public string FileName
+                {
+                    get 
+                    {
+                        return _FileName;
+                    }
+
+                    set
+                    {
+                        _FileName = value;
+                    }
+                }
+                
+                public override bool Execute()
+                {
+                    Log.LogMessage(MessageImportance.Normal, "Downloading: {0}", FileName);
+
+                    client.DownloadProgressChanged += (o, e) =>
+                    {
+                        Log.LogMessage(MessageImportance.Normal, "Downloaded {0:N0} of {1:N0} bytes. {2}% ", e.BytesReceived, e.TotalBytesToReceive, e.ProgressPercentage);
+                    };
+                
+                    client.DownloadFileCompleted += (o, e) => 
+                    {
+                        if (e.Cancelled)
+                            Log.LogMessage(MessageImportance.Normal, "Download cancelled!");
+                        else if (e.Error == null)
+                            Log.LogMessage(MessageImportance.Normal, "Download finished!");
+                        lock (this)
+                        {
+                            cancelled = e.Cancelled;
+                            error = e.Error;
+                            System.Threading.Monitor.Pulse(this);
+                        }
+                    };
+                    
+                    lock (this)
+                    {
+                        client.DownloadFileAsync(new Uri(Address), FileName);
+                        Monitor.Wait(this);
+                    }
+                    
+                    if (cancelled)
+                        File.Delete(FileName);
+                    
+                    if (error != null)
+                        Log.LogErrorFromException(error, false, false, Address);
+
+                    return error == null;
+                }
+
+                public void Cancel()
+                {         
+                    client.CancelAsync();
+                }
+            }
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  
+  <UsingTask TaskName="UnzipFile" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
+    <ParameterGroup>
+      <FileName ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="System.IO.Compression" />
+      <Reference Include="System.IO.Compression.FileSystem" />
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+            Console.Out.WriteLine("Unzip: " + FileName);
+            using (System.IO.Compression.ZipArchive archive = System.IO.Compression.ZipFile.OpenRead(FileName))
+            {
+                foreach (System.IO.Compression.ZipArchiveEntry entry in archive.Entries)
+                {
+                    Log.LogMessage(MessageImportance.Normal, " {0}", entry.FullName);
+                    String entryFullName = Path.Combine(".", entry.FullName);
+                    
+                    String entryPath = Path.GetDirectoryName(entryFullName);
+                    if (!Directory.Exists(entryPath))
+                    {
+                        Directory.CreateDirectory(entryPath);
+                    }
+
+                    String entryFn = Path.GetFileName(entryFullName);
+                    if (!String.IsNullOrEmpty(entryFn))
+                    {
+                        System.IO.Compression.ZipFileExtensions.ExtractToFile(entry, entryFullName, true);
+                    }
+                }
+            } 
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+</Project>

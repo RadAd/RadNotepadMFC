@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Update" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="Common.tasks" /> 
+  
+  <Target Name="Download" Outputs="scintilla.zip">
+    <DownloadFile Address="http://www.scintilla.org/scintilla376.zip" FileName="scintilla.zip" />
+  </Target>
+  
+  <Target Name="Extract" Inputs="scintilla.zip" Outputs="scintilla">
+    <UnzipFile FileName="scintilla.zip" />
+  </Target>
+  
+  <Target Name="Update" DependsOnTargets="Download;Extract">
+  </Target>
+</Project>

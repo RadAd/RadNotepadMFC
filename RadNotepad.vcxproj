@@ -282,4 +282,7 @@
       <UserProperties RESOURCE_FILE="RadNotepad.rc" />
     </VisualStudio>
   </ProjectExtensions>
+  <Target Name="Run">
+    <Exec Command="&quot;$(TargetPath)&quot; $(RunParam)"/>
+  </Target>
 </Project>
