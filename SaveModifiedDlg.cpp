@@ -31,6 +31,7 @@ void CSaveModifiedDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CSaveModifiedDlg, CDialogEx)
     ON_BN_CLICKED(IDNO, &CSaveModifiedDlg::OnBnClickedNo)
+    ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 
 
@@ -40,6 +41,8 @@ END_MESSAGE_MAP()
 BOOL CSaveModifiedDlg::OnInitDialog()
 {
     CDialogEx::OnInitDialog();
+
+    GetWindowRect(&m_OrigWndRect);
 
     HIMAGELIST ImlLarge, ImlSmall;
     Shell_GetImageLists(&ImlLarge, &ImlSmall);
@@ -112,4 +115,10 @@ void CSaveModifiedDlg::OnOK()
     }
     if (bSaved)
         CDialogEx::OnOK();
+}
+
+void CSaveModifiedDlg::OnGetMinMaxInfo(MINMAXINFO* pMinMaxInfo)
+{
+    pMinMaxInfo->ptMinTrackSize.x = m_OrigWndRect.Width();
+    pMinMaxInfo->ptMinTrackSize.y = m_OrigWndRect.Height();
 }

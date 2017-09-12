@@ -340,15 +340,11 @@ CFileView::CFileView()
     m_pRootPidl = nullptr;
     HRESULT    hr = NOERROR;
     hr = SHGetMalloc(&m_Malloc);
-    HIMAGELIST ImlLarge, ImlSmall;
-    Shell_GetImageLists(&ImlLarge, &ImlSmall);
-    m_FileViewImages.Attach(ImlSmall);
 }
 
 CFileView::~CFileView()
 {
     SHChangeNotifyDeregister(m_Notify);
-    m_FileViewImages.Detach();
 }
 
 BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
@@ -397,7 +393,12 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	// Load view images:
-    m_wndFileView.SetImageList(&m_FileViewImages, TVSIL_NORMAL);
+    HIMAGELIST ImlLarge, ImlSmall;
+    Shell_GetImageLists(&ImlLarge, &ImlSmall);
+    CImageList il;
+    il.Attach(ImlSmall);
+    m_wndFileView.SetImageList(&il, TVSIL_NORMAL);
+    il.Detach();
 
 	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_EXPLORER);
 	m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);

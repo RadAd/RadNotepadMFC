@@ -32,7 +32,6 @@ protected:
     PtrIDAbsolute m_pRootPidl;
     CComPtr<IMalloc> m_Malloc;
 	CViewTree m_wndFileView;
-	CImageList m_FileViewImages;
     CPaneToolBar m_wndToolBar;
 
 protected:
