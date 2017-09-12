@@ -65,21 +65,26 @@
 			<style name="Line Added (+)" key="6" fore="00007f" />
 		</use-styles>
 	</language>
-	<language name="output" title="Output" internal="true">
+	<base-language name="outputbase">
 		<lexer name="errorlist" />
-			<margins>
-				<margin key="1" name="Current" show="true" width="16" />
-			</margins>
-			<markers>
-				<marker key="3" name="Current" type="4" fore="000000" back="00ffff" />
-			</markers>
-			<use-styles>
+		<margins>
+			<margin key="1" name="Current" show="true" width="16" />
+		</margins>
+		<markers>
+			<marker key="3" name="Current" type="4" fore="000000" back="00ffff" />
+		</markers>
+		<use-styles>
 			<style name="Default" key="32" size="9" />
 			<style name="Whitespace" key="0" />
+			<style name="command or return status" key="4" class="comment" />
+			<style name="Margin" key="33" class="linenumbers" />
+		</use-styles>
+	</base-language>
+	<language name="output" base="outputbase" title="Output" internal="true">
+		<use-styles>
 			<style name="Python error" key="1" class="error" hotspot="true" />
 			<style name="gcc error" key="2" class="error" hotspot="true" />
 			<style name="Microsoft error" key="3" class="error" hotspot="true" />
-			<style name="command or return status" key="4" class="comment" />
 			<style name="Borland message" key="5" class="error" hotspot="true" />
 			<style name="Perl message" key="6" class="error" hotspot="true" />
 			<style name=".NET tracebacks" key="7" class="error" hotspot="true" />
@@ -92,7 +97,22 @@
 				<style name="message (---)" key="13" fore="7f0000" />
 			</group>
 			<style name="PHP error" key="14" class="error" hotspot="true" />
-      <style name="Margin" key="33" class="linenumbers" />
+
+			<!-- this is the style used by the container-based error lexer. It may in the future
+			clash with that used by scintilla so will need updating then. -->
+			<style name="Custom error" key="20" class="error" hotspot="true" />
+		</use-styles>
+	</language>
+	<language name="find" base="outputbase" title="Find" internal="true">
+		<use-styles>
+			<style name="Python error" key="1" class="find" hotspot="true" />
+			<style name="gcc error" key="2" class="find" hotspot="true" />
+			<style name="Microsoft error" key="3" class="find" hotspot="true" />
+			<style name="Borland message" key="5" class="find" hotspot="true" />
+			<style name="Perl message" key="6" class="find" hotspot="true" />
+			<style name=".NET tracebacks" key="7" class="find" hotspot="true" />
+			<style name="Lua messages" key="8" class="find" hotspot="true" />
+			<style name="PHP error" key="14" class="find" hotspot="true" />
 
 			<!-- this is the style used by the container-based error lexer. It may in the future
 			clash with that used by scintilla so will need updating then. -->

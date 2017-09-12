@@ -39,7 +39,8 @@
 		<style-class name="operator" description="Operators" />
 		<style-class name="preprocessor" description="Preprocessor" fore="7f7f00" />
 		<style-class name="error" description="Error Text" fore="ffff00" back="ff0000" />
-		<style-class name="commentdoc" description="Doc Comments" inherit-style="comment" fore="3f703f"/>
+    <style-class name="find" description="Find Text" fore="0000ef" />
+    <style-class name="commentdoc" description="Doc Comments" inherit-style="comment" fore="3f703f"/>
 		<style-class name="commentline" description="Line Comments" inherit-style="comment"/>
 		<style-class name="commentbox" description="Box Comments" inherit-style="comment"/>
 		<style-class name="tag" description="Tag" fore="000080"/>

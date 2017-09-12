@@ -1,6 +1,8 @@
 
 #pragma once
 
+struct Language;
+
 /////////////////////////////////////////////////////////////////////////////
 // COutputList window
 
@@ -11,12 +13,16 @@ public:
 	COutputList();
 
 public:
+    void SetLanguage(LPCTSTR pOutput);
     void NotifySettingsChanged();
     void Clear();
     void SetDirectory(LPCTSTR pText) { m_strDirectory = pText; }
     void AppendText(LPCSTR pText, int nLen);
     void AppendText(LPCWSTR pText, int nLen);
     void AppendText(const CString& str) { AppendText(str, str.GetLength()); }
+
+private:
+    const Language* m_pLanguage;
 
 // Implementation
 public:

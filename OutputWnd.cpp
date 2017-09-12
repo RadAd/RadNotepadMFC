@@ -14,7 +14,6 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // TODO
-// Allow a choice of lexer - maybe use the tab name for the lexer
 // Search for next/prev error
 
 #define RAD_MARKER_CURRENT 3
@@ -129,6 +128,7 @@ COutputList* COutputWnd::Get(LPCTSTR pOutput, BOOL bCreate)
             return nullptr;      // fail to create
         }
         pOutputList->SetOwner(this);
+        pOutputList->SetLanguage(pOutput);
         m_wndTabs.AddTab(pOutputList, pOutput, (UINT) 0);
     }
     return pOutputList;
@@ -149,6 +149,7 @@ COutputList* COutputWnd::Reset(LPCTSTR pOutput, LPCTSTR pDirectory)
 // COutputList1
 
 COutputList::COutputList()
+    : m_pLanguage(nullptr)
 {
 }
 
@@ -156,11 +157,19 @@ COutputList::~COutputList()
 {
 }
 
+void COutputList::SetLanguage(LPCTSTR pOutput)
+{
+    const Theme* pTheme = &theApp.m_Settings.user;
+    m_pLanguage = GetLanguage(pTheme, pOutput);
+    if (m_pLanguage == nullptr)
+        m_pLanguage = GetLanguage(pTheme, _T("output"));
+    Apply(*this, m_pLanguage, pTheme);
+}
+
 void COutputList::NotifySettingsChanged()
 {
     const Theme* pTheme = &theApp.m_Settings.user;
-    const Language* pLanguage = GetLanguage(pTheme, _T("output"));
-    Apply(*this, pLanguage, pTheme);
+    Apply(*this, m_pLanguage, pTheme);
 }
 
 void COutputList::Clear()
@@ -303,10 +312,6 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;
 
     SetupDirectAccess();    // Should be in CScintillaCtrl::OnCreate
-
-    const Theme* pTheme = &theApp.m_Settings.user;
-    const Language* pLanguage = GetLanguage(pTheme, _T("output"));
-    Apply(*this, pLanguage, pTheme);
 
     SetReadOnly(TRUE);
     SetHotspotActiveUnderline(TRUE);
