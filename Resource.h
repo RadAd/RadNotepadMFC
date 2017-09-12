@@ -52,7 +52,9 @@
 #define IDD_GOTOLINE                    310
 #define IDR_SCHEME_MASTER               312
 #define IDR_EXTMAP                      314
+#define IDD_SAVE_MODIFIED               317
 #define IDC_LINE                        1000
+#define IDC_LIST1                       1000
 #define ID_FILE_REVERT                  32784
 #define ID_FILE_CLOSEALL                32788
 #define ID_FILE_SAVEALL                 32789
@@ -101,9 +103,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        316
+#define _APS_NEXT_RESOURCE_VALUE        319
 #define _APS_NEXT_COMMAND_VALUE         32861
-#define _APS_NEXT_CONTROL_VALUE         1000
+#define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

@@ -715,6 +715,14 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
             CScintillaCtrl& rCtrl = GetCtrl();
             const Theme* pTheme = &theApp.m_Settings.user;
             Apply(rCtrl, m_pLanguage, pTheme);
+
+            CFrameWnd* pFrame = GetParentFrame();
+            if (pFrame->GetIcon(FALSE) != NULL)
+            {
+                DestroyIcon(pFrame->SetIcon(NULL, FALSE));
+                pFrame->OnUpdateFrameTitle(TRUE);
+            }
+            // TODO SetIcon is calling UpdateTabs but it doesn't seem to redraw it.
         }
         break;
 

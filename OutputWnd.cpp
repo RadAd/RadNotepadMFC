@@ -169,6 +169,7 @@ void COutputList::Clear()
     SelectAll();
     CScintillaCtrl::Clear();
     SetReadOnly(TRUE);
+    MarkerDeleteAll(RAD_MARKER_CURRENT);
 }
 
 void COutputList::AppendText(LPCSTR pText, int nLen)

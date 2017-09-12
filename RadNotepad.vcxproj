@@ -201,6 +201,7 @@
     <ClInclude Include="PropertiesWnd.h" />
     <ClInclude Include="RadWindowsManagerDialog.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="SaveModifiedDlg.h" />
     <ClInclude Include="scintillawrappers\resource.h" />
     <ClInclude Include="scintillawrappers\ScintillaCtrl.h" />
     <ClInclude Include="scintillawrappers\ScintillaDocView.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="PropertiesWnd.cpp" />
     <ClCompile Include="RadWindowsManagerDialog.cpp" />
+    <ClCompile Include="SaveModifiedDlg.cpp" />
     <ClCompile Include="scintillawrappers\ScintillaCtrl.cpp" />
     <ClCompile Include="scintillawrappers\ScintillaDocView.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -283,6 +285,6 @@
     </VisualStudio>
   </ProjectExtensions>
   <Target Name="Run">
-    <Exec Command="&quot;$(TargetPath)&quot; $(RunParam)"/>
+    <Exec Command="&quot;$(TargetPath)&quot; $(RunParam)" />
   </Target>
 </Project>

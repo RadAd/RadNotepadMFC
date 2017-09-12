@@ -15,12 +15,9 @@
     </tool>
     <tool name="FindStr" capture="Find">
         <cmd>findstr.exe</cmd>
-        <param>/L /S /N "{selected}" *.txt *.cpp *.h *.java</param>
+        <param>/S /N /P /C:"{selected}" *.*</param>
     </tool>
-    <tool name="VCMake" capture="Build">
-        <cmd>%HOMEDRIVE%%HOMEPATH%\Dropbox\Utils\CommandLine\bin\vcmake.bat</cmd>
-    </tool>
-    <tool name="Output" capture="output">
+    <tool name="Output" capture="Output">
         <cmd>cmd.exe</cmd>
         <param>/C type {file}</param>
     </tool>
