@@ -12,6 +12,8 @@
 #endif
 #include "afxres.h"
 #include "verrsrc.h"
+#define LVS_EX_CHECKBOXES 0x00000004
+#define LVS_EX_FULLROWSELECT 0x00000020
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -601,7 +603,7 @@ CAPTION "Save Modified Items"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Do you want to save these modified items?",IDC_STATIC,7,7,138,8
-    LISTBOX         IDC_LIST1,7,19,295,130,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,19,295,130,LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT
     DEFPUSHBUTTON   "Yes",IDOK,144,155,50,14
     PUSHBUTTON      "No",IDNO,198,155,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,252,155,50,14
@@ -634,7 +636,12 @@ END
 
 IDD_SAVE_MODIFIED AFX_DIALOG_LAYOUT
 BEGIN
-    0
+    0,
+    0, 0, 0, 0,
+    0, 0, 100, 100,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0
 END
 
 
@@ -644,22 +651,24 @@ END
 // TEXTINCLUDE
 //
 
-1 TEXTINCLUDE 
+1 TEXTINCLUDE
 BEGIN
     "resource.h\0"
 END
 
-2 TEXTINCLUDE 
+2 TEXTINCLUDE
 BEGIN
     "#ifndef APSTUDIO_INVOKED\r\n"
     "#include ""targetver.h""\r\n"
     "#endif\r\n"
     "#include ""afxres.h""\r\n"
     "#include ""verrsrc.h""\r\n"
+    "#define LVS_EX_CHECKBOXES 0x00000004\r\n"
+    "#define LVS_EX_FULLROWSELECT 0x00000020\r\n"
     "\0"
 END
 
-3 TEXTINCLUDE 
+3 TEXTINCLUDE
 BEGIN
     "#define _AFX_NO_OLE_RESOURCES\r\n"
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"

@@ -22,7 +22,7 @@ protected:
     virtual void OnOK() override;
 
 	DECLARE_MESSAGE_MAP()
-    CCheckListBox m_List;
+    CListCtrl m_List;
 public:
     virtual BOOL OnInitDialog();
     afx_msg void OnBnClickedNo();
