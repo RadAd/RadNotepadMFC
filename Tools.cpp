@@ -17,6 +17,19 @@ inline bool isnull(LPCWSTR s)
     return s == nullptr;
 }
 
+inline bool Required(LPCTSTR name, LPCTSTR value, LPCTSTR section)
+{
+    if (isnull(value))
+    {
+        CString msg;
+        msg.Format(_T("Missing %s: %s"), name, section);
+        AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+        return false;
+    }
+    else
+        return true;
+}
+
 inline _bstr_t GetAttribute(MSXML2::IXMLDOMNode* pXMLNode, LPCWSTR name)
 {
     MSXML2::IXMLDOMNamedNodeMapPtr pXMLAttributes(pXMLNode->Getattributes());
@@ -63,22 +76,11 @@ void ProcessTools(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Tool>& rTools)
                 _bstr_t icon = GetElementText(pXMLChildNode, _T("icon"));
                 _bstr_t param = GetElementText(pXMLChildNode, _T("param"));
                 _bstr_t capture = GetAttribute(pXMLChildNode, _T("capture"));
+                _bstr_t save = GetAttribute(pXMLChildNode, _T("save"));
 
-                if (isnull(name))
+                if (Required(_T("name"), name, bstrName) && Required(_T("cmd"), cmd, bstrName))
                 {
-                    CString msg;
-                    msg.Format(_T("Missing name: %s"), (LPCTSTR) bstrName);
-                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-                }
-                else if (isnull(cmd))
-                {
-                    CString msg;
-                    msg.Format(_T("Missing cmd: %s"), (LPCTSTR) bstrName);
-                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-                }
-                else
-                {
-                    rTools.push_back(Tool((LPCTSTR) name, (LPCTSTR) cmd, (LPCTSTR) param));
+                    rTools.push_back(Tool(name, cmd, param));
                     Tool& tool(rTools.back());
 
                     TCHAR strIcon[MAX_PATH];
@@ -98,6 +100,8 @@ void ProcessTools(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Tool>& rTools)
                         else
                             tool.capture = (LPCTSTR) capture;
                     }
+                    if (!isnull(save))
+                        tool.save = save == L"true";
                 }
             }
             else
@@ -214,7 +218,7 @@ static DWORD WINAPI CaptureOutput(LPVOID lpParameter)
     DWORD dwExitCode = 0;
     GetExitCodeProcess(pData->hProcess, &dwExitCode);
     CString msg;
-    msg.Format(_T("> Exit code: %d\n"), dwExitCode);
+    msg.Format(_T("\n> Exit code: %d\n"), dwExitCode);
     COutputList* pOutputList = pData->pWndOutput->Get(pData->sCapture);
     if (pOutputList)
         pOutputList->AppendText(msg);

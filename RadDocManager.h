@@ -1,5 +1,6 @@
 #pragma once
 #include "afxwin.h"
+
 class CRadDocManager :
     public CDocManager
 {
@@ -8,6 +9,7 @@ public:
     ~CRadDocManager();
 
     static CDocument* GetActiveDocument();
+    static CView* GetActiveView();
 
     int GetModifiedDocumentCount() const;
 

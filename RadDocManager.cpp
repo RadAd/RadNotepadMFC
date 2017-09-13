@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "RadDocManager.h"
 #include "RadNotepad.h"
-#include "MainFrm.h"
 #include "SaveModifiedDlg.h"
 
 CRadDocManager::CRadDocManager()
@@ -18,6 +17,16 @@ CDocument* CRadDocManager::GetActiveDocument()
     CMDIChildWnd* pChild = pMainWnd->MDIGetActive();
     if (pChild != nullptr)
         return pChild->GetActiveDocument();
+    else
+        return nullptr;
+}
+
+CView* CRadDocManager::GetActiveView()
+{
+    CMDIFrameWndEx* pMainWnd = DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd());
+    CMDIChildWnd* pChild = pMainWnd->MDIGetActive();
+    if (pChild != nullptr)
+        return pChild->GetActiveView();
     else
         return nullptr;
 }

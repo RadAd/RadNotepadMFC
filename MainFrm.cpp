@@ -5,6 +5,7 @@
 #include "ChildFrm.h"
 #include "RadNotepadView.h"
 #include "RadWindowsManagerDialog.h"
+#include "RadDocManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -416,22 +417,25 @@ static CString ExpandEnvironmentStrings(LPCTSTR str)
 
 void CMainFrame::OnToolsTool(UINT nID)
 {
-    // TODO What to do if no active file
-    // TODO Save current file? Load when done?
+    // TODO
+    // Load when done?
+    // Read-only until done?
 
     const Tool& tool = theApp.m_Tools[nID - ID_TOOLS_FIRSTTOOL];
+
+    CRadNotepadView* pView = DYNAMIC_DOWNCAST(CRadNotepadView, CRadDocManager::GetActiveView());
+    CDocument* pDoc = pView == nullptr ? nullptr : pView->CView::GetDocument();
+    if (tool.save && pDoc != nullptr && !pDoc->DoFileSave())
+        return;
+
     ToolExecuteData ted;
     ted.cmd = ExpandEnvironmentStrings(tool.cmd);
     ted.param = ExpandEnvironmentStrings(tool.param);
     ted.directory = _T("{path}");
     ted.pWndOutput = &m_wndOutput;
 
-    CMDIChildWnd* pFrame = MDIGetActive();
-    if (pFrame != nullptr)
+    if (pDoc != nullptr && pView != nullptr)
     {
-        CDocument* pDoc = pFrame->GetActiveDocument();
-        CRadNotepadView* pView = DYNAMIC_DOWNCAST(CRadNotepadView, pFrame->GetActiveView());
-
         TCHAR FileName[MAX_PATH] = _T("");
         StrCpy(FileName, pDoc->GetPathName());
         TCHAR Dir[MAX_PATH] = _T("");

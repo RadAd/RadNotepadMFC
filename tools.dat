@@ -17,7 +17,7 @@
         <cmd>findstr.exe</cmd>
         <param>/S /N /P /C:"{selected}" *.*</param>
     </tool>
-    <tool name="Output" capture="Output">
+    <tool name="Output" capture="Output" save="true">
         <cmd>cmd.exe</cmd>
         <param>/C type {file}</param>
     </tool>

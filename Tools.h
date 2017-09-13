@@ -4,13 +4,11 @@
 
 struct Tool
 {
-    Tool(CString name, CString cmd, CString param = _T(""))
+    Tool(LPCTSTR name, LPCTSTR cmd, LPCTSTR param = _T(""))
         : name(name)
         , cmd(cmd)
         , param(param)
-        , hIcon(NULL)
     {
-
     }
 
     Tool(const Tool&) = delete;
@@ -21,6 +19,7 @@ struct Tool
         , param(other.param)
         , hIcon(other.hIcon)
         , capture(other.capture)
+        , save(other.save)
     {
         other.hIcon = NULL;
     }
@@ -33,8 +32,9 @@ struct Tool
     CString name;
     CString cmd;
     CString param;
-    HICON hIcon;
+    HICON hIcon = NULL;
     CString capture;
+    BOOL save = FALSE;
 };
 
 class COutputWnd;

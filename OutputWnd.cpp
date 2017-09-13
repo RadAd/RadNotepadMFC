@@ -5,6 +5,7 @@
 #include "Resource.h"
 #include "RadNotepad.h"
 #include "RadNotepadDoc.h"
+#include "RadDocManager.h"
 #include "Theme.h"
 
 #ifdef _DEBUG
@@ -324,14 +325,9 @@ BOOL COutputWnd::PreTranslateMessage(MSG* pMsg)
     // TODO Move this to an accelerator
     if (pMsg->message == WM_KEYUP && pMsg->wParam == VK_ESCAPE)
     {
-        CMDIFrameWndEx* pMainWnd = DYNAMIC_DOWNCAST(CMDIFrameWndEx, AfxGetMainWnd());
-        CFrameWnd* pFrameWnd = pMainWnd->GetActiveFrame();
-        if (pFrameWnd != nullptr)
-        {
-            CView* pView = pFrameWnd->GetActiveView();
-            if (pView)
-                pView->SetFocus();
-        }
+        CView* pView = CRadDocManager::GetActiveView();
+        if (pView)
+            pView->SetFocus();
     }
 
     return CDockablePane::PreTranslateMessage(pMsg);
