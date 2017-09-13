@@ -5,6 +5,7 @@
 
 // TODO
 // Stop too many outputting to the same window at the same time
+// Filter per Language
 
 inline bool operator==(const _bstr_t& s1, LPCWSTR s2)
 {

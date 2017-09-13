@@ -16,6 +16,8 @@ static char THIS_FILE[] = __FILE__;
 
 // TODO
 // Search for next/prev error
+// Search for text in output
+// Using shortcut goes to main window even if output is in focus? ie Ctrl+V (Paste)
 
 #define RAD_MARKER_CURRENT 3
 
@@ -151,7 +153,7 @@ COutputList* COutputWnd::Reset(LPCTSTR pOutput, LPCTSTR pDirectory)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// COutputList1
+// COutputList
 
 COutputList::COutputList()
     : m_pLanguage(nullptr)
@@ -207,13 +209,13 @@ void COutputList::AppendText(LPCWSTR pText, int nLen)
 }
 
 BEGIN_MESSAGE_MAP(COutputList, CListBox)
-	ON_WM_CONTEXTMENU()
-	ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
-	ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
-	ON_COMMAND(ID_VIEW_OUTPUTWND, OnViewOutput)
-    ON_NOTIFY_REFLECT(SCN_HOTSPOTCLICK, OnHotSpotClick)
-	ON_WM_WINDOWPOSCHANGING()
+    ON_WM_CONTEXTMENU()
+    ON_WM_WINDOWPOSCHANGING()
     ON_WM_CREATE()
+    ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
+    ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
+    ON_COMMAND(ID_VIEW_OUTPUTWND, OnViewOutput)
+    ON_NOTIFY_REFLECT(SCN_HOTSPOTCLICK, OnHotSpotClick)
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // COutputList message handlers
@@ -336,4 +338,14 @@ void COutputWnd::OnReturn()
     CView* pView = CRadDocManager::GetActiveView();
     if (pView)
         pView->SetFocus();
+}
+
+BOOL COutputWnd::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+    int i = m_wndTabs.GetActiveTab();
+    CWnd* pWnd = m_wndTabs.GetTabWnd(i);
+    if (pWnd != nullptr && pWnd->SendMessage(WM_COMMAND, wParam, lParam))
+        return TRUE;
+
+    return CDockablePane::OnCommand(wParam, lParam);
 }

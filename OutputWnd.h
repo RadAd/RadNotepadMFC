@@ -55,6 +55,7 @@ protected:
 // Overrides
 protected:
     virtual BOOL PreTranslateMessage(MSG* pMsg) override;
+    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
 
 public:
     void AdjustHorzScroll(CListBox& wndListBox);
@@ -71,6 +72,5 @@ protected:
     DECLARE_MESSAGE_MAP()
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnSize(UINT nType, int cx, int cy);
-public:
     afx_msg void OnReturn();
 };
