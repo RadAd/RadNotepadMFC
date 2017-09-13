@@ -1,12 +1,7 @@
-// SaveModifiedDlg.cpp : implementation file
-//
-
 #include "stdafx.h"
 #include "RadNotepad.h"
 #include "SaveModifiedDlg.h"
 #include "afxdialogex.h"
-
-// TODO Give dialog an icon
 
 // CSaveModifiedDlg dialog
 
@@ -15,7 +10,6 @@ IMPLEMENT_DYNAMIC(CSaveModifiedDlg, CDialogEx)
 CSaveModifiedDlg::CSaveModifiedDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_SAVE_MODIFIED, pParent)
 {
-
 }
 
 CSaveModifiedDlg::~CSaveModifiedDlg()
@@ -28,19 +22,18 @@ void CSaveModifiedDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Control(pDX, IDC_LIST1, m_List);
 }
 
-
 BEGIN_MESSAGE_MAP(CSaveModifiedDlg, CDialogEx)
     ON_BN_CLICKED(IDNO, &CSaveModifiedDlg::OnBnClickedNo)
     ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
 
-
 // CSaveModifiedDlg message handlers
-
 
 BOOL CSaveModifiedDlg::OnInitDialog()
 {
     CDialogEx::OnInitDialog();
+
+    SetIcon(theApp.LoadIcon(IDD_SAVE_MODIFIED), FALSE);
 
     GetWindowRect(&m_OrigWndRect);
 
@@ -95,12 +88,10 @@ BOOL CSaveModifiedDlg::OnInitDialog()
                   // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-
 void CSaveModifiedDlg::OnBnClickedNo()
 {
     EndDialog(IDNO);
 }
-
 
 void CSaveModifiedDlg::OnOK()
 {

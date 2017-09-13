@@ -253,6 +253,7 @@
     <Image Include="res\fileview_hc.bmp" />
     <Image Include="res\file_view.ico" />
     <Image Include="res\file_view_hc.ico" />
+    <Image Include="res\save.ico" />
     <Image Include="res\RadNotepad.ico" />
     <Image Include="res\RadNotepadDoc.ico" />
     <Image Include="res\menuimages.bmp" />

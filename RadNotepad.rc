@@ -594,6 +594,16 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDD_SAVE_MODIFIED       ICON                    "res\\save.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Dialog
 //
 
