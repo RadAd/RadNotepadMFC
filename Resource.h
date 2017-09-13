@@ -46,7 +46,7 @@
 #define IDB_CLASS_VIEW                  177
 #define IDR_MENU_IMAGES                 179
 #define ID_TOOLS_MACRO                  181
-#define IDR_OUTPUT_POPUP                182
+#define IDR_POPUP_OUTPUT                182
 #define IDR_PROPERTIES                  183
 #define IDS_EDIT_MENU                   306
 #define IDD_GOTOLINE                    310

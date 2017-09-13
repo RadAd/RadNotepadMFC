@@ -223,7 +223,7 @@ END_MESSAGE_MAP()
 void COutputList::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 {
 	CMenu menu;
-	menu.LoadMenu(IDR_OUTPUT_POPUP);
+	menu.LoadMenu(IDR_POPUP_OUTPUT);
 
 	CMenu* pSumMenu = menu.GetSubMenu(0);
 
