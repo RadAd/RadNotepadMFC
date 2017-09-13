@@ -54,6 +54,7 @@
 #define IDR_EXTMAP                      314
 #define IDD_SAVE_MODIFIED               317
 #define IDI_SAVE                        319
+#define IDR_OUTPUT                      320
 #define IDC_LINE                        1000
 #define IDC_LIST1                       1000
 #define ID_FILE_REVERT                  32784
@@ -97,6 +98,8 @@
 #define ID_MARGINS_3                    32858
 #define ID_MARGINS_4                    32859
 #define ID_MARGINS_5                    32860
+#define ID_RETURN                       32861
+#define ID_EDIT_RETURN                  32863
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -104,8 +107,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        320
-#define _APS_NEXT_COMMAND_VALUE         32861
+#define _APS_NEXT_RESOURCE_VALUE        321
+#define _APS_NEXT_COMMAND_VALUE         32866
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

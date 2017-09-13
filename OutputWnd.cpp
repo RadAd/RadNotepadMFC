@@ -24,6 +24,7 @@ static char THIS_FILE[] = __FILE__;
 
 COutputWnd::COutputWnd()
 {
+    m_hAccel = NULL;
 }
 
 COutputWnd::~COutputWnd()
@@ -31,14 +32,17 @@ COutputWnd::~COutputWnd()
 }
 
 BEGIN_MESSAGE_MAP(COutputWnd, CDockablePane)
-	ON_WM_CREATE()
-	ON_WM_SIZE()
+    ON_WM_CREATE()
+    ON_WM_SIZE()
+    ON_COMMAND(ID_RETURN, &COutputWnd::OnReturn)
 END_MESSAGE_MAP()
 
 int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CDockablePane::OnCreate(lpCreateStruct) == -1)
 		return -1;
+
+    m_hAccel = LoadAccelerators(NULL, MAKEINTRESOURCE(IDR_OUTPUT));
 
 	CRect rectDummy;
 	rectDummy.SetRectEmpty();
@@ -50,7 +54,7 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;      // fail to create
 	}
 
-	//UpdateFonts();
+    UpdateFonts();
 
     if (Get(_T("Output"), TRUE) == nullptr)
     {
@@ -319,16 +323,17 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return 0;
 }
 
-
 BOOL COutputWnd::PreTranslateMessage(MSG* pMsg)
 {
-    // TODO Move this to an accelerator
-    if (pMsg->message == WM_KEYUP && pMsg->wParam == VK_ESCAPE)
-    {
-        CView* pView = CRadDocManager::GetActiveView();
-        if (pView)
-            pView->SetFocus();
-    }
+    if (m_hAccel != NULL && pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST)
+        return ::TranslateAccelerator(m_hWnd, m_hAccel, pMsg);
 
     return CDockablePane::PreTranslateMessage(pMsg);
+}
+
+void COutputWnd::OnReturn()
+{
+    CView* pView = CRadDocManager::GetActiveView();
+    if (pView)
+        pView->SetFocus();
 }

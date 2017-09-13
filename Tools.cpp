@@ -4,7 +4,6 @@
 #import <MSXML6.dll> exclude("ISequentialStream", "_FILETIME")
 
 // TODO
-// Save before execute
 // Stop too many outputting to the same window at the same time
 
 inline bool operator==(const _bstr_t& s1, LPCWSTR s2)
@@ -149,48 +148,14 @@ void LoadToolDirectory(LPCTSTR strDirectory, std::vector<Tool>& rTools)
 
 void InitTools(std::vector<Tool>& rTools)
 {
-#if 0
-    rTools.push_back(Tool(_T("Run"), _T("{file}")));
-    rTools.push_back(Tool(_T("CMD"), _T("cmd.exe")));
-    rTools.push_back(Tool(_T("Explorer"), _T("explorer.exe"), _T("/select,\"{file}\"")));
-    rTools.push_back(Tool(_T("Google"), _T("https://www.google.com.au/search?q={selected}")));
-    rTools.push_back(Tool(_T("FindStr"), _T("findstr.exe"), _T("/L /S /N \"{selected}\" *.txt *.cpp *.h *.java"), TRUE));
-    rTools.push_back(Tool(_T("VCMake"), _T("%HOMEDRIVE%%HOMEPATH%\\Dropbox\\Utils\\CommandLine\\bin\\vcmake.bat"), _T(""), TRUE));
-    rTools.push_back(Tool(_T("Output"), _T("cmd.exe"), _T("/C type {file}"), TRUE));
-
-    for (Tool& t : rTools)
-    {
-        TCHAR exe[MAX_PATH];
-        PTSTR pArgs = PathGetArgs(t.cmd);
-        while (pArgs > t.cmd && pArgs[-1] == _T(' '))
-            --pArgs;
-        wcsncpy_s(exe, t.cmd, pArgs - t.cmd);
-        PathUnquoteSpaces(exe);
-
-        if (t.hIcon == NULL)
-            //t.hIcon = ExtractIcon(AfxGetInstanceHandle(), t.cmd, 0);
-            ExtractIconEx(exe, 0, nullptr, &t.hIcon, 1);
-#if 0
-        if (t.hIcon == NULL)
-        {
-            SHFILEINFO fi = {};
-            SHGetFileInfo(exe, 0, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
-            t.hIcon = fi.hIcon;
-        }
-    }
-#endif
-#else
     HMODULE hModule = NULL;
     TCHAR exepath[_MAX_PATH];
 
     GetModuleFileName(hModule, exepath, MAX_PATH);
     PathFindFileName(exepath)[0] = _T('\0');
     LoadToolDirectory(exepath, rTools);
-#if 0
-    PathCombine(exepath, exepath, _T("..\\.."));
-    LoadToolDirectory(exepath, rTools);
-#endif
-#endif
+
+    // TODO Also load from user directory
 }
 
 struct CaptureOutputData

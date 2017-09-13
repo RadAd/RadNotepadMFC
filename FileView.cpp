@@ -1065,11 +1065,8 @@ LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
 
 BOOL CFileView::PreTranslateMessage(MSG* pMsg)
 {
-    if (pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST && m_wndFileView.GetEditControl() == NULL)
-    {
-        HACCEL hAccel = m_hAccel;
-        return hAccel != NULL &&  ::TranslateAccelerator(m_hWnd, hAccel, pMsg);
-    }
+    if (m_hAccel != NULL && pMsg->message >= WM_KEYFIRST && pMsg->message <= WM_KEYLAST && m_wndFileView.GetEditControl() == NULL)
+        return ::TranslateAccelerator(m_hWnd, m_hAccel, pMsg);
 
     return CDockablePane::PreTranslateMessage(pMsg);
 }

@@ -179,6 +179,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Make Uppercase\tCtrl+Shift+U", ID_EDIT_MAKEUPPERCASE
         MENUITEM "Make Lowercase\tCtrl+U",      ID_EDIT_MAKELOWERCASE
+        MENUITEM "Return",                      ID_RETURN
     END
     POPUP "&View"
     BEGIN
@@ -301,6 +302,7 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_ESCAPE,      ID_RETURN,              VIRTKEY, NOINVERT
 END
 
 IDR_EXPLORER ACCELERATORS
@@ -308,6 +310,11 @@ BEGIN
     VK_F2,          ID_EDIT_RENAME,         VIRTKEY, NOINVERT
     VK_RETURN,      ID_EDIT_VIEW,           VIRTKEY, NOINVERT
     VK_RETURN,      ID_PROPERTIES,          VIRTKEY, ALT, NOINVERT
+END
+
+IDR_OUTPUT ACCELERATORS
+BEGIN
+    VK_ESCAPE,      ID_RETURN,              VIRTKEY, NOINVERT
 END
 
 
