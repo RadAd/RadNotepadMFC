@@ -11,9 +11,9 @@ extern UINT NEAR WM_RADNOTEPAD;
 
 class CMainFrame : public CMDIFrameWndEx
 {
-	DECLARE_DYNAMIC(CMainFrame)
+    DECLARE_DYNAMIC(CMainFrame)
 public:
-	CMainFrame();
+    CMainFrame();
 
 // Attributes
 public:
@@ -28,44 +28,43 @@ public:
 
 // Overrides
 protected:
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs) override;
     virtual BOOL PreTranslateMessage(MSG* pMsg) override;
 
 public:
-	virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd* pParentWnd = NULL, CCreateContext* pContext = NULL) override;
+    virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd* pParentWnd = NULL, CCreateContext* pContext = NULL) override;
 
 // Implementation
 public:
-	virtual ~CMainFrame();
+    virtual ~CMainFrame();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
 protected:
     BOOL CreateDockingWindows();
     void SetDockingWindowIcons();
 
-protected:  // control bar embedded members
+protected:
     int m_PrevNext;
     std::vector<CWnd*> m_MDIStack;
-	CMFCMenuBar       m_wndMenuBar;
-	CMFCToolBar       m_wndToolBar;
-	CMFCStatusBar     m_wndStatusBar;
-	CMFCToolBarImages m_UserImages;
-	CFileView         m_wndFileView;
-	//CClassView        m_wndClassView;
-	COutputWnd        m_wndOutput;
-	CPropertiesWnd    m_wndProperties;
+    CMFCMenuBar       m_wndMenuBar;
+    CMFCToolBar       m_wndToolBar;
+    CMFCStatusBar     m_wndStatusBar;
+    CMFCToolBarImages m_UserImages;
+    CFileView         m_wndFileView;
+    //CClassView        m_wndClassView;
+    COutputWnd        m_wndOutput;
+    CPropertiesWnd    m_wndProperties;
 
 // Generated message map functions
 protected:
     DECLARE_MESSAGE_MAP()
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnWindowManager();
-	afx_msg void OnViewCustomize();
-	afx_msg void OnViewPane(UINT nID);
-	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
+    afx_msg void OnWindowManager();
+    afx_msg void OnViewCustomize();
+    afx_msg void OnViewPane(UINT nID);
+    afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnUpdateClear(CCmdUI* pCmdUI);
     afx_msg void OnToolsTool(UINT nID);
     afx_msg void OnUpdateToolsTool(CCmdUI *pCmdUI);

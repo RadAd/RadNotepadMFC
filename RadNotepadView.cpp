@@ -1,7 +1,3 @@
-
-// RadNotepadView.cpp : implementation of the CRadNotepadView class
-//
-
 #include "stdafx.h"
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
@@ -22,7 +18,6 @@
 // Look into replacing scintilla scrollbars with splitter scrollbars (maybe just the vertical one)
 // Replace tabs with spaces or spaces with tabs
 // Support to comment out selection
-// Replace "b" with "ab" causes infintie loop
 
 #define WM_CHECKUPDATE (WM_USER + 1)
 
@@ -36,10 +31,10 @@
 IMPLEMENT_DYNCREATE(CRadNotepadView, CScintillaView)
 
 BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
-	// Standard printing commands
+    // Standard printing commands
     ON_WM_CREATE()
     ON_WM_CONTEXTMENU()
-	ON_WM_RBUTTONUP()
+    ON_WM_RBUTTONUP()
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CRadNotepadView::OnUpdateLine)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CRadNotepadView::OnUpdateInsert)
     ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CRadNotepadView::OnFilePrintPreview)
@@ -84,13 +79,6 @@ CRadNotepadView::CRadNotepadView()
 
 CRadNotepadView::~CRadNotepadView()
 {
-}
-
-BOOL CRadNotepadView::PreCreateWindow(CREATESTRUCT& cs)
-{
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
-	return CScintillaView::PreCreateWindow(cs);
 }
 
 void CRadNotepadView::OnCharAdded(_Inout_ SCNotification* pSCNotification)
@@ -161,39 +149,25 @@ void CRadNotepadView::OnUpdateUI(_Inout_ SCNotification* pSCNotification)
     }
 }
 
-// CRadNotepadView drawing
-
-void CRadNotepadView::OnDraw(CDC* /*pDC*/)
-{
-	CRadNotepadDoc* pDoc = GetDocument();
-	ASSERT_VALID(pDoc);
-	if (!pDoc)
-		return;
-
-	// TODO: add draw code for native data here
-}
-
-
 // CRadNotepadView printing
-
 
 void CRadNotepadView::OnFilePrintPreview()
 {
 #ifndef SHARED_HANDLERS
-	AFXPrintPreview(this);
+    AFXPrintPreview(this);
 #endif
 }
 
 void CRadNotepadView::OnRButtonUp(UINT /* nFlags */, CPoint point)
 {
-	ClientToScreen(&point);
-	OnContextMenu(this, point);
+    ClientToScreen(&point);
+    OnContextMenu(this, point);
 }
 
 void CRadNotepadView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 {
 #ifndef SHARED_HANDLERS
-	theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
+    theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_EDIT, point.x, point.y, this, TRUE);
 #endif
 }
 
@@ -220,7 +194,6 @@ void CRadNotepadView::OnUpdateInsert(CCmdUI* pCmdUI)
     pCmdUI->Enable(GetCtrl().GetOvertype());
 }
 
-
 // CRadNotepadView diagnostics
 
 #ifdef _DEBUG
@@ -236,8 +209,8 @@ void CRadNotepadView::Dump(CDumpContext& dc) const
 
 CRadNotepadDoc* CRadNotepadView::GetDocument() const // non-debug version is inline
 {
-	ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CRadNotepadDoc)));
-	return (CRadNotepadDoc*)m_pDocument;
+    ASSERT(m_pDocument->IsKindOf(RUNTIME_CLASS(CRadNotepadDoc)));
+    return (CRadNotepadDoc*)m_pDocument;
 }
 #endif //_DEBUG
 
@@ -297,7 +270,6 @@ CStringW CRadNotepadView::GetCurrentWord(BOOL bSelect)
 }
 
 // CRadNotepadView message handlers
-
 
 void CRadNotepadView::OnInitialUpdate()
 {
@@ -388,7 +360,6 @@ void CRadNotepadView::OnUpdateViewMargin(CCmdUI *pCmdUI)
         pCmdUI->m_pMenu->RemoveMenu(pCmdUI->m_nID, MF_BYCOMMAND);
 }
 
-
 void CRadNotepadView::OnViewWhitespace()
 {
     CScintillaCtrl& rCtrl = GetCtrl();
@@ -399,13 +370,11 @@ void CRadNotepadView::OnViewWhitespace()
     rCtrl.SetViewWS(ws);
 }
 
-
 void CRadNotepadView::OnUpdateViewWhitespace(CCmdUI *pCmdUI)
 {
     CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetViewWS() != SCWS_INVISIBLE);
 }
-
 
 void CRadNotepadView::OnViewEndOfLine()
 {
@@ -415,13 +384,11 @@ void CRadNotepadView::OnViewEndOfLine()
     rCtrl.SetViewEOL(bEol);
 }
 
-
 void CRadNotepadView::OnUpdateViewEndOfLine(CCmdUI *pCmdUI)
 {
     CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetViewEOL());
 }
-
 
 void CRadNotepadView::OnViewWordWrap()
 {
@@ -431,13 +398,11 @@ void CRadNotepadView::OnViewWordWrap()
     rCtrl.SetWrapMode(wm);
 }
 
-
 void CRadNotepadView::OnUpdateViewWordWrap(CCmdUI *pCmdUI)
 {
     CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetWrapMode() != SC_WRAP_NONE);
 }
-
 
 int CRadNotepadView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
@@ -476,7 +441,6 @@ void CRadNotepadView::OnUpdateViewUseTabs(CCmdUI *pCmdUI)
     pCmdUI->SetCheck(rCtrl.GetUseTabs());
 }
 
-
 void CRadNotepadView::OnEditToggleBookmark()
 {
     CScintillaCtrl& rCtrl = GetCtrl();
@@ -512,7 +476,6 @@ void CRadNotepadView::OnEditNextBookmark()
         rCtrl.GotoLine(nLine);
 }
 
-
 void CRadNotepadView::OnLineEndings(UINT nID)
 {
     const int mode = nID - ID_LINEENDINGS_WINDOWS;
@@ -526,7 +489,6 @@ void CRadNotepadView::OnUpdateLineEndings(CCmdUI *pCmdUI)
     pCmdUI->SetRadio(rCtrl.GetEOLMode() == mode);
 }
 
-
 void CRadNotepadView::OnEditMakeUppercase()
 {
     CString sel = GetCurrentWord(TRUE);
@@ -536,7 +498,6 @@ void CRadNotepadView::OnEditMakeUppercase()
         rCtrl.UpperCase();
     }
 }
-
 
 void CRadNotepadView::OnEditMakeLowercase()
 {
@@ -555,7 +516,6 @@ void CRadNotepadView::OnActivateView(BOOL bActivate, CView* pActivateView, CView
 
     CScintillaView::OnActivateView(bActivate, pActivateView, pDeactiveView);
 }
-
 
 afx_msg LRESULT CRadNotepadView::OnCheckUpdate(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
@@ -601,7 +561,6 @@ void CRadNotepadView::OnEditFindPreviousCurrentWord()
     if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
 }
-
 
 void CRadNotepadView::OnEditFindMatchingBrace()
 {
@@ -689,7 +648,6 @@ void CRadNotepadView::OnUpdateScheme(CCmdUI *pCmdUI)
     const std::vector<Language>& vecLanguage = theApp.m_Settings.user.vecLanguage;
     pCmdUI->SetRadio(m_pLanguage == &vecLanguage[pCmdUI->m_nID - ID_VIEW_FIRSTSCHEME]);
 }
-
 
 void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
 {

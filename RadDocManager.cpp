@@ -4,11 +4,9 @@
 #include "MainFrm.h"
 #include "SaveModifiedDlg.h"
 
-
 CRadDocManager::CRadDocManager()
 {
 }
-
 
 CRadDocManager::~CRadDocManager()
 {
@@ -146,9 +144,6 @@ BOOL CRadDocManager::SaveAllModified()
 
     if (nModified > 0)
     {
-        // TODO Need a better dialog
-        //CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
-        //return pMainWnd->DoWindowsDialog() == IDOK;
         CSaveModifiedDlg dlg;
         return dlg.DoModal() != IDCANCEL;
     }

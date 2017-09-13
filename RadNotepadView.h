@@ -6,12 +6,12 @@ class CRadNotepadDoc;
 class CRadNotepadView : public CScintillaView
 {
 protected: // create from serialization only
-	CRadNotepadView();
-	DECLARE_DYNCREATE(CRadNotepadView)
+    CRadNotepadView();
+    DECLARE_DYNCREATE(CRadNotepadView)
 
 // Attributes
 public:
-	CRadNotepadDoc* GetDocument() const;
+    CRadNotepadDoc* GetDocument() const;
 
 // Operations
 public:
@@ -21,8 +21,6 @@ public:
 
 // Overrides
 public:
-	virtual void OnDraw(CDC* pDC) override;
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs) override;
     virtual void OnInitialUpdate() override;
     virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
     virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/) override;
@@ -34,10 +32,10 @@ protected:
 
 // Implementation
 public:
-	virtual ~CRadNotepadView();
+    virtual ~CRadNotepadView();
 #ifdef _DEBUG
-	virtual void AssertValid() const;
-	virtual void Dump(CDumpContext& dc) const;
+    virtual void AssertValid() const;
+    virtual void Dump(CDumpContext& dc) const;
 #endif
 
 protected:
@@ -49,8 +47,8 @@ protected:
 protected:
     DECLARE_MESSAGE_MAP()
     afx_msg void OnFilePrintPreview();
-	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
-	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+    afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
+    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnUpdateLine(CCmdUI* pCmdUI);
     afx_msg void OnUpdateInsert(CCmdUI* pCmdUI);
     afx_msg void OnViewMargin(UINT nID);

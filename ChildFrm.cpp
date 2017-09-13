@@ -28,8 +28,8 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
     return CMDIChildWndEx::OnCreateClient(lpcs, pContext);
 #else
     BOOL bRet = m_wndSplitter.Create(this,
-        2, 1,			// TODO: adjust the number of rows, columns
-        CSize(10, 10),	// TODO: adjust the minimum pane size
+        2, 1,
+        CSize(10, 10),
         pContext);
     if (bRet)
         m_wndSplitter.SetScrollStyle(0);
@@ -39,10 +39,10 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT /*lpcs*/, CCreateContext* pConte
 
 BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
-	if( !CMDIChildWndEx::PreCreateWindow(cs) )
-		return FALSE;
+    if( !CMDIChildWndEx::PreCreateWindow(cs) )
+        return FALSE;
 
-	return TRUE;
+    return TRUE;
 }
 
 // CChildFrame diagnostics
@@ -50,12 +50,12 @@ BOOL CChildFrame::PreCreateWindow(CREATESTRUCT& cs)
 #ifdef _DEBUG
 void CChildFrame::AssertValid() const
 {
-	CMDIChildWndEx::AssertValid();
+    CMDIChildWndEx::AssertValid();
 }
 
 void CChildFrame::Dump(CDumpContext& dc) const
 {
-	CMDIChildWndEx::Dump(dc);
+    CMDIChildWndEx::Dump(dc);
 }
 #endif //_DEBUG
 
