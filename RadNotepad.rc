@@ -132,6 +132,7 @@ BEGIN
         MENUITEM "Re&vert",                     ID_FILE_REVERT
         MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM "Close All",                   ID_FILE_CLOSEALL
+        MENUITEM "Close Others",                ID_FILE_CLOSEOTHERS
         MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
         MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
         MENUITEM "Save A&ll",                   ID_FILE_SAVEALL
@@ -587,6 +588,23 @@ END
 STRINGTABLE
 BEGIN
     IDS_EDIT_MENU           "Edit"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_REVERT          "Revert the active document to the current saved state\nRevert"
+    ID_FILE_CLOSEALL        "Close all documents\nClose All"
+    ID_FILE_SAVEALL         "Save all documents\nSave All"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_CLOSEOTHERS     "Close all documents except the active document\nClose Others"
+END
+
+STRINGTABLE
+BEGIN
+    ID_FILE_READONLY        "Toggle the read only state\nRead Only"
 END
 
 #endif    // English (United States) resources

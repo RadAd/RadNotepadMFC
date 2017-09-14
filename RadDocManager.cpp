@@ -180,3 +180,22 @@ void CRadDocManager::SaveAll()
         }
     }
 }
+
+void CRadDocManager::CloseOtherDocuments(CDocument* pThisDoc)
+{
+    POSITION posTemplate = GetFirstDocTemplatePosition();
+    while (posTemplate != NULL)
+    {
+        CDocTemplate* pTemplate = (CDocTemplate*) GetNextDocTemplate(posTemplate);
+        ASSERT_KINDOF(CDocTemplate, pTemplate);
+        {
+            POSITION pos = pTemplate->GetFirstDocPosition();
+            while (pos != NULL)
+            {
+                CDocument* pDoc = pTemplate->GetNextDoc(pos);
+                if (pDoc != pThisDoc)
+                    pDoc->OnCloseDocument();
+            }
+        }
+    }
+}

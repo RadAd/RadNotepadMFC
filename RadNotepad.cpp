@@ -57,6 +57,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadApp, CWinAppEx)
     ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEALL, &CRadNotepadApp::OnUpdateFileCloseAll)
     ON_COMMAND(ID_FILE_SAVEALL, &CRadNotepadApp::OnFileSaveAll)
     ON_UPDATE_COMMAND_UI(ID_FILE_SAVEALL, &CRadNotepadApp::OnUpdateFileSaveAll)
+    ON_COMMAND(ID_FILE_CLOSEOTHERS, &CRadNotepadApp::OnFileCloseOthers)
+    ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEOTHERS, &CRadNotepadApp::OnUpdateFileCloseOthers)
 END_MESSAGE_MAP()
 
 
@@ -288,4 +290,17 @@ void CRadNotepadApp::OnUpdateFileSaveAll(CCmdUI *pCmdUI)
 {
     CRadDocManager* pDocManager = DYNAMIC_DOWNCAST(CRadDocManager, m_pDocManager);
     pCmdUI->Enable(pDocManager->GetModifiedDocumentCount() > 0);
+}
+
+void CRadNotepadApp::OnFileCloseOthers()
+{
+    CRadDocManager* pDocManager = DYNAMIC_DOWNCAST(CRadDocManager, m_pDocManager);
+    CDocument* pDoc = CRadDocManager::GetActiveDocument();
+    if (pDoc != nullptr)
+        pDocManager->CloseOtherDocuments(pDoc);
+}
+
+void CRadNotepadApp::OnUpdateFileCloseOthers(CCmdUI *pCmdUI)
+{
+    pCmdUI->Enable(CRadDocManager::GetActiveDocument() != nullptr);
 }

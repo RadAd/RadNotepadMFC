@@ -19,4 +19,5 @@ public:
     virtual BOOL SaveAllModified() override;
     void SaveAll();
     void UpdateAllViews(CView* pSender, LPARAM lHint = 0L, CObject* pHint = NULL);
+    void CloseOtherDocuments(CDocument* pThisDoc);
 };

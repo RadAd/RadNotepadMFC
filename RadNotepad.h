@@ -44,6 +44,8 @@ public:
     afx_msg void OnUpdateFileCloseAll(CCmdUI *pCmdUI);
     afx_msg void OnFileSaveAll();
     afx_msg void OnUpdateFileSaveAll(CCmdUI *pCmdUI);
+    afx_msg void OnFileCloseOthers();
+    afx_msg void OnUpdateFileCloseOthers(CCmdUI *pCmdUI);
 };
 
 extern CRadNotepadApp theApp;
