@@ -6,6 +6,7 @@
 #define IDP_OLE_INIT_FAILED             100
 #define ID_INDICATOR_LINE               101
 #define IDS_FILE_REVERT                 102
+#define IDS_TAB_MENU                    103
 #define IDR_POPUP_EDIT                  119
 #define IDS_TOOLBAR_STANDARD            124
 #define IDS_TOOLBAR_CUSTOMIZE           125
@@ -55,6 +56,7 @@
 #define IDD_SAVE_MODIFIED               317
 #define IDI_SAVE                        319
 #define IDR_OUTPUT                      320
+#define IDR_POPUP_TAB                   321
 #define IDC_LINE                        1000
 #define IDC_LIST1                       1000
 #define ID_FILE_REVERT                  32784
@@ -108,7 +110,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        321
+#define _APS_NEXT_RESOURCE_VALUE        322
 #define _APS_NEXT_COMMAND_VALUE         32869
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310

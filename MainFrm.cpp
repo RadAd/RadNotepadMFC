@@ -60,6 +60,7 @@ const UINT uiLastUserToolBarId = uiFirstUserToolBarId + iMaxUserToolbars - 1;
 BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_WM_CREATE()
     ON_WM_SETTINGCHANGE()
+    ON_WM_CONTEXTMENU()
     ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
     ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
     ON_COMMAND_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnViewPane)
@@ -638,4 +639,39 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
     }
 
     return CMDIFrameWndEx::PreTranslateMessage(pMsg);
+}
+
+CWnd* TabWndFromPoint(CMDIClientAreaWnd& wndClientArea, CPoint ptScreen)
+{
+    for (POSITION pos = wndClientArea.GetMDITabGroups().GetHeadPosition(); pos != NULL;)
+    {
+        CMFCTabCtrl* pNextTab = DYNAMIC_DOWNCAST(CMFCTabCtrl, wndClientArea.GetMDITabGroups().GetNext(pos));
+        ASSERT_VALID(pNextTab);
+        CRect rectWnd;
+        pNextTab->GetWindowRect(rectWnd);
+        if (rectWnd.PtInRect(ptScreen))
+        {
+            CPoint ptClient(ptScreen);
+            pNextTab->ScreenToClient(&ptClient);
+            int i = pNextTab->GetTabFromPoint(ptClient);
+            if (i >= 0)
+                return pNextTab->GetTabWnd(i);
+            else
+                return NULL;
+        }
+    }
+    return NULL;
+}
+
+void CMainFrame::OnContextMenu(CWnd* pWnd, CPoint point)
+{
+    if (pWnd == &m_wndClientArea)
+    {
+        CWnd* pChildWnd = TabWndFromPoint(m_wndClientArea, point);
+        if (pChildWnd != nullptr)
+        {
+            m_wndClientArea.SetActiveTab(pChildWnd->GetSafeHwnd());
+            theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_TAB, point.x, point.y, this, TRUE);
+        }
+    }
 }

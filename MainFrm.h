@@ -72,6 +72,7 @@ protected:
     afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
     afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
+    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 };
 
 

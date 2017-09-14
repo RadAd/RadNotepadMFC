@@ -252,11 +252,8 @@ void CRadNotepadApp::NotifySettingsChanged()
 
 void CRadNotepadApp::PreLoadState()
 {
-	BOOL bNameValid;
-	CString strName;
-	bNameValid = strName.LoadString(IDS_EDIT_MENU);
-	ASSERT(bNameValid);
-	GetContextMenuManager()->AddMenu(strName, IDR_POPUP_EDIT);
+    GetContextMenuManager()->AddMenu(IDS_EDIT_MENU, IDR_POPUP_EDIT);
+    GetContextMenuManager()->AddMenu(IDS_TAB_MENU, IDR_POPUP_TAB);
 }
 
 void CRadNotepadApp::LoadCustomState()
