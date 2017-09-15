@@ -399,6 +399,16 @@ void CRadNotepadDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
         UpdateAllViews(nullptr, HINT_PATH_UPDATED);
 }
 
+CFile* CRadNotepadDoc::GetFile(LPCTSTR lpszFileName, UINT nOpenFlags, CFileException* pError)
+{
+    if (nOpenFlags & CFile::shareDenyWrite)
+    {   // Allow reading locked files
+        nOpenFlags &= ~CFile::shareDenyWrite;
+        nOpenFlags |= CFile::shareDenyNone;
+    }
+    return CScintillaDoc::GetFile(lpszFileName, nOpenFlags, pError);
+}
+
 void CRadNotepadDoc::SyncModified()
 {
     CScintillaView* pView = GetView();
