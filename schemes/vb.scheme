@@ -23,8 +23,11 @@
 			shared short single static step stop string structure sub synclock then throw to true try
 			typeof unicode until variant when while with withevents writeonly xor
 		</keyword-class>
-	</keyword-classes>
-	
+    <keyword-class name="vbvalues">
+      empty nothing null true false
+    </keyword-class>
+  </keyword-classes>
+
 	<base-language name="vbbase">
 		<use-styles>
 			<style name="Default" key="32" />
@@ -37,9 +40,10 @@
 			<style name="Operator" key="6" class="operator" />
 			<style name="Identifier" key="7" />
 			<style name="Date" key="8" class="number" />
+      <style name="Values" key="12" class="number"/>
 		</use-styles>
 	</base-language>
-	
+
 	<language base="vbbase" name="vb" title="Visual Basic" >
 		<comments line="'" blockStart="'" blockLine="'" blockEnd="" />
     <property name="fold" value="1" />
@@ -51,7 +55,7 @@
 			<keyword key="0" name="Keywords" class="vbnet"/>
 		</use-keywords>
 	</language>
-	
+
 	<language base="vbbase" name="vbscript" title="VBScript" >
 		<comments line="'" blockStart="'" blockLine="'" blockEnd="" />
     <property name="fold" value="1" />
@@ -61,6 +65,7 @@
 		<lexer name="vbscript" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="vb"/>
-		</use-keywords>
+      <keyword key="3" name="Values" class="vbvalues"/>
+    </use-keywords>
 	</language>
 </Scheme>
