@@ -4,9 +4,10 @@
     <caret style="1" width="1" />
     <tabs use="false" width="4" />
     <indent-guide type="3" />
-    <whitespace show="false" type="1" size="1" draw="0" />
+    <whitespace show="false" type="1" size="1" draw="0" eol="false"/>
     <braces highlight="true" />
     <indent auto="true" />
+    <wrap enabled="false" />
   </editor>
   <margins>
     <margin key="0" name="Line Numbers" show="false" width-text="99999" />
