@@ -162,6 +162,7 @@ BOOL CRadNotepadDoc::OnNewDocument()
 
 static void AddText(CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesRead, Encoding eEncoding)
 {
+    // TODO Check/Handle when nBytesRead is not an exact multiple
     if (nBytesRead > 0)
     {
         switch (eEncoding)
@@ -169,6 +170,7 @@ static void AddText(CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesRead, Encodi
         case BOM_ANSI:
         case BOM_UTF8:
             rCtrl.AddText(nBytesRead / sizeof(char), reinterpret_cast<char*>(Buffer));
+            ASSERT(nBytesRead % sizeof(char) == 0);
             break;
 
         case BOM_UTF16_BE:
@@ -176,6 +178,7 @@ static void AddText(CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesRead, Encodi
             // fallthrough
         case BOM_UTF16_LE:
             rCtrl.AddText(nBytesRead / sizeof(wchar_t), reinterpret_cast<wchar_t*>(Buffer));
+            ASSERT(nBytesRead % sizeof(wchar_t) == 0);
             break;
 
         default:
@@ -228,17 +231,25 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
 {
     CScintillaView* pView = GetView();
     CScintillaCtrl& rCtrl = pView->GetCtrl();
+    CFrameWnd* pMainWnd = DYNAMIC_DOWNCAST(CFrameWnd, AfxGetMainWnd());
+    CMFCStatusBar* pMsgWnd = DYNAMIC_DOWNCAST(CMFCStatusBar, pMainWnd->GetMessageBar());
+    const int nIndex = 0;
 
-    const int BUFSIZE = 4096;
+    const int BUFSIZE = 4 * 1024;
 
     if (ar.IsLoading())
     {
+        pMsgWnd->EnablePaneProgressBar(nIndex, 100, TRUE);
+
         //Tell the control not to maintain any undo info while we stream the data
         rCtrl.Cancel();
         rCtrl.SetUndoCollection(FALSE);
 
         //Read the data in from the file in blocks
         CFile* pFile = ar.GetFile();
+        ULONGLONG nLength = pFile->GetLength();
+        ULONGLONG nBytesReadTotal = 0;
+
         BYTE Buffer[BUFSIZE];
         int nBytesRead = 0;
         bool bFirst = true;
@@ -255,6 +266,8 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
             }
             else
                 AddText(rCtrl, Buffer, nBytesRead, m_eEncoding);
+            nBytesReadTotal += nBytesRead;
+            pMsgWnd->SetPaneProgress(nIndex, static_cast<long>(nBytesReadTotal * 100 / nLength));
         } while (nBytesRead);
 
         CheckReadOnly();
@@ -265,11 +278,16 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
         rCtrl.EmptyUndoBuffer();
         rCtrl.SetSavePoint();
         rCtrl.GotoPos(0);
+
+        pMsgWnd->EnablePaneProgressBar(nIndex, -1);
     }
     else
     {
+        pMsgWnd->EnablePaneProgressBar(nIndex, 100, TRUE);
+
         //Get the length of the document
         int nDocLength = rCtrl.GetLength();
+        ULONGLONG nBytesWriteTotal = 0;
 
         //Write the data in blocks to disk
         CFile* pFile = ar.GetFile();
@@ -290,19 +308,12 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
 
             //Write it to disk
             WriteText(pFile, Buffer, nGrabSize, m_eEncoding);
+            nBytesWriteTotal += nGrabSize;
+            pMsgWnd->SetPaneProgress(nIndex, static_cast<long>(nBytesWriteTotal * 100 / nDocLength));
         }
+
+        pMsgWnd->EnablePaneProgressBar(nIndex, -1);
     }
-}
-
-void CRadNotepadDoc::ReleaseFile(CFile* pFile, BOOL bAbort)
-{
-    CString strFile = pFile->GetFilePath();
-
-    CScintillaDoc::ReleaseFile(pFile, bAbort);
-
-    CFile rFile;
-    if (rFile.Open(strFile, CFile::modeRead | CFile::shareDenyNone))
-        GetFileTime(rFile, NULL, NULL, &m_ftWrite);
 }
 
 #ifdef SHARED_HANDLERS
@@ -395,6 +406,11 @@ void CRadNotepadDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
 {
     bool bPathNameFirstSet = GetPathName().IsEmpty();
     CScintillaDoc::SetPathName(lpszPathName, bAddToMRU);
+
+    CFile rFile;
+    if (rFile.Open(GetPathName(), CFile::modeRead | CFile::shareDenyNone))
+        GetFileTime(rFile, NULL, NULL, &m_ftWrite);
+
     if (bPathNameFirstSet)
         UpdateAllViews(nullptr, HINT_PATH_UPDATED);
 }

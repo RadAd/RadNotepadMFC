@@ -1,11 +1,9 @@
 
 #include "stdafx.h"
-#include "mainfrm.h"
 #include "FileView.h"
 #include "Resource.h"
 #include "RadNotepad.h"
 #include "RadDocManager.h"
-#include "MainFrm.h"
 #include <set>
 
 // TODO
@@ -219,13 +217,13 @@ static LRESULT CALLBACK ContextMenuHookWndProc(HWND hWnd, UINT msg, WPARAM wp, L
                     g_pIContext2->GetCommandString(uItem - MIN_SHELL_ID, GCS_HELPTEXT, NULL, szBuf, MAX_PATH - 1);
 
                 // set the status bar text
-                CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+                CFrameWnd* pMainWnd = DYNAMIC_DOWNCAST(CFrameWnd, AfxGetMainWnd());
                 pMainWnd->SetMessageText(szBufW);
                 return 0;
             }
             else
             {
-                CMainFrame* pMainWnd = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+                CFrameWnd* pMainWnd = DYNAMIC_DOWNCAST(CFrameWnd, AfxGetMainWnd());
                 pMainWnd->SetMessageText(_T(""));
                 return 0;
             }

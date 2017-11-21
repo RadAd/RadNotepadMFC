@@ -21,7 +21,6 @@ public:
 public:
 	virtual BOOL OnNewDocument() override;
 	virtual void Serialize(CArchive& ar) override;
-    virtual void ReleaseFile(CFile* pFile, BOOL bAbort) override;
     virtual void SetTitle(LPCTSTR lpszTitle) override;
     virtual void SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU = TRUE) override;
     virtual CFile* GetFile(LPCTSTR lpszFileName, UINT nOpenFlags, CFileException* pError) override;
