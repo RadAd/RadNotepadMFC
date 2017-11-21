@@ -271,30 +271,18 @@
     <ResourceCompile Include="RadNotepad.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="res\classview.bmp" />
     <Image Include="res\classview_hc.bmp" />
-    <Image Include="res\class_view.ico" />
     <Image Include="res\class_view_hc.ico" />
-    <Image Include="res\explorer.bmp" />
     <Image Include="res\explorer_hc.bmp" />
-    <Image Include="res\fileview.bmp" />
-    <Image Include="res\fileview_hc.bmp" />
-    <Image Include="res\file_view.ico" />
     <Image Include="res\file_view_hc.ico" />
     <Image Include="res\save.ico" />
     <Image Include="res\RadNotepad.ico" />
     <Image Include="res\RadNotepadDoc.ico" />
-    <Image Include="res\menuimages.bmp" />
     <Image Include="res\menuimages_hc.bmp" />
-    <Image Include="res\output_wnd.ico" />
     <Image Include="res\output_wnd_hc.ico" />
-    <Image Include="res\properties.bmp" />
     <Image Include="res\properties_hc.bmp" />
-    <Image Include="res\properties_wnd.ico" />
     <Image Include="res\properties_wnd_hc.ico" />
-    <Image Include="res\sort.bmp" />
     <Image Include="res\sort_hc.bmp" />
-    <Image Include="res\Toolbar.bmp" />
     <Image Include="res\Toolbar256.bmp" />
     <Image Include="UserImages.bmp" />
   </ItemGroup>
