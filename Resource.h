@@ -57,6 +57,8 @@
 #define IDI_SAVE                        319
 #define IDR_OUTPUT                      320
 #define IDR_POPUP_TAB                   321
+#define IDB_BITMAP1                     322
+#define IDB_USER_IMAGES                 322
 #define IDC_LINE                        1000
 #define IDC_LIST1                       1000
 #define ID_FILE_REVERT                  32784
@@ -110,7 +112,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        322
+#define _APS_NEXT_RESOURCE_VALUE        323
 #define _APS_NEXT_COMMAND_VALUE         32869
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310

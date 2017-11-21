@@ -201,9 +201,34 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     if (CMFCToolBar::GetUserImages() == NULL)
     {
         // load user-defined toolbar images
-        if (m_UserImages.Load(_T(".\\UserImages.bmp"))) // TODO Better define where this is located
+        TCHAR szPath[_MAX_PATH];
+        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, szPath)))
         {
-            CMFCToolBar::SetUserImages(&m_UserImages);
+            PathAppend(szPath, _T("RadSoft\\RadNotepad"));
+            PathAppend(szPath, _T("UserImages.bmp"));
+            if (!PathFileExists(szPath))
+            {
+                HMODULE hInstance = NULL;
+                HRSRC hResInfo = ::FindResource(hInstance, MAKEINTRESOURCE(IDB_USER_IMAGES), RT_BITMAP);
+                HGLOBAL hRes = ::LoadResource(hInstance, hResInfo);
+                LPVOID memRes = ::LockResource(hRes);
+                DWORD sizeRes = ::SizeofResource(hInstance, hResInfo);
+
+                BITMAPFILEHEADER bfh = {};
+                bfh.bfType = 0x4D42; // BM
+                bfh.bfSize = sizeof(bfh) + sizeRes;
+                bfh.bfOffBits = sizeof(bfh) + sizeof(BITMAPINFOHEADER);
+
+                HANDLE hFile = ::CreateFile(szPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+                DWORD dwWritten = 0;
+                ::WriteFile(hFile, &bfh, sizeof(bfh), &dwWritten, NULL);
+                ::WriteFile(hFile, memRes, sizeRes, &dwWritten, NULL);
+                ::CloseHandle(hFile);
+            }
+            if (PathFileExists(szPath) && m_UserImages.Load(szPath))
+            {
+                CMFCToolBar::SetUserImages(&m_UserImages);
+            }
         }
     }
 

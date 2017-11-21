@@ -271,6 +271,7 @@
     <ResourceCompile Include="RadNotepad.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\bitmap1.bmp" />
     <Image Include="res\classview_hc.bmp" />
     <Image Include="res\class_view_hc.ico" />
     <Image Include="res\explorer_hc.bmp" />
@@ -284,7 +285,7 @@
     <Image Include="res\properties_wnd_hc.ico" />
     <Image Include="res\sort_hc.bmp" />
     <Image Include="res\Toolbar256.bmp" />
-    <Image Include="UserImages.bmp" />
+    <Image Include="res\UserImages.bmp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\RadNotepad.rc2" />
