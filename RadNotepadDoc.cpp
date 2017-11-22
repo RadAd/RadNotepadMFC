@@ -10,6 +10,7 @@
 #endif
 
 #include "RadNotepadDoc.h"
+#include "RadWaitCursor.h"
 
 #include <propkey.h>
 
@@ -229,17 +230,17 @@ static void WriteText(CFile* pFile, const char* Buffer, int nBytes, Encoding eEn
 
 void CRadNotepadDoc::Serialize(CArchive& ar)
 {
-    CScintillaView* pView = GetView();
-    CScintillaCtrl& rCtrl = pView->GetCtrl();
-    CFrameWnd* pMainWnd = DYNAMIC_DOWNCAST(CFrameWnd, AfxGetMainWnd());
-    CMFCStatusBar* pMsgWnd = DYNAMIC_DOWNCAST(CMFCStatusBar, pMainWnd->GetMessageBar());
+    CScintillaCtrl& rCtrl = GetView()->GetCtrl();
+    CRadWaitCursor wc;
+    CMFCStatusBar* pMsgWnd = wc.GetStatusBar();
     const int nIndex = 0;
+    pMsgWnd->EnablePaneProgressBar(nIndex, 100, TRUE);
 
     const int BUFSIZE = 4 * 1024;
 
     if (ar.IsLoading())
     {
-        pMsgWnd->EnablePaneProgressBar(nIndex, 100, TRUE);
+        rCtrl.SetRedraw(FALSE);
 
         //Tell the control not to maintain any undo info while we stream the data
         rCtrl.Cancel();
@@ -268,6 +269,13 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
                 AddText(rCtrl, Buffer, nBytesRead, m_eEncoding);
             nBytesReadTotal += nBytesRead;
             pMsgWnd->SetPaneProgress(nIndex, static_cast<long>(nBytesReadTotal * 100 / nLength));
+
+            MSG msg;
+            while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+            {
+                if (!::AfxPumpMessage())
+                    break;
+            }
         } while (nBytesRead);
 
         CheckReadOnly();
@@ -279,12 +287,10 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
         rCtrl.SetSavePoint();
         rCtrl.GotoPos(0);
 
-        pMsgWnd->EnablePaneProgressBar(nIndex, -1);
+        rCtrl.SetRedraw(TRUE);
     }
     else
     {
-        pMsgWnd->EnablePaneProgressBar(nIndex, 100, TRUE);
-
         //Get the length of the document
         int nDocLength = rCtrl.GetLength();
         ULONGLONG nBytesWriteTotal = 0;
@@ -310,10 +316,16 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
             WriteText(pFile, Buffer, nGrabSize, m_eEncoding);
             nBytesWriteTotal += nGrabSize;
             pMsgWnd->SetPaneProgress(nIndex, static_cast<long>(nBytesWriteTotal * 100 / nDocLength));
-        }
 
-        pMsgWnd->EnablePaneProgressBar(nIndex, -1);
+            MSG msg;
+            while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
+            {
+                if (!::AfxPumpMessage())
+                    break;
+            }
+        }
     }
+    pMsgWnd->EnablePaneProgressBar(nIndex, -1);
 }
 
 #ifdef SHARED_HANDLERS

@@ -227,6 +227,7 @@
     <ClInclude Include="MainFrm.h" />
     <ClInclude Include="OutputWnd.h" />
     <ClInclude Include="PropertiesWnd.h" />
+    <ClInclude Include="RadWaitCursor.h" />
     <ClInclude Include="RadWindowsManagerDialog.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SaveModifiedDlg.h" />
@@ -253,6 +254,7 @@
     <ClCompile Include="MainFrm.cpp" />
     <ClCompile Include="OutputWnd.cpp" />
     <ClCompile Include="PropertiesWnd.cpp" />
+    <ClCompile Include="RadWaitCursor.cpp" />
     <ClCompile Include="RadWindowsManagerDialog.cpp" />
     <ClCompile Include="SaveModifiedDlg.cpp" />
     <ClCompile Include="scintillawrappers\ScintillaCtrl.cpp" />

@@ -6,6 +6,7 @@
 #include "RadNotepadView.h"
 #include "RadWindowsManagerDialog.h"
 #include "RadDocManager.h"
+#include "RadWaitCursor.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -73,6 +74,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_COMMAND_RANGE(ID_TOOLS_FIRSTTOOL, ID_TOOLS_LASTTOOL, &CMainFrame::OnToolsTool)
     ON_UPDATE_COMMAND_UI(ID_TOOLS_FIRSTTOOL, &CMainFrame::OnUpdateToolsTool)
     ON_UPDATE_COMMAND_UI(ID_DOCKINGWINDOWS, &CMainFrame::OnUpdateDockingWindows)
+    ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -220,10 +222,13 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
                 bfh.bfOffBits = sizeof(bfh) + sizeof(BITMAPINFOHEADER);
 
                 HANDLE hFile = ::CreateFile(szPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-                DWORD dwWritten = 0;
-                ::WriteFile(hFile, &bfh, sizeof(bfh), &dwWritten, NULL);
-                ::WriteFile(hFile, memRes, sizeRes, &dwWritten, NULL);
-                ::CloseHandle(hFile);
+                if (hFile != INVALID_HANDLE_VALUE)
+                {
+                    DWORD dwWritten = 0;
+                    ::WriteFile(hFile, &bfh, sizeof(bfh), &dwWritten, NULL);
+                    ::WriteFile(hFile, memRes, sizeRes, &dwWritten, NULL);
+                    ::CloseHandle(hFile);
+                }
             }
             if (PathFileExists(szPath) && m_UserImages.Load(szPath))
             {
@@ -699,4 +704,13 @@ void CMainFrame::OnContextMenu(CWnd* pWnd, CPoint point)
             theApp.GetContextMenuManager()->ShowPopupMenu(IDR_POPUP_TAB, point.x, point.y, this, TRUE);
         }
     }
+}
+
+
+BOOL CMainFrame::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+    if (CRadWaitCursor::s_Count > 0)
+        return SetCursor(LoadCursor(NULL, IDC_WAIT)), TRUE;
+    else
+        return CMDIFrameWndEx::OnSetCursor(pWnd, nHitTest, message);
 }
