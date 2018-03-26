@@ -87,43 +87,95 @@ CRadNotepadApp::CRadNotepadApp()
 
 CRadNotepadApp theApp;
 
+class CRadCommandLineInfo : public CCommandLineInfo
+{
+public:
+    // Sets default values
+    CRadCommandLineInfo()
+        : m_bNewWindow(FALSE)
+    {
+    }
+
+    // plain char* version on UNICODE for source-code backwards compatibility
+    virtual void ParseParam(const TCHAR* pszParam, BOOL bFlag, BOOL bLast) override
+    {
+        if (bFlag)
+        {
+            const CStringA strParam(pszParam);
+            ParseParamFlag(strParam.GetString());
+        }
+        else
+            ParseParamNotFlag(pszParam);
+
+        ParseLast(bLast);
+    }
+#ifdef _UNICODE
+    virtual void ParseParam(const char* pszParam, BOOL bFlag, BOOL bLast) override
+    {
+        if (bFlag)
+            ParseParamFlag(pszParam);
+        else
+            ParseParamNotFlag(pszParam);
+
+        ParseLast(bLast);
+    }
+
+    BOOL m_bNewWindow;
+
+#endif
+protected:
+    void ParseParamFlag(const char* pszParam)
+    {
+        CCommandLineInfo::ParseParamFlag(pszParam);
+
+        if (lstrcmpA(pszParam, "NewWindow") == 0)
+            m_bNewWindow = TRUE;
+    }
+};
 
 // CRadNotepadApp initialization
 
 BOOL CRadNotepadApp::InitInstance()
 {
+    // Parse command line for standard shell commands, DDE, file open
+    CRadCommandLineInfo cmdInfo;
+    if (!m_Settings.bEmptyFileOnStartup)
+        cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
+    ParseCommandLine(cmdInfo);
+
     HWND hOther = NULL;
     EnumWindows(FindRadNotepadProc, (LPARAM) &hOther);
 
-    if (hOther != NULL)
+    if (!cmdInfo.m_bNewWindow && hOther != NULL)
     {
-        CCommandLineInfo cli;
-        ParseCommandLine(cli);
-
-        switch (cli.m_nShellCommand)
+#if 0
+        CCommandLineInfo cmdInfo;
+        ParseCommandLine(cmdInfo);
+#endif
+        switch (cmdInfo.m_nShellCommand)
         {
         case CCommandLineInfo::FileOpen:
             {
-                PathMakeAbsolute(cli.m_strFileName);
+                PathMakeAbsolute(cmdInfo.m_strFileName);
 
-                HGLOBAL hMem = GlobalAlloc(GHND | GMEM_SHARE, sizeof(DROPFILES) + (cli.m_strFileName.GetLength() + 2) * sizeof(TCHAR));
+                HGLOBAL hMem = GlobalAlloc(GHND | GMEM_SHARE, sizeof(DROPFILES) + (cmdInfo.m_strFileName.GetLength() + 2) * sizeof(TCHAR));
                 DROPFILES* pDropFiles = (DROPFILES*) GlobalLock(hMem);
                 pDropFiles->pFiles = (DWORD) ((LPBYTE) (pDropFiles + 1) - (LPBYTE) pDropFiles);
                 pDropFiles->fWide = TRUE;
                 LPTSTR pDst = (LPTSTR) ((LPBYTE) pDropFiles + pDropFiles->pFiles);
-                int Size = (cli.m_strFileName.GetLength() + 1) * sizeof(TCHAR);
-                memcpy(pDst, cli.m_strFileName.GetBuffer(), Size);
+                int Size = (cmdInfo.m_strFileName.GetLength() + 1) * sizeof(TCHAR);
+                memcpy(pDst, cmdInfo.m_strFileName.GetBuffer(), Size);
                 pDst = (LPTSTR) ((LPBYTE) pDropFiles + pDropFiles->pFiles + Size);
                 *pDst = _T('\0');
                 GlobalUnlock(hMem);
 
                 PostMessage(hOther, WM_DROPFILES, (WPARAM) hMem, 0);
+
+                SetForegroundWindow(hOther);
+                return FALSE;
             }
             break;
         }
-
-        SetForegroundWindow(hOther);
-        return FALSE;
     }
 
     // InitCommonControlsEx() is required on Windows XP if an application
@@ -204,11 +256,13 @@ BOOL CRadNotepadApp::InitInstance()
 	}
 	m_pMainWnd = pMainFrame;
 
-	// Parse command line for standard shell commands, DDE, file open
-	CCommandLineInfo cmdInfo;
+#if 0
+    // Parse command line for standard shell commands, DDE, file open
+    CCommandLineInfo cmdInfo;
     if (!m_Settings.bEmptyFileOnStartup)
         cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
-	ParseCommandLine(cmdInfo);
+    ParseCommandLine(cmdInfo);
+#endif
 
 	// Dispatch commands specified on the command line.  Will return FALSE if
 	// app was launched with /RegServer, /Register, /Unregserver or /Unregister.
