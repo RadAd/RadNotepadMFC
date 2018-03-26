@@ -378,15 +378,15 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "040904B0"
+        BLOCK "040904b0"
         BEGIN
-            VALUE "CompanyName", "TODO: <Company name>"
+            VALUE "CompanyName", "RadSoft"
             VALUE "FileDescription", "RadNotepad"
             VALUE "FileVersion", "1.0.0.1"
             VALUE "InternalName", "RadNotepad.exe"
-            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
+            VALUE "LegalCopyright", "Copyright © 2018"
             VALUE "OriginalFilename", "RadNotepad.exe"
-            VALUE "ProductName", "TODO: <Product name>"
+            VALUE "ProductName", "Rad Notepad"
             VALUE "ProductVersion", "1.0.0.1"
         END
     END
