@@ -32,8 +32,11 @@ static void PathMakeAbsolute(CString& strFileName)
 
 static BOOL CALLBACK FindRadNotepadProc(_In_ HWND hWnd, _In_ LPARAM lParam)
 {
+    TCHAR Class[1024];
     DWORD_PTR lRet = 0;
-    ::SendMessageTimeout(hWnd, WM_RADNOTEPAD, 0, 0, SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT | SMTO_BLOCK, 1000, &lRet);
+    ::GetClassName(hWnd, Class, ARRAYSIZE(Class));
+    if (wcsncmp(Class, _T("Afx:"), 4) == 0)
+        ::SendMessageTimeout(hWnd, WM_RADNOTEPAD, 0, 0, SMTO_ABORTIFHUNG | SMTO_ERRORONEXIT | SMTO_BLOCK, 100, &lRet);
     if (lRet == MSG_RADNOTEPAD)
     {
         HWND* phOther = (HWND*) lParam;
@@ -143,38 +146,34 @@ BOOL CRadNotepadApp::InitInstance()
         cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
     ParseCommandLine(cmdInfo);
 
-    HWND hOther = NULL;
-    EnumWindows(FindRadNotepadProc, (LPARAM) &hOther);
-
-    if (!cmdInfo.m_bNewWindow && hOther != NULL)
+    if (!cmdInfo.m_bNewWindow && cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen)
     {
-#if 0
-        CCommandLineInfo cmdInfo;
-        ParseCommandLine(cmdInfo);
-#endif
-        switch (cmdInfo.m_nShellCommand)
+        HWND hOther = NULL;
+        EnumWindows(FindRadNotepadProc, (LPARAM) &hOther);
+
+        if (hOther != NULL)
         {
-        case CCommandLineInfo::FileOpen:
-            {
-                PathMakeAbsolute(cmdInfo.m_strFileName);
+#if 0
+            CCommandLineInfo cmdInfo;
+            ParseCommandLine(cmdInfo);
+#endif
+            PathMakeAbsolute(cmdInfo.m_strFileName);
 
-                HGLOBAL hMem = GlobalAlloc(GHND | GMEM_SHARE, sizeof(DROPFILES) + (cmdInfo.m_strFileName.GetLength() + 2) * sizeof(TCHAR));
-                DROPFILES* pDropFiles = (DROPFILES*) GlobalLock(hMem);
-                pDropFiles->pFiles = (DWORD) ((LPBYTE) (pDropFiles + 1) - (LPBYTE) pDropFiles);
-                pDropFiles->fWide = TRUE;
-                LPTSTR pDst = (LPTSTR) ((LPBYTE) pDropFiles + pDropFiles->pFiles);
-                int Size = (cmdInfo.m_strFileName.GetLength() + 1) * sizeof(TCHAR);
-                memcpy(pDst, cmdInfo.m_strFileName.GetBuffer(), Size);
-                pDst = (LPTSTR) ((LPBYTE) pDropFiles + pDropFiles->pFiles + Size);
-                *pDst = _T('\0');
-                GlobalUnlock(hMem);
+            HGLOBAL hMem = GlobalAlloc(GHND | GMEM_SHARE, sizeof(DROPFILES) + (cmdInfo.m_strFileName.GetLength() + 2) * sizeof(TCHAR));
+            DROPFILES* pDropFiles = (DROPFILES*) GlobalLock(hMem);
+            pDropFiles->pFiles = (DWORD) ((LPBYTE) (pDropFiles + 1) - (LPBYTE) pDropFiles);
+            pDropFiles->fWide = TRUE;
+            LPTSTR pDst = (LPTSTR) ((LPBYTE) pDropFiles + pDropFiles->pFiles);
+            int Size = (cmdInfo.m_strFileName.GetLength() + 1) * sizeof(TCHAR);
+            memcpy(pDst, cmdInfo.m_strFileName.GetBuffer(), Size);
+            pDst = (LPTSTR) ((LPBYTE) pDropFiles + pDropFiles->pFiles + Size);
+            *pDst = _T('\0');
+            GlobalUnlock(hMem);
 
-                PostMessage(hOther, WM_DROPFILES, (WPARAM) hMem, 0);
+            PostMessage(hOther, WM_DROPFILES, (WPARAM) hMem, 0);
 
-                SetForegroundWindow(hOther);
-                return FALSE;
-            }
-            break;
+            SetForegroundWindow(hOther);
+            return FALSE;
         }
     }
 
