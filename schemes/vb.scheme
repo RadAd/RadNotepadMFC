@@ -3,19 +3,35 @@
 	<keyword-classes>
 		<keyword-class name="vb">
 			and begin case call continue do each else elseif end erase
-			error event exit false for function get gosub goto if implement in load loop lset
-			me mid new next not nothing on or property raiseevent rem resume return rset
+			error empty event exit false for function get gosub goto if implement in load loop lset
+			me new next not nothing on or property raiseevent rem resume return rset
 			select set stop sub then to true unload until wend while with withevents
 			attribute alias as boolean byref byte byval const compare currency date declare dim double
 			enum explicit friend global integer let lib long module object option optional
 			preserve private property public redim single static string type variant
 		</keyword-class>
+		<keyword-class name="vbfunc">
+      date dateadd datediff datepart dateserial datevalue day hour isdate minute
+      month monthname now second time timer timeserial timevalue weekday weekdayname year
+      asc cbool cbyte ccur cdate cdbl chr cint clng csng cstr
+      formatcurrency formatdatetime formatnumber formatpercent
+      abs atn cos exp hex int fix log oct rnd sgn sin sqr tan
+      array filter isarray join lbound split ubound
+      instr instrrev lcase left len lltrim rtrim trim mid replace right space strcomp string strreverse ubound
+      createobject eval isempty isnull isnumeric isobject rgb round typename vartype msgbox
+      wscript.application wscript.buildversion wscript.fullname wscript.interactive wscript.scriptfullname wscript.scriptname wscript.name wscript.tmieout wscript.version
+      wscript.createobject wscript.connectobject wscript.disconnectobject wscript.echo wscript.getobject wscript.quit wscript.sleep
+      wscript.arguments wscript.arguments.count
+      wscript.stdin.read wscript.stdin.readall wscript.stdin.readline wscript.stdin.atendofstream
+      wscript.stdout.write wscript.stdout.writeline wscript.stdout.atendofstream
+      wscript.stderr.write wscript.stdout.writeline wscript.stderr.atendofstream
+    </keyword-class>
 		<keyword-class name="vbnet">
 			addhandler addressof andalso alias and ansi as assembly auto boolean
 			byref byte byval call case catch cbool cbyte cchar cdate cdec cdbl char cint class
 			clng cobj const cshort csng cstr ctype date decimal declare default delegate dim do double
 			each else elseif end enum erase error event exit false finally for friend function get
-			gettype goto  handles if implements imports in inherits integer interface is let lib like long
+			gettype goto handles if implements imports in inherits integer interface is let lib like long
 			loop me mod module mustinherit mustoverride mybase myclass namespace new
 			next not nothing notinheritable notoverridable object on option optional or
 			orelse overloads overridable overrides paramarray preserve private property protected public
@@ -23,10 +39,10 @@
 			shared short single static step stop string structure sub synclock then throw to true try
 			typeof unicode until variant when while with withevents writeonly xor
 		</keyword-class>
-    <keyword-class name="vbvalues">
-      empty nothing null true false
-    </keyword-class>
-  </keyword-classes>
+		<keyword-class name="vbvalues">
+			empty nothing null true false
+		</keyword-class>
+	</keyword-classes>
 
 	<base-language name="vbbase">
 		<use-styles>
@@ -40,16 +56,16 @@
 			<style name="Operator" key="6" class="operator" />
 			<style name="Identifier" key="7" />
 			<style name="Date" key="8" class="number" />
-      <style name="Values" key="12" class="number"/>
+			<style name="Values" key="12" class="keyword"/>
 		</use-styles>
 	</base-language>
 
 	<language base="vbbase" name="vb" title="Visual Basic" >
 		<comments line="'" blockStart="'" blockLine="'" blockEnd="" />
-    <property name="fold" value="1" />
-    <property name="fold.comment" value="1" />
-    <property name="fold.compact" value="1" />
-    <property name="fold.preprocessor" value="1" />
+		<property name="fold" value="1" />
+		<property name="fold.comment" value="1" />
+		<property name="fold.compact" value="1" />
+		<property name="fold.preprocessor" value="1" />
 		<lexer name="vb" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="vbnet"/>
@@ -58,14 +74,17 @@
 
 	<language base="vbbase" name="vbscript" title="VBScript" >
 		<comments line="'" blockStart="'" blockLine="'" blockEnd="" />
-    <property name="fold" value="1" />
-    <property name="fold.comment" value="1" />
-    <property name="fold.compact" value="1" />
-    <property name="fold.preprocessor" value="1" />
+		<property name="fold" value="1" />
+		<property name="fold.comment" value="1" />
+		<property name="fold.compact" value="1" />
+		<property name="fold.preprocessor" value="1" />
 		<lexer name="vbscript" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="vb"/>
-      <keyword key="3" name="Values" class="vbvalues"/>
-    </use-keywords>
+			<keyword key="1" name="Function" class="vbfunc"/>
+		</use-keywords>
+		<use-styles>
+			<style name="Functions" key="10" class="function"/>
+		</use-styles>
 	</language>
 </Scheme>
