@@ -176,7 +176,7 @@ void CRadNotepadView::OnUpdateLine(CCmdUI* pCmdUI)
     CScintillaCtrl& rCtrl = GetCtrl();
     const Sci_Position nPos = rCtrl.GetCurrentPos();
     const int nLine = rCtrl.LineFromPosition(nPos);
-    const int nLineStart = rCtrl.PositionFromLine(nLine);
+    const Sci_Position nLineStart = rCtrl.PositionFromLine(nLine);
     const int nColumn = rCtrl.GetColumn(nPos);
     const Sci_Position nAnchor = rCtrl.GetAnchor();
 

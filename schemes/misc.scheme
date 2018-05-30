@@ -2,14 +2,14 @@
 <Scheme>
 	<keyword-classes>
 		<keyword-class name="dosbatch">
-			rem set if exist errorlevel for in do
-			break call chcp cd chdir choice cls country ctty date del erase dir echo
-			equ neq geq leq not
-			exit goto loadfix loadhigh mkdir md move path pause prompt rename ren
-			rmdir rd shift start time type ver verify vol
-			setlocal endlocal
-			com com1 con lpt lpt1 nul prn
-		</keyword-class>
+      rem set if else cmdextversion defined exist errorlevel for in do
+      break call chcp cd chdir choice cls country ctty date del erase dir echo
+      equ neq geq leq not
+      exit goto loadfix loadhigh mkdir md move path pause prompt rename ren
+      rmdir rd shift start time type ver verify vol
+      setlocal endlocal
+      com com1 con lpt lpt1 nul prn
+    </keyword-class>
 	</keyword-classes>
 	<language name="properties" title="Properties">
 		<lexer name="props"/>

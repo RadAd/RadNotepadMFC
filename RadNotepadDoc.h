@@ -20,6 +20,7 @@ public:
 // Overrides
 public:
 	virtual BOOL OnNewDocument() override;
+    virtual BOOL OnOpenDocument(LPCTSTR lpszPathName) override;
 	virtual void Serialize(CArchive& ar) override;
     virtual void SetTitle(LPCTSTR lpszTitle) override;
     virtual void SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU = TRUE) override;

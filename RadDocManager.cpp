@@ -120,7 +120,7 @@ BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
         nFilterCount /= 2;
     }
 
-    CFileDialog dlgFile(bOpenFileDialog, strDefaultExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, strFilter);
+    CFileDialog dlgFile(bOpenFileDialog, strDefaultExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_CREATEPROMPT, strFilter);
 
     CString title;
     ENSURE(title.LoadString(nIDSTitle));

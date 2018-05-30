@@ -159,6 +159,14 @@ BOOL CRadNotepadDoc::OnNewDocument()
 	return TRUE;
 }
 
+BOOL CRadNotepadDoc::OnOpenDocument(LPCTSTR lpszPathName)
+{
+    if (PathFileExists(lpszPathName))
+        return CScintillaDoc::OnNewDocument();
+    else
+        return TRUE; // Allow opening non-existent files
+}
+
 // CRadNotepadDoc serialization
 
 static void AddText(CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesRead, Encoding eEncoding)
@@ -417,7 +425,7 @@ void CRadNotepadDoc::SetTitle(LPCTSTR lpszTitle)
 void CRadNotepadDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
 {
     bool bPathNameFirstSet = GetPathName().IsEmpty();
-    CScintillaDoc::SetPathName(lpszPathName, bAddToMRU);
+    CScintillaDoc::SetPathName(lpszPathName, bAddToMRU && PathFileExists(lpszPathName));
 
     CFile rFile;
     if (rFile.Open(GetPathName(), CFile::modeRead | CFile::shareDenyNone))
