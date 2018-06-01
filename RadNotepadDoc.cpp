@@ -162,7 +162,7 @@ BOOL CRadNotepadDoc::OnNewDocument()
 BOOL CRadNotepadDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
     if (PathFileExists(lpszPathName))
-        return CScintillaDoc::OnNewDocument();
+        return CScintillaDoc::OnOpenDocument(lpszPathName);
     else
         return TRUE; // Allow opening non-existent files
 }
