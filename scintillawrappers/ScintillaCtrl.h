@@ -3,7 +3,7 @@ Module : ScintillaCtrl.h
 Purpose: Defines the interface for an MFC wrapper class for the Scintilla edit control (www.scintilla.org)
 Created: PJN / 19-03-2004
 
-Copyright (c) 2004 - 2017 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2018 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -30,49 +30,14 @@ to maintain a single distribution point for the source code.
 #include <Scintilla.h>
 #endif //#ifndef SCINTILLA_H
 
+#ifndef __ATTR_SAL
+#pragma message("To avoid this message, please put sal.h in your pre compiled header (normally stdafx.h)")
+#include <sal.h>
+#endif //#ifndef __ATTR_SAL
+
 #ifndef SCINTILLACTRL_EXT_CLASS
 #define SCINTILLACTRL_EXT_CLASS
 #endif //#ifndef SCINTILLACTRL_EXT_CLASS
-
-#ifndef _In_
-#define _In_
-#endif //#ifndef _In_
-
-#ifndef _In_z_
-#define _In_z_
-#endif //#ifndef _In_z_
-
-#ifndef _In_reads_bytes_
-#define _In_reads_bytes_(size)
-#endif //#ifndef _In_reads_bytes_
-
-#ifndef _Inout_
-#define _Inout_
-#endif //#ifndef _Inout_
-
-#ifndef _Inout_opt_
-#define _Inout_opt_
-#endif //#ifndef _Inout_opt_
-
-#ifndef _Inout_updates_opt_
-#define _Inout_updates_opt_(size)
-#endif //#ifndef _Inout_updates_opt_
-
-#ifndef _In_opt_
-#define _In_opt_
-#endif //#ifndef _In_opt_
-
-#ifndef _Inout_z_
-#define _Inout_z_
-#endif //#ifndef _Inout_z_
-
-#ifndef _In_opt_z_
-#define _In_opt_z_
-#endif //#ifndef _In_opt_z_
-
-#ifndef _In_NLS_string_
-#define _In_NLS_string_(size)
-#endif //#ifndef _In_NLS_string_
 
 
 //////////////////// Classes //////////////////////////////////////////////////
@@ -134,12 +99,8 @@ public:
   CStringW StyleGetFont(_In_ int style);
   void MarginSetText(_In_ int line, _In_z_ const wchar_t* text);
   //Note we do not have a MarginGetText method as Scintilla does not provide a way of a priori working out a valid length of a UTF8 buffer for SCI_MARGINGETTEXT
-  void MarginSetStyles(_In_ int line, _In_z_ const wchar_t* styles);
-  //Note we do not have a MarginGetStyles method as Scintilla does not provide a way of a priori working out a valid length of a UTF8 buffer for SCI_MARGINGETSTYLES
   void AnnotationSetText(_In_ int line, _In_z_ const wchar_t* text);
   //Note we do not have a AnnotationGetText method as Scintilla does not provide a way of a priori working out a valid length of a UTF8 buffer for SCI_ANNOTATIONGETTEXT
-  void AnnotationSetStyles(_In_ int line, _In_z_ const wchar_t* styles);
-  //Note we do not have a AnnotationGetStyles method as Scintilla does not provide a way of a priori working out a valid length of a UTF8 buffer for SCI_ANNOTATIONGETSTYLES
   CStringW AutoCGetCurrentText();
   CStringW GetLexerLanguage();
   CStringW PropertyNames();
@@ -152,6 +113,9 @@ public:
   CStringW GetWhitespaceChars();
   CStringW GetPunctuationChars();
   CStringW GetTargetText();
+  CStringW NameOfStyle(_In_ int style);
+  CStringW TagsOfStyle(_In_ int style);
+  CStringW DescriptionOfStyle(_In_ int style);
 
   static CStringW UTF82W(_In_NLS_string_(nLength) const char* pszText, _In_ int nLength);
   static CStringA W2UTF8(_In_NLS_string_(nLength) const wchar_t* pszText, _In_ int nLength);
@@ -173,6 +137,9 @@ public:
   CStringA GetWhitespaceChars();
   CStringA GetPunctuationChars();
   CStringA GetTargetText();
+  CStringA NameOfStyle(_In_ int style);
+  CStringA TagsOfStyle(_In_ int style);
+  CStringA DescriptionOfStyle(_In_ int style);
 #endif //#ifdef _UNICODE
 
 //Auto generated using the "ConvertScintillaiface.js" script
@@ -315,8 +282,6 @@ public:
   void SetWhitespaceBack(_In_ BOOL useSetting, _In_ COLORREF back);
   void SetWhitespaceSize(_In_ int size);
   int GetWhitespaceSize();
-  void SetStyleBits(_In_ int bits);
-  int GetStyleBits();
   void SetLineState(_In_ int line, _In_ int state);
   int GetLineState(_In_ int line);
   int GetMaxLineState();
@@ -507,8 +472,6 @@ public:
   void SetVScrollBar(_In_ BOOL visible);
   BOOL GetVScrollBar();
   void AppendText(_In_ int length, _In_reads_bytes_(length) const char* text);
-  BOOL GetTwoPhaseDraw();
-  void SetTwoPhaseDraw(_In_ BOOL twoPhase);
   int GetPhasesDraw();
   void SetPhasesDraw(_In_ int phases);
   void SetFontQuality(_In_ int fontQuality);
@@ -610,9 +573,9 @@ public:
   BOOL SelectionIsRectangle();
   void SetZoom(_In_ int zoomInPoints);
   int GetZoom();
-  int CreateDocument();
-  void AddRefDocument(_In_ int doc);
-  void ReleaseDocument(_In_ int doc);
+  void* CreateDocument(_In_ int bytes, _In_ int documentOption);
+  void AddRefDocument(_In_ void* doc);
+  void ReleaseDocument(_In_ void* doc);
   int GetModEventMask();
   void SCISetFocus(_In_ BOOL focus);
   BOOL GetFocus();
@@ -660,6 +623,7 @@ public:
   void CopyText(_In_ int length, _In_reads_bytes_(length) const char* text);
   void SetSelectionMode(_In_ int selectionMode);
   int GetSelectionMode();
+  BOOL GetMoveExtendsSelection();
   Sci_Position GetLineSelStartPosition(_In_ int line);
   Sci_Position GetLineSelEndPosition(_In_ int line);
   void LineDownRectExtend();
@@ -828,7 +792,7 @@ public:
   void ScrollToEnd();
   void SetTechnology(_In_ int technology);
   int GetTechnology();
-  int CreateLoader(_In_ int bytes);
+  void* CreateLoader(_In_ int bytes, _In_ int documentOption);
   void FindIndicatorShow(_In_ Sci_Position start, _In_ Sci_Position end);
   void FindIndicatorFlash(_In_ Sci_Position start, _In_ Sci_Position end);
   void FindIndicatorHide();
@@ -854,7 +818,6 @@ public:
   int GetProperty(_In_z_ const char* key, _Inout_opt_ char* value);
   int GetPropertyExpanded(_In_z_ const char* key, _Inout_opt_ char* value);
   int GetPropertyInt(_In_z_ const char* key, _In_ int defaultValue);
-  int GetStyleBitsNeeded();
   int GetLexerLanguage(_Inout_opt_ char* language);
   void* PrivateLexerCall(_In_ int operation, _In_opt_ void* pointer);
   int PropertyNames(_Inout_opt_ char* names);
@@ -871,6 +834,12 @@ public:
   void SetIdentifiers(_In_ int style, _In_z_ const char* identifiers);
   int DistanceToSecondaryStyles();
   int GetSubStyleBases(_Inout_z_ char* styles);
+  int GetNamedStyles();
+  int NameOfStyle(_In_ int style, _Inout_opt_ char* name);
+  int TagsOfStyle(_In_ int style, _Inout_opt_ char* tags);
+  int DescriptionOfStyle(_In_ int style, _Inout_opt_ char* description);
+  int GetBidirectional();
+  void SetBidirectional(_In_ int bidirectional);
 
 protected:
   DECLARE_DYNAMIC(CScintillaCtrl)
@@ -879,7 +848,6 @@ protected:
   BOOL    m_bCallDirect;
   LRESULT m_DirectFunction;
   LRESULT m_DirectPointer;
-  DWORD   m_bThreadId;
 };
 
 

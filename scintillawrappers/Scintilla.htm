@@ -3,13 +3,13 @@
 
 <head>
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
-<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.43</title>
+<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.49</title>
 <link href="naughter.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
 
-<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.43</h2>
+<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.49</h2>
 <h2><i>Freeware MFC wrapper classes for the Scintilla edit control</i></h2>
 <p>These classes provides a MFC wrapping for the Scintilla edit control (<a href="http://www.scintilla.org">http://www.scintilla.org</a>). 
 This control provides an open source cross platform edit control. Some of the features 
@@ -41,7 +41,7 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Features"></a>Features</h2>
 <ul>
-	<li>Implements all the functionality provided by Scintilla v3.7.5.</li>
+	<li>Implements all the functionality provided by Scintilla v4.0.4.</li>
 	<li>The CScintillaCtrl wrapper class observes the same semantics as the built 
 	in MFC &quot;CEdit&quot; wrapper class.</li>
 	<li>Uses the direct access functions provided by Scintilla to improve performance. 
@@ -89,7 +89,7 @@ the control in MFC projects on Windows.</p>
 	to make calls to the class.</li>
 	<li>If you want to use the document / view wrappers then also include ScintillaDocView.h 
 	and ScintillaDocView.cpp in your project.</li>
-	<li>As of v1.38, the classes are now designed for VC 2010 or later. They will 
+	<li>As of v1.44, the classes are now designed for VC 2013 or later. They will 
 	not compile on earlier releases of VC.</li>
 	<li>Your code will need to include MFC either statically or dynamically.</li>
 	<li>If you are linking to Scintilla dynamically, then you should call LoadLibrary 
@@ -121,6 +121,52 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2><a name="History"></a>History</h2>
+<p><b>V1.49 (3 May 2018)</b></p>
+<ul>
+	<li>Added support for SCN_MARGINRIGHTCLICK notification. Thanks to Karagoez 
+	Yusuf for reporting this issue.</li>
+	<li>Verified the code works with the latest Scintilla v4.0.4. No new 
+	messages were added for this release of scintilla.</li>
+</ul>
+<p><b>V1.48 (18 March 2018)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v4.0.3. New parameters to 
+	SCI_CREATEDOCUMENT &amp; SCI_CREATELOADER messages. New messages wrapped 
+	include: SCI_GETMOVEEXTENDSSELECTION message, SCI_GETBIDIRECTIONAL &amp; 
+	SCI_SETBIDIRECTIONAL </li>
+	<li>SCI_ADDREFDOCUMENT and SCI_RELEASEDOCUMENT wrappers now use void* 
+	for the document parameter. </li>
+</ul>
+<p><b>V1.47 (28 January 2018)</b></p>
+<ul>
+	<li>Added code to OnEditRepeat, OnFindNext and OnReplaceSel methods to 
+	ensure that the text just found or replaced is visible. This is necessary 
+	because sometimes the found text could be hidden in folded text. Thanks to 
+	Michael Thompson for reporting this issue. </li>
+	<li>The OnEditRepeat method now calls AdjustFindDialogPosition to ensure it 
+	is moved if necessary. Thanks to Michael Thompson for reporting this issue. </li>
+</ul>
+<p><b>V1.46 (3 January 2018)</b></p>
+<ul>
+	<li>Updated copyright details. </li>
+	<li>Removed Unicode versions of MarginSetStyles &amp; AnnotationSetStyles 
+	methods as these methods take byte buffers and do not take text data. Thanks 
+	to Karagoez Yusuf for reporting this issue. </li>
+</ul>
+<p><b>V1.45 (27 December 2017)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v4.0.2. Some messages have been 
+	removed in 4.0.2 including SCI_SETSTYLEBITS, SCI_GETSTYLEBITS &amp; 
+	SCI_GETSTYLEBITSNEEDED.</li>
+</ul>
+<p><b>V1.44 (31 August 2017)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v4.0.0. New messages wrapped 
+	include: SCI_GETNAMEDSTYLES, SCI_NAMEOFSTYLE, SCI_TAGSOFSTYLE &amp; 
+	SCI_DESCRIPTIONOFSTYLE. Messages removed include SCI_GETTWOPHASEDRAW &amp; 
+	SCI_SETTWOPHASEDRAW</li>
+	<li>Fixed up a number of compiler warnings when the code is compiled for x64 </li>
+</ul>
 <p><b>V1.43 (12 June 2017)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v3.7.5. New messages wrapped include: 
@@ -265,7 +311,7 @@ the control in MFC projects on Windows.</p>
 	<li>Updated copyright details</li>
 	<li>Added virtual methods for SCN_INDICATORCLICK, SCN_INDICATORRELEASE, SCN_AUTOCCHARDELETED, 
 	SCN_AUTOCCANCELLED &amp; SCN_HOTSPOTRELEASECLICK notifications. Thanks to Markus 
-	Nißl for prompting this update. </li>
+	Nissl for prompting this update. </li>
 	<li>The classes are now encapsulated in a Scintilla namespace if the SCI_NAMESPACE 
 	define is defined. This is consistent with how the scintilla.h header file operates 
 	in the presence of this define. Thanks to Markus Nißl for prompting this update.</li>
@@ -332,7 +378,6 @@ the control in MFC projects on Windows.</p>
 	<li>Fixed a bug in CScintillaCtrl::Create where a crash can occur in a Unicode 
 	build if the CreateEx call fails (for example, if the Scintilla DLL was not 
 	loaded). Thanks to Simon Smith for reporting this bug</li>
-	<li></li>
 	<li>Updated class to work with Scintilla v2.01. New messages wrapped include: 
 	SCI_SETWRAPINDENTMODE, SCI_GETWRAPINDENTMODE, SCI_INDICSETALPHA, SCI_INDICGETALPHA, 
 	SCI_SETEXTRAASCENT, SCI_GETEXTRAASCENT, SCI_SETEXTRADESCENT, SCI_GETEXTRADESCENT, 
@@ -650,7 +695,7 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Contact"></a>Contacting the Author</h2>
 <p>PJ Naughter<br>Email: <a href="mailto:pjna@naughter.com">pjna@naughter.com</a><br>
-Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>12 June 2017</p>
+Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>3 May 2018</p>
 
 </body>
 

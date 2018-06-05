@@ -126,8 +126,15 @@ History: PJN / 12-08-2004 1. Made all the remaining non virtual functions relate
                           position was located. Thanks to Michael Thompson for provided this nice addition.
                           3. Updated the demo app included in the download to show how CScintillaView::CreateControl
                           can be used. Thanks to Michael Thompson for prompting this update.
+         PJN / 28-01-2018 1. Added code to OnEditRepeat, OnFindNext and OnReplaceSel methods to ensure that the text 
+                          just found or replaced is visible. This is necessary because sometimes the found text could 
+                          be hidden in folded text. Thanks to Michael Thompson for reporting this issue.
+                          2. The OnEditRepeat method now calls AdjustFindDialogPosition to ensure it is moved if 
+                          necessary. Thanks to Michael Thompson for reporting this issue.
+         PJN / 03-05-2018 1. Added support for SCN_MARGINRIGHTCLICK notification. Thanks to Karagoez Yusuf for 
+                          reporting this issue.
 
-Copyright (c) 2004 - 2017 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2018 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -616,8 +623,8 @@ Sci_Position CScintillaView::PrintPage(CDC* pDC, CPrintInfo* pInfo, Sci_Position
   rfPrint.rc.bottom = rfPrint.rcPage.bottom - rMargins.bottom;
 
   //Fill in the text to print
-  rfPrint.chrg.cpMin = nIndexStart;
-  rfPrint.chrg.cpMax = nIndexStop;
+  rfPrint.chrg.cpMin = static_cast<Sci_PositionCR>(nIndexStart);
+  rfPrint.chrg.cpMax = static_cast<Sci_PositionCR>(nIndexStop);
 
   //Print the header (if requested to)
   if (m_bPrintHeader)
@@ -818,9 +825,17 @@ void CScintillaView::OnEditRepeat()
 {
   //Validate our parameters
   ASSERT_VALID(this);
-  
+
   if (!FindText(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
     TextNotFound(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
+  else
+  {
+    CScintillaCtrl& rCtrl = GetCtrl();
+    int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
+    rCtrl.EnsureVisible(nLine);
+    if (g_scintillaEditState.pFindReplaceDlg != nullptr)
+      AdjustFindDialogPosition();
+  }
 }
 
 void CScintillaView::AdjustFindDialogPosition()
@@ -923,7 +938,13 @@ void CScintillaView::OnFindNext(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ B
   if (!FindText(g_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
     TextNotFound(g_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, FALSE);
   else
-    AdjustFindDialogPosition();
+  {
+    CScintillaCtrl& rCtrl = GetCtrl();
+    int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
+    rCtrl.EnsureVisible(nLine);
+    if (g_scintillaEditState.pFindReplaceDlg != nullptr)
+      AdjustFindDialogPosition();
+  }
   ASSERT_VALID(this);
 }
 
@@ -946,7 +967,12 @@ void CScintillaView::OnReplaceSel(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_
     if (!FindText(g_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
       TextNotFound(g_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
     else
-      AdjustFindDialogPosition();
+    {
+      int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
+      rCtrl.EnsureVisible(nLine);
+      if (g_scintillaEditState.pFindReplaceDlg != nullptr)
+        AdjustFindDialogPosition();
+    }
     return;
   }
 
@@ -960,7 +986,12 @@ void CScintillaView::OnReplaceSel(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_
   if (!FindText(g_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression))
     TextNotFound(g_scintillaEditState.strFind, bNext, bCase, bWord, bRegularExpression, TRUE);
   else
-    AdjustFindDialogPosition();
+  {
+    int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
+    rCtrl.EnsureVisible(nLine);
+    if (g_scintillaEditState.pFindReplaceDlg != nullptr)
+      AdjustFindDialogPosition();
+  }
   ASSERT_VALID(this);
 }
 
@@ -1040,7 +1071,7 @@ BOOL CScintillaView::SameAsSelected(_In_z_ LPCTSTR lpszCompare, _In_ BOOL bCase,
   CScintillaCtrl& rCtrl = GetCtrl();
 
   //check length first
-  Sci_Position nStartChar = rCtrl.GetSelectionStart(); //get the selection size    
+  Sci_Position nStartChar = rCtrl.GetSelectionStart(); //get the selection size
   Sci_Position nEndChar = rCtrl.GetSelectionEnd();
   size_t nLen = _tcslen(lpszCompare); //get the #chars to search for
   
@@ -1084,8 +1115,8 @@ BOOL CScintillaView::FindTextSimple(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _I
   CScintillaCtrl& rCtrl = GetCtrl();
 
   Sci_TextToFind ft;
-  ft.chrg.cpMin = rCtrl.GetSelectionStart();
-  ft.chrg.cpMax = rCtrl.GetSelectionEnd();
+  ft.chrg.cpMin = static_cast<Sci_PositionCR>(rCtrl.GetSelectionStart());
+  ft.chrg.cpMax = static_cast<Sci_PositionCR>(rCtrl.GetSelectionEnd());
   if (m_bFirstSearch)
   {
     if (bNext)
@@ -1167,13 +1198,13 @@ BOOL CScintillaView::FindTextSimple(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _I
     if (bNext)
     {
       ft.chrg.cpMin = 0;
-      ft.chrg.cpMax = min(m_lInitialSearchPos + CString(lpszFind).GetLength(), rCtrl.GetLength());
+      ft.chrg.cpMax = static_cast<Sci_PositionCR>(min(m_lInitialSearchPos + CString(lpszFind).GetLength(), rCtrl.GetLength()));
       m_lInitialSearchPos = 0;
     }
     else
     {
       ft.chrg.cpMin = rCtrl.GetLength();
-      ft.chrg.cpMax = max(m_lInitialSearchPos - CString(lpszFind).GetLength(), 0);
+      ft.chrg.cpMax = static_cast<Sci_PositionCR>(max(m_lInitialSearchPos - CString(lpszFind).GetLength(), 0));
       m_lInitialSearchPos = ft.chrg.cpMin;
     }
 
@@ -1447,10 +1478,15 @@ void CScintillaView::OnMacroRecord(_Inout_ SCNotification* /*pSCNotification*/)
 
 void CScintillaView::OnMarginClick(_Inout_ SCNotification* pSCNotification)
 {
-  //By default get the line where the click occured and toggle its fold state
+  //By default get the line where the click occurred and toggle its fold state
   CScintillaCtrl& rCtrl = GetCtrl();
   int nLine = rCtrl.LineFromPosition(pSCNotification->position);
   rCtrl.ToggleFold(nLine);
+}
+
+void CScintillaView::OnMarginRightClick(_Inout_ SCNotification* /*pSCNotification*/)
+{
+  //By default do nothing, derived classes may want to do something
 }
 
 void CScintillaView::OnNeedShown(_Inout_ SCNotification* /*pSCNotification*/)
@@ -1655,6 +1691,11 @@ BOOL CScintillaView::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
       case SCN_MARGINCLICK:
       {
         OnMarginClick(pSCNotification);
+        break;
+      }
+      case SCN_MARGINRIGHTCLICK:
+      {
+        OnMarginRightClick(pSCNotification);
         break;
       }
       case SCN_NEEDSHOWN:

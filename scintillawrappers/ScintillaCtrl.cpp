@@ -140,7 +140,7 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           SCI_SETCARETLINEVISIBLEALWAYS.
                           3. The classes are now encapsulated in a Scintilla namespace if the SCI_NAMESPACE define
                           is defined. This is consistent with how the scintilla.h header file operates in the 
-                          presence of this define. Thanks to Markus Niﬂl for prompting this update.
+                          presence of this define. Thanks to Markus Nissl for prompting this update.
                           4. Updated the sample app to compile when the SCI_NAMESPACE define is defined.
                           5. The sample app is now built by default with the SCI_NAMESPACE defined. This means that all the 
                           classes of the author will appear in the "Scintilla" namespace.
@@ -204,8 +204,21 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           SCI_GETACCESSIBILITY
          PJN / 12-06-2017 1. Updated class to work with Scintilla v3.7.5. New messages wrapped include: SCI_GETCARETLINEFRAME, 
                           SCI_SETCARETLINEFRAME & SCI_LINEREVERSE
+         PJN / 31-08-2017 1. Updated class to work with Scintilla v4.0.0. New messages wrapped include: SCI_GETNAMEDSTYLES, SCI_NAMEOFSTYLE,
+                          SCI_TAGSOFSTYLE & SCI_DESCRIPTIONOFSTYLE. Messages removed include SCI_GETTWOPHASEDRAW & SCI_SETTWOPHASEDRAW
+                          2. Fixed up a number of compiler warnings when the code is compiled for x64
+         PJN / 27-12-2017 1. Updated class to work with Scintilla v4.0.2. Some messages have been removed in 4.0.2 including SCI_SETSTYLEBITS,
+                          SCI_GETSTYLEBITS & SCI_GETSTYLEBITSNEEDED.
+         PJN / 03-01-2018 1. Updated copyright details.
+                          2. Removed Unicode versions of MarginSetStyles & AnnotationSetStyles methods as these methods take byte buffers 
+                          and do not take text data. Thanks to Karagoez Yusuf for reporting this issue.
+         PJN / 18-03-2018 1. Updated class to work with Scintilla v4.0.3. New parameters to SCI_CREATEDOCUMENT & SCI_CREATELOADER messages. 
+                          New messages wrapped include: SCI_GETMOVEEXTENDSSELECTION message, SCI_GETBIDIRECTIONAL & SCI_SETBIDIRECTIONAL
+                          2. SCI_ADDREFDOCUMENT and SCI_RELEASEDOCUMENT wrappers now use void* for the document parameter.
+         PJN / 03-05-2018 1. Verified the code works with the latest Scintilla v4.0.4. No new messages were added for this release of
+                          scintilla.
 
-Copyright (c) 2004 - 2017 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2018 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -239,8 +252,7 @@ IMPLEMENT_DYNAMIC(CScintillaCtrl, CWnd)
 
 CScintillaCtrl::CScintillaCtrl() : m_DirectFunction(0),
                                    m_DirectPointer(0),
-                                   m_bCallDirect(TRUE),
-                                   m_bThreadId(GetCurrentThreadId())
+                                   m_bCallDirect(TRUE)
 {
 }
 
@@ -287,7 +299,7 @@ inline LRESULT CScintillaCtrl::Call(_In_ UINT message, _In_ WPARAM wParam, _In_ 
 {
   ASSERT(::IsWindow(m_hWnd)); //Window must be valid
 
-  if (m_bCallDirect && m_bThreadId == GetCurrentThreadId())
+  if (m_bCallDirect)
   {
     ASSERT(m_DirectFunction); //Direct function must be valid
     return (reinterpret_cast<SciFnDirect>(m_DirectFunction))(m_DirectPointer, message, wParam, lParam);
@@ -728,15 +740,6 @@ void CScintillaCtrl::MarginSetText(_In_ int line, _In_z_ const wchar_t* text)
   MarginSetText(line, sUTF8);
 }
 
-void CScintillaCtrl::MarginSetStyles(_In_ int line, _In_z_ const wchar_t* styles)
-{
-  //Convert the unicode text to UTF8
-  CStringA sUTF8(W2UTF8(styles, -1));
-
-  //Call the native scintilla version of the function with the UTF8 text
-  MarginSetStyles(line, sUTF8);
-}
-
 void CScintillaCtrl::AnnotationSetText(_In_ int line, _In_z_ const wchar_t* text)
 {
   //Convert the unicode text to UTF8
@@ -744,15 +747,6 @@ void CScintillaCtrl::AnnotationSetText(_In_ int line, _In_z_ const wchar_t* text
 
   //Call the native scintilla version of the function with the UTF8 text
   AnnotationSetText(line, sUTF8);
-}
-
-void CScintillaCtrl::AnnotationSetStyles(_In_ int line, _In_z_ const wchar_t* styles)
-{
-  //Convert the unicode text to UTF8
-  CStringA sUTF8(W2UTF8(styles, -1));
-
-  //Call the native scintilla version of the function with the UTF8 text
-  AnnotationSetStyles(line, sUTF8);
 }
 
 CStringW CScintillaCtrl::AutoCGetCurrentText()
@@ -909,6 +903,45 @@ CStringW CScintillaCtrl::GetTargetText()
   sUTF8.ReleaseBuffer();
 
   return UTF82W(sUTF8, -1);
+}
+
+CStringW CScintillaCtrl::NameOfStyle(_In_ int style)
+{
+  //Work out the length of string to allocate
+  int nUTF8ValueLength = NameOfStyle(style, nullptr);
+
+  //Call the function which does the work
+  CStringA sUTF8Value;
+  NameOfStyle(style, sUTF8Value.GetBufferSetLength(nUTF8ValueLength));
+  sUTF8Value.ReleaseBuffer();
+
+  return UTF82W(sUTF8Value, -1);
+}
+
+CStringW CScintillaCtrl::TagsOfStyle(_In_ int style)
+{
+  //Work out the length of string to allocate
+  int nUTF8ValueLength = TagsOfStyle(style, nullptr);
+
+  //Call the function which does the work
+  CStringA sUTF8Value;
+  TagsOfStyle(style, sUTF8Value.GetBufferSetLength(nUTF8ValueLength));
+  sUTF8Value.ReleaseBuffer();
+
+  return UTF82W(sUTF8Value, -1);
+}
+
+CStringW CScintillaCtrl::DescriptionOfStyle(_In_ int style)
+{
+  //Work out the length of string to allocate
+  int nUTF8ValueLength = DescriptionOfStyle(style, nullptr);
+
+  //Call the function which does the work
+  CStringA sUTF8Value;
+  DescriptionOfStyle(style, sUTF8Value.GetBufferSetLength(nUTF8ValueLength));
+  sUTF8Value.ReleaseBuffer();
+
+  return UTF82W(sUTF8Value, -1);
 }
 
 #else
@@ -1134,6 +1167,45 @@ CStringA CScintillaCtrl::GetTargetText()
   sTargetText.ReleaseBuffer();
 
   return sTargetText;
+}
+
+CStringA CScintillaCtrl::NameOfStyle(_In_ int style)
+{
+  //Work out the length of string to allocate
+  int nValueLength = NameOfStyle(style, nullptr);
+
+  //Call the function which does the work
+  CStringA sValue;
+  NameOfStyle(style, sValue.GetBufferSetLength(nValueLength));
+  sValue.ReleaseBuffer();
+
+  return sValue;
+}
+
+CStringA CScintillaCtrl::TagsOfStyle(_In_ int style)
+{
+  //Work out the length of string to allocate
+  int nValueLength = TagsOfStyle(style, nullptr);
+
+  //Call the function which does the work
+  CStringA sValue;
+  TagsOfStyle(style, sValue.GetBufferSetLength(nValueLength));
+  sValue.ReleaseBuffer();
+
+  return sValue;
+}
+
+CStringA CScintillaCtrl::DescriptionOfStyle(_In_ int style)
+{
+  //Work out the length of string to allocate
+  int nValueLength = DescriptionOfStyle(style, nullptr);
+
+  //Call the function which does the work
+  CStringA sValue;
+  DescriptionOfStyle(style, sValue.GetBufferSetLength(nValueLength));
+  sValue.ReleaseBuffer();
+
+  return sValue;
 }
 #endif //#ifdef _UNICODE
 
@@ -1833,16 +1905,6 @@ void CScintillaCtrl::SetWhitespaceSize(_In_ int size)
 int CScintillaCtrl::GetWhitespaceSize()
 {
   return static_cast<int>(Call(SCI_GETWHITESPACESIZE, 0, 0));
-}
-
-void CScintillaCtrl::SetStyleBits(_In_ int bits)
-{
-  Call(SCI_SETSTYLEBITS, static_cast<WPARAM>(bits), 0);
-}
-
-int CScintillaCtrl::GetStyleBits()
-{
-  return static_cast<int>(Call(SCI_GETSTYLEBITS, 0, 0));
 }
 
 void CScintillaCtrl::SetLineState(_In_ int line, _In_ int state)
@@ -2795,16 +2857,6 @@ void CScintillaCtrl::AppendText(_In_ int length, _In_reads_bytes_(length) const 
   Call(SCI_APPENDTEXT, static_cast<WPARAM>(length), reinterpret_cast<LPARAM>(text));
 }
 
-BOOL CScintillaCtrl::GetTwoPhaseDraw()
-{
-  return static_cast<BOOL>(Call(SCI_GETTWOPHASEDRAW, 0, 0));
-}
-
-void CScintillaCtrl::SetTwoPhaseDraw(_In_ BOOL twoPhase)
-{
-  Call(SCI_SETTWOPHASEDRAW, static_cast<WPARAM>(twoPhase), 0);
-}
-
 int CScintillaCtrl::GetPhasesDraw()
 {
   return static_cast<int>(Call(SCI_GETPHASESDRAW, 0, 0));
@@ -3310,19 +3362,19 @@ int CScintillaCtrl::GetZoom()
   return static_cast<int>(Call(SCI_GETZOOM, 0, 0));
 }
 
-int CScintillaCtrl::CreateDocument()
+void* CScintillaCtrl::CreateDocument(_In_ int bytes, _In_ int documentOption)
 {
-  return static_cast<int>(Call(SCI_CREATEDOCUMENT, 0, 0));
+  return reinterpret_cast<void*>(Call(SCI_CREATEDOCUMENT, static_cast<WPARAM>(bytes), static_cast<LPARAM>(documentOption)));
 }
 
-void CScintillaCtrl::AddRefDocument(_In_ int doc)
+void CScintillaCtrl::AddRefDocument(_In_ void* doc)
 {
-  Call(SCI_ADDREFDOCUMENT, 0, static_cast<LPARAM>(doc));
+  Call(SCI_ADDREFDOCUMENT, 0, reinterpret_cast<LPARAM>(doc));
 }
 
-void CScintillaCtrl::ReleaseDocument(_In_ int doc)
+void CScintillaCtrl::ReleaseDocument(_In_ void* doc)
 {
-  Call(SCI_RELEASEDOCUMENT, 0, static_cast<LPARAM>(doc));
+  Call(SCI_RELEASEDOCUMENT, 0, reinterpret_cast<LPARAM>(doc));
 }
 
 int CScintillaCtrl::GetModEventMask()
@@ -3558,6 +3610,11 @@ void CScintillaCtrl::SetSelectionMode(_In_ int selectionMode)
 int CScintillaCtrl::GetSelectionMode()
 {
   return static_cast<int>(Call(SCI_GETSELECTIONMODE, 0, 0));
+}
+
+BOOL CScintillaCtrl::GetMoveExtendsSelection()
+{
+  return static_cast<BOOL>(Call(SCI_GETMOVEEXTENDSSELECTION, 0, 0));
 }
 
 Sci_Position CScintillaCtrl::GetLineSelStartPosition(_In_ int line)
@@ -4400,9 +4457,9 @@ int CScintillaCtrl::GetTechnology()
   return static_cast<int>(Call(SCI_GETTECHNOLOGY, 0, 0));
 }
 
-int CScintillaCtrl::CreateLoader(_In_ int bytes)
+void* CScintillaCtrl::CreateLoader(_In_ int bytes, _In_ int documentOption)
 {
-  return static_cast<int>(Call(SCI_CREATELOADER, static_cast<WPARAM>(bytes), 0));
+  return reinterpret_cast<void*>(Call(SCI_CREATELOADER, static_cast<WPARAM>(bytes), static_cast<LPARAM>(documentOption)));
 }
 
 void CScintillaCtrl::FindIndicatorShow(_In_ Sci_Position start, _In_ Sci_Position end)
@@ -4530,11 +4587,6 @@ int CScintillaCtrl::GetPropertyInt(_In_z_ const char* key, _In_ int defaultValue
   return static_cast<int>(Call(SCI_GETPROPERTYINT, reinterpret_cast<WPARAM>(key), defaultValue));
 }
 
-int CScintillaCtrl::GetStyleBitsNeeded()
-{
-  return static_cast<int>(Call(SCI_GETSTYLEBITSNEEDED, 0, 0));
-}
-
 int CScintillaCtrl::GetLexerLanguage(_Inout_opt_ char* language)
 {
   return static_cast<int>(Call(SCI_GETLEXERLANGUAGE, 0, reinterpret_cast<LPARAM>(language)));
@@ -4615,3 +4667,32 @@ int CScintillaCtrl::GetSubStyleBases(_Inout_z_ char* styles)
   return static_cast<int>(Call(SCI_GETSUBSTYLEBASES, 0, reinterpret_cast<LPARAM>(styles)));
 }
 
+int CScintillaCtrl::GetNamedStyles()
+{
+  return static_cast<int>(Call(SCI_GETNAMEDSTYLES, 0, 0));
+}
+
+int CScintillaCtrl::NameOfStyle(_In_ int style, _Inout_opt_ char* name)
+{
+  return static_cast<int>(Call(SCI_NAMEOFSTYLE, static_cast<WPARAM>(style), reinterpret_cast<LPARAM>(name)));
+}
+
+int CScintillaCtrl::TagsOfStyle(_In_ int style, _Inout_opt_ char* tags)
+{
+  return static_cast<int>(Call(SCI_TAGSOFSTYLE, static_cast<WPARAM>(style), reinterpret_cast<LPARAM>(tags)));
+}
+
+int CScintillaCtrl::DescriptionOfStyle(_In_ int style, _Inout_opt_ char* description)
+{
+  return static_cast<int>(Call(SCI_DESCRIPTIONOFSTYLE, static_cast<WPARAM>(style), reinterpret_cast<LPARAM>(description)));
+}
+
+int CScintillaCtrl::GetBidirectional()
+{
+  return static_cast<int>(Call(SCI_GETBIDIRECTIONAL, 0, 0));
+}
+
+void CScintillaCtrl::SetBidirectional(_In_ int bidirectional)
+{
+  Call(SCI_SETBIDIRECTIONAL, static_cast<WPARAM>(bidirectional), 0);
+}

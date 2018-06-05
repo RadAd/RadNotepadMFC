@@ -4,7 +4,7 @@ Purpose: Defines the interface for MFC CView and CDocument derived wrapper class
          edit control (www.scintilla.org)
 Created: PJN / 19-03-2004
 
-Copyright (c) 2004 - 2017 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2018 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -155,6 +155,7 @@ protected:
   virtual void OnModified(_Inout_ SCNotification* pSCNotification);
   virtual void OnMacroRecord(_Inout_ SCNotification* pSCNotification);
   virtual void OnMarginClick(_Inout_ SCNotification* pSCNotification);
+  virtual void OnMarginRightClick(_Inout_ SCNotification* pSCNotification);
   virtual void OnNeedShown(_Inout_ SCNotification* pSCNotification);
   virtual void OnPainted(_Inout_ SCNotification* pSCNotification);
   virtual void OnUserListSelection(_Inout_ SCNotification* pSCNotification);
