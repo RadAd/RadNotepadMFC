@@ -2,11 +2,12 @@
 #include "stdafx.h"
 
 #include "OutputWnd.h"
-#include "Resource.h"
 #include "RadNotepad.h"
 #include "RadNotepadDoc.h"
 #include "RadDocManager.h"
 #include "Theme.h"
+
+#include "..\resource.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

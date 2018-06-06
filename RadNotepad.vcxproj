@@ -214,60 +214,60 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AboutDlg.h" />
-    <ClInclude Include="ChildFrm.h" />
-    <ClInclude Include="ClassView.h" />
-    <ClInclude Include="FileView.h" />
-    <ClInclude Include="GoToLineDlg.h" />
-    <ClInclude Include="PaneToolBar.h" />
-    <ClInclude Include="RadDocManager.h" />
-    <ClInclude Include="RadNotepad.h" />
-    <ClInclude Include="RadNotepadDoc.h" />
-    <ClInclude Include="RadNotepadView.h" />
-    <ClInclude Include="MainFrm.h" />
-    <ClInclude Include="OutputWnd.h" />
-    <ClInclude Include="PropertiesWnd.h" />
-    <ClInclude Include="RadWaitCursor.h" />
-    <ClInclude Include="RadWindowsManagerDialog.h" />
-    <ClInclude Include="Resource.h" />
-    <ClInclude Include="SaveModifiedDlg.h" />
-    <ClInclude Include="scintillawrappers\resource.h" />
-    <ClInclude Include="scintillawrappers\ScintillaCtrl.h" />
-    <ClInclude Include="scintillawrappers\ScintillaDocView.h" />
-    <ClInclude Include="Settings.h" />
-    <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
-    <ClInclude Include="Theme.h" />
-    <ClInclude Include="Tools.h" />
-    <ClInclude Include="ViewTree.h" />
+    <ClInclude Include="src\AboutDlg.h" />
+    <ClInclude Include="src\ChildFrm.h" />
+    <ClInclude Include="src\ClassView.h" />
+    <ClInclude Include="src\FileView.h" />
+    <ClInclude Include="src\GoToLineDlg.h" />
+    <ClInclude Include="src\PaneToolBar.h" />
+    <ClInclude Include="src\RadDocManager.h" />
+    <ClInclude Include="src\RadNotepad.h" />
+    <ClInclude Include="src\RadNotepadDoc.h" />
+    <ClInclude Include="src\RadNotepadView.h" />
+    <ClInclude Include="src\MainFrm.h" />
+    <ClInclude Include="src\OutputWnd.h" />
+    <ClInclude Include="src\PropertiesWnd.h" />
+    <ClInclude Include="src\RadWaitCursor.h" />
+    <ClInclude Include="src\RadWindowsManagerDialog.h" />
+    <ClInclude Include="src\Resource.h" />
+    <ClInclude Include="src\SaveModifiedDlg.h" />
+    <ClInclude Include="src\scintillawrappers\resource.h" />
+    <ClInclude Include="src\scintillawrappers\ScintillaCtrl.h" />
+    <ClInclude Include="src\scintillawrappers\ScintillaDocView.h" />
+    <ClInclude Include="src\Settings.h" />
+    <ClInclude Include="src\stdafx.h" />
+    <ClInclude Include="src\targetver.h" />
+    <ClInclude Include="src\Theme.h" />
+    <ClInclude Include="src\Tools.h" />
+    <ClInclude Include="src\ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ChildFrm.cpp" />
-    <ClCompile Include="ClassView.cpp" />
-    <ClCompile Include="FileView.cpp" />
-    <ClCompile Include="GoToLineDlg.cpp" />
-    <ClCompile Include="PaneToolBar.cpp" />
-    <ClCompile Include="RadDocManager.cpp" />
-    <ClCompile Include="RadNotepad.cpp" />
-    <ClCompile Include="RadNotepadDoc.cpp" />
-    <ClCompile Include="RadNotepadView.cpp" />
-    <ClCompile Include="MainFrm.cpp" />
-    <ClCompile Include="OutputWnd.cpp" />
-    <ClCompile Include="PropertiesWnd.cpp" />
-    <ClCompile Include="RadWaitCursor.cpp" />
-    <ClCompile Include="RadWindowsManagerDialog.cpp" />
-    <ClCompile Include="SaveModifiedDlg.cpp" />
-    <ClCompile Include="scintillawrappers\ScintillaCtrl.cpp" />
-    <ClCompile Include="scintillawrappers\ScintillaDocView.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="src\ChildFrm.cpp" />
+    <ClCompile Include="src\ClassView.cpp" />
+    <ClCompile Include="src\FileView.cpp" />
+    <ClCompile Include="src\GoToLineDlg.cpp" />
+    <ClCompile Include="src\PaneToolBar.cpp" />
+    <ClCompile Include="src\RadDocManager.cpp" />
+    <ClCompile Include="src\RadNotepad.cpp" />
+    <ClCompile Include="src\RadNotepadDoc.cpp" />
+    <ClCompile Include="src\RadNotepadView.cpp" />
+    <ClCompile Include="src\MainFrm.cpp" />
+    <ClCompile Include="src\OutputWnd.cpp" />
+    <ClCompile Include="src\PropertiesWnd.cpp" />
+    <ClCompile Include="src\RadWaitCursor.cpp" />
+    <ClCompile Include="src\RadWindowsManagerDialog.cpp" />
+    <ClCompile Include="src\SaveModifiedDlg.cpp" />
+    <ClCompile Include="src\scintillawrappers\ScintillaCtrl.cpp" />
+    <ClCompile Include="src\scintillawrappers\ScintillaDocView.cpp" />
+    <ClCompile Include="src\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Theme.cpp" />
-    <ClCompile Include="Tools.cpp" />
-    <ClCompile Include="ViewTree.cpp" />
+    <ClCompile Include="src\Theme.cpp" />
+    <ClCompile Include="src\Tools.cpp" />
+    <ClCompile Include="src\ViewTree.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RadNotepad.rc" />

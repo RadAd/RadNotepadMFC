@@ -1291,7 +1291,7 @@ BOOL CALLBACK EnumResExtMapProc(
     return TRUE;
 }
 
-#include "Resource.h"
+#include "..\resource.h"
 
 template <class T>
 static void MergeOnKey(std::vector<T>& vecMerge, std::vector<T>& vecDefault)

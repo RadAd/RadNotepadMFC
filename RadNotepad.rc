@@ -732,7 +732,7 @@ BEGIN
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
     "LANGUAGE 9, 1\r\n"
     "#include ""res\\RadNotepad.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
-    "#include ""scintillawrappers\\ScintillaDocView.rc2""\r\n"
+    "#include ""src\\scintillawrappers\\ScintillaDocView.rc2""\r\n"
     "#include ""afxres.rc""      // Standard components\r\n"
     "#include ""afxprint.rc""    // printing/print preview resources\r\n"
     "#if !defined(_AFXDLL)\r\n"
@@ -835,7 +835,7 @@ IDR_EXTMAP              EXTMAP                  "schemes\\extmap.dat"
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE 9, 1
 #include "res\RadNotepad.rc2"  // non-Microsoft Visual C++ edited resources
-#include "scintillawrappers\ScintillaDocView.rc2"
+#include "src\scintillawrappers\ScintillaDocView.rc2"
 #include "afxres.rc"      // Standard components
 #include "afxprint.rc"    // printing/print preview resources
 #if !defined(_AFXDLL)

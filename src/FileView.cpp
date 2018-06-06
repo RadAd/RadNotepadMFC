@@ -1,10 +1,12 @@
 
 #include "stdafx.h"
+
 #include "FileView.h"
-#include "Resource.h"
 #include "RadNotepad.h"
 #include "RadDocManager.h"
 #include <set>
+
+#include "..\resource.h"
 
 // TODO
 // top level file updates

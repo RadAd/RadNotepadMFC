@@ -2,9 +2,11 @@
 #include "stdafx.h"
 
 #include "PropertiesWnd.h"
-#include "Resource.h"
 #include "MainFrm.h"
 #include "RadNotepad.h"
+
+#include "..\resource.h"
+
 #include <algorithm>
 
 #ifdef _DEBUG

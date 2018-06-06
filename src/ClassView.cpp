@@ -1,9 +1,11 @@
 
 #include "stdafx.h"
+
 #include "MainFrm.h"
 #include "ClassView.h"
-#include "Resource.h"
 #include "RadNotepad.h"
+
+#include "..\resource.h"
 
 class CClassViewMenuButton : public CMFCToolBarMenuButton
 {

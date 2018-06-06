@@ -7,7 +7,7 @@
 	#error "include 'stdafx.h' before including this file for PCH"
 #endif
 
-#include "resource.h"       // main symbols
+#include "..\resource.h"       // main symbols
 #include "Settings.h"
 #include "Tools.h"
 
