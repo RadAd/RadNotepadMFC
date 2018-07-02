@@ -161,6 +161,7 @@ BOOL CRadNotepadDoc::OnNewDocument()
 
 BOOL CRadNotepadDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
+    m_eEncoding = theApp.m_Settings.DefaultEncoding;
     if (PathFileExists(lpszPathName))
         return CScintillaDoc::OnOpenDocument(lpszPathName);
     else
@@ -459,6 +460,7 @@ void CRadNotepadDoc::SyncModified()
 void CRadNotepadDoc::OnFileRevert()
 {
     OnOpenDocument(GetPathName());
+    UpdateAllViews(nullptr, HINT_REVERT);
 }
 
 

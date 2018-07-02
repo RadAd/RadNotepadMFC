@@ -696,5 +696,9 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
             }
         }
         break;
+
+    case HINT_REVERT:
+        Invalidate();
+        break;
     }
 }

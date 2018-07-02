@@ -55,6 +55,7 @@
 #define HINT_UPDATE_SETTINGS    2
 #define HINT_PATH_UPDATED       3
 #define HINT_SHELL_CHANGED      4
+#define HINT_REVERT             5
 
 struct CShellChanged : public CObject
 {

@@ -131,7 +131,7 @@ protected:
     {
         CCommandLineInfo::ParseParamFlag(pszParam);
 
-        if (lstrcmpA(pszParam, "NewWindow") == 0)
+        if (lstrcmpiA(pszParam, "NewWindow") == 0)
             m_bNewWindow = TRUE;
     }
 };
