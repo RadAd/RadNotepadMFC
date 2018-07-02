@@ -544,22 +544,48 @@ void CRadNotepadView::OnEditFindPrevious()
 {
     if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
+    else
+    {
+        CScintillaCtrl& rCtrl = GetCtrl();
+        int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
+        rCtrl.EnsureVisible(nLine);
+        if (g_scintillaEditState.pFindReplaceDlg != nullptr)
+            AdjustFindDialogPosition();
+    }
 }
 
 void CRadNotepadView::OnEditFindNextCurrentWord()
 {
+    m_bFirstSearch = TRUE;
     g_scintillaEditState.strFind = GetCurrentWord();
     g_scintillaEditState.bNext = TRUE;
     if (!FindText(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
+    else
+    {
+        CScintillaCtrl& rCtrl = GetCtrl();
+        int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
+        rCtrl.EnsureVisible(nLine);
+        if (g_scintillaEditState.pFindReplaceDlg != nullptr)
+            AdjustFindDialogPosition();
+    }
 }
 
 void CRadNotepadView::OnEditFindPreviousCurrentWord()
 {
+    m_bFirstSearch = TRUE;
     g_scintillaEditState.strFind = GetCurrentWord();
     g_scintillaEditState.bNext = TRUE;
     if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
         TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
+    else
+    {
+        CScintillaCtrl& rCtrl = GetCtrl();
+        int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
+        rCtrl.EnsureVisible(nLine);
+        if (g_scintillaEditState.pFindReplaceDlg != nullptr)
+            AdjustFindDialogPosition();
+    }
 }
 
 void CRadNotepadView::OnEditFindMatchingBrace()
