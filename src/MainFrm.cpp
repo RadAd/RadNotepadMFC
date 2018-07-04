@@ -7,6 +7,7 @@
 #include "RadWindowsManagerDialog.h"
 #include "RadDocManager.h"
 #include "RadWaitCursor.h"
+#include "RadToolBarsCustomizeDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -71,8 +72,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
     ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, &CMainFrame::OnAfxWmOnGetTabTooltip)
     ON_REGISTERED_MESSAGE(WM_RADNOTEPAD, &CMainFrame::OnRadNotepad)
-    ON_COMMAND_RANGE(ID_TOOLS_FIRSTTOOL, ID_TOOLS_LASTTOOL, &CMainFrame::OnToolsTool)
-    ON_UPDATE_COMMAND_UI(ID_TOOLS_FIRSTTOOL, &CMainFrame::OnUpdateToolsTool)
     ON_UPDATE_COMMAND_UI(ID_DOCKINGWINDOWS, &CMainFrame::OnUpdateDockingWindows)
     ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
@@ -347,7 +346,7 @@ void CMainFrame::OnWindowManager()
 
 void CMainFrame::OnViewCustomize()
 {
-    CMFCToolBarsCustomizeDialog* pDlgCust = new CMFCToolBarsCustomizeDialog(this, TRUE /* scan menus */);
+    CMFCToolBarsCustomizeDialog* pDlgCust = new CRadToolBarsCustomizeDialog(this, TRUE /* scan menus */);
     pDlgCust->EnableUserDefinedToolbars();
     pDlgCust->Create();
 }
@@ -393,6 +392,8 @@ BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle, CWnd* pParent
         return FALSE;
     }
 
+    if (afxUserToolsManager->GetUserTools().IsEmpty())
+        CRadToolBarsCustomizeDialog::CreateDefaultTools();
 
     // enable customization button for all user toolbars
     BOOL bNameValid;
@@ -446,70 +447,6 @@ static CString ExpandEnvironmentStrings(LPCTSTR str)
     return ret;
 }
 
-void CMainFrame::OnToolsTool(UINT nID)
-{
-    // TODO
-    // Load when done?
-    // Read-only until done?
-
-    const Tool& tool = theApp.m_Tools[nID - ID_TOOLS_FIRSTTOOL];
-
-    CRadNotepadView* pView = DYNAMIC_DOWNCAST(CRadNotepadView, CRadDocManager::GetActiveView());
-    CDocument* pDoc = pView == nullptr ? nullptr : pView->CView::GetDocument();
-    if (tool.save && pDoc != nullptr && !pDoc->DoFileSave())
-        return;
-
-    ToolExecuteData ted;
-    ted.cmd = ExpandEnvironmentStrings(tool.cmd);
-    ted.param = ExpandEnvironmentStrings(tool.param);
-    ted.directory = _T("{path}");
-    ted.pWndOutput = &m_wndOutput;
-
-    if (pDoc != nullptr && pView != nullptr)
-    {
-        TCHAR FileName[MAX_PATH] = _T("");
-        StrCpy(FileName, pDoc->GetPathName());
-        TCHAR Dir[MAX_PATH] = _T("");
-        StrCpy(Dir, pDoc->GetPathName());
-        PathRemoveFileSpec(Dir);
-
-        for (CString* s : { &ted.cmd, &ted.directory })
-        {
-            s->Replace(_T("{file}"), FileName);
-            s->Replace(_T("{path}"), Dir);
-            s->Replace(_T("{selected}"), pView->GetCurrentWord());
-        }
-
-        PathQuoteSpaces(FileName);
-        PathQuoteSpaces(Dir);
-
-        for (CString* s : { &ted.param })
-        {
-            s->Replace(_T("{file}"), FileName);
-            s->Replace(_T("{path}"), Dir);
-            s->Replace(_T("{selected}"), pView->GetCtrl().GetSelText());
-        }
-    }
-    else
-    {
-        for (CString* s : { &ted.cmd, &ted.directory })
-        {
-            s->Replace(_T("{file}"), _T(""));
-            s->Replace(_T("{path}"), _T(""));
-            s->Replace(_T("{selected}"), _T(""));
-        }
-
-        for (CString* s : { &ted.param })
-        {
-            s->Replace(_T("{file}"), _T("\"\""));
-            s->Replace(_T("{path}"), _T("\"\""));
-            s->Replace(_T("{selected}"), _T("\"\""));
-        }
-    }
-
-    ExecuteTool(tool, ted);
-}
-
 // Copied from CMFCToolBarImages::AddIcon because it is failing if pImages->IsScaled()
 int AddIcon(CMFCToolBarImages* pImages, HICON hIcon)
 {
@@ -536,53 +473,6 @@ int AddIcon(CMFCToolBarImages* pImages, HICON hIcon)
     dcMem.SelectObject(pBmpOriginal);
 
     return pImages->AddImage(bmpMem);
-}
-
-void CMainFrame::OnUpdateToolsTool(CCmdUI *pCmdUI)
-{
-    if (theApp.m_Tools.empty())
-    {
-        pCmdUI->Enable(FALSE);
-    }
-    else if (pCmdUI->m_pMenu != nullptr)
-    {
-        for (int i = 0; i < (ID_TOOLS_LASTTOOL - ID_TOOLS_FIRSTTOOL); ++i)
-            pCmdUI->m_pMenu->DeleteMenu(pCmdUI->m_nID + i, MF_BYCOMMAND);
-
-        CMFCToolBarImages* pImages = CMFCToolBar::GetImages();
-        //pImages->SmoothResize(1.25);
-
-        for (const Tool& tool : theApp.m_Tools)
-        {
-            pCmdUI->m_pMenu->InsertMenu(pCmdUI->m_nIndex++, MF_STRING | MF_BYPOSITION, pCmdUI->m_nID++, tool.name);
-            if (tool.hIcon != NULL)
-            {
-#if 0
-                CBitmap hBitmapUnchecked, hBitmapChecked;
-                if (IconToBitmap(this, tool.hIcon, hBitmapUnchecked, hBitmapChecked))
-                {
-                    pCmdUI->m_pMenu->SetMenuItemBitmaps(pCmdUI->m_nIndex - 1, MF_BYPOSITION, &hBitmapUnchecked, &hBitmapChecked);
-                    hBitmapUnchecked.Detach();
-                    hBitmapChecked.Detach();
-                }
-#else
-                if (GetCmdMgr()->GetCmdImage(pCmdUI->m_nID - 1, FALSE) < 0)
-                {
-                    int i = pImages->AddIcon(tool.hIcon);
-                    if (i == -1)
-                        i = AddIcon(pImages, tool.hIcon);
-                    // TODO This is faliing (i == -1) on some computers
-                    GetCmdMgr()->SetCmdImage(pCmdUI->m_nID - 1, i, FALSE);
-                }
-#endif
-            }
-        }
-
-        pCmdUI->m_nIndex--; // point to last menu added
-        pCmdUI->m_nIndexMax = pCmdUI->m_pMenu->GetMenuItemCount();
-
-        pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
-    }
 }
 
 void CMainFrame::OnUpdateDockingWindows(CCmdUI *pCmdUI)
@@ -705,7 +595,6 @@ void CMainFrame::OnContextMenu(CWnd* pWnd, CPoint point)
         }
     }
 }
-
 
 BOOL CMainFrame::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
 {

@@ -220,7 +220,7 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "<placeholder>",               ID_TOOLS_FIRSTTOOL
+        MENUITEM "<placeholder>",               ID_TOOLS
     END
     POPUP "&Window"
     BEGIN
@@ -576,7 +576,7 @@ END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+    AFX_IDS_PREVIEW_CLOSE   "{selected}"
 END
 
 STRINGTABLE
@@ -611,6 +611,9 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_CLOSEOTHERS     "Close all documents except the active document\nClose Others"
+    ID_FIELD_FILE           "{file}"
+    ID_FIELD_PATH           "{path}"
+    ID_FIELD_SELECTED       "{selected}"
 END
 
 STRINGTABLE
@@ -645,6 +648,22 @@ IDD_SAVE_MODIFIED       ICON                    "res\\save.ico"
 //
 
 IDB_USER_IMAGES         BITMAP                  "res\\UserImages.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_TOOL_FIELDS MENU
+BEGIN
+    POPUP "Field"
+    BEGIN
+        MENUITEM "File",                        ID_FIELD_FILE
+        MENUITEM "Path",                        ID_FIELD_PATH
+        MENUITEM "Selected",                    ID_FIELD_SELECTED
+    END
+END
 
 
 /////////////////////////////////////////////////////////////////////////////

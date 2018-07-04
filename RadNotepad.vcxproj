@@ -112,7 +112,8 @@
       </Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>copy tools.dat "$(OutputPath)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -142,7 +143,8 @@
       </Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>copy tools.dat "$(OutputPath)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -176,7 +178,8 @@
       </Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>copy tools.dat "$(OutputPath)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -210,10 +213,12 @@
       </Command>
     </CustomBuildStep>
     <PostBuildEvent>
-      <Command>copy tools.dat "$(OutputPath)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="resource.h" />
     <ClInclude Include="src\AboutDlg.h" />
     <ClInclude Include="src\ChildFrm.h" />
     <ClInclude Include="src\ClassView.h" />
@@ -227,9 +232,10 @@
     <ClInclude Include="src\MainFrm.h" />
     <ClInclude Include="src\OutputWnd.h" />
     <ClInclude Include="src\PropertiesWnd.h" />
+    <ClInclude Include="src\RadToolBarsCustomizeDialog.h" />
+    <ClInclude Include="src\RadUserTool.h" />
     <ClInclude Include="src\RadWaitCursor.h" />
     <ClInclude Include="src\RadWindowsManagerDialog.h" />
-    <ClInclude Include="src\Resource.h" />
     <ClInclude Include="src\SaveModifiedDlg.h" />
     <ClInclude Include="src\scintillawrappers\resource.h" />
     <ClInclude Include="src\scintillawrappers\ScintillaCtrl.h" />
@@ -238,7 +244,6 @@
     <ClInclude Include="src\stdafx.h" />
     <ClInclude Include="src\targetver.h" />
     <ClInclude Include="src\Theme.h" />
-    <ClInclude Include="src\Tools.h" />
     <ClInclude Include="src\ViewTree.h" />
   </ItemGroup>
   <ItemGroup>
@@ -254,6 +259,8 @@
     <ClCompile Include="src\MainFrm.cpp" />
     <ClCompile Include="src\OutputWnd.cpp" />
     <ClCompile Include="src\PropertiesWnd.cpp" />
+    <ClCompile Include="src\RadToolBarsCustomizeDialog.cpp" />
+    <ClCompile Include="src\RadUserTool.cpp" />
     <ClCompile Include="src\RadWaitCursor.cpp" />
     <ClCompile Include="src\RadWindowsManagerDialog.cpp" />
     <ClCompile Include="src\SaveModifiedDlg.cpp" />
@@ -266,7 +273,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\Theme.cpp" />
-    <ClCompile Include="src\Tools.cpp" />
     <ClCompile Include="src\ViewTree.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -294,7 +300,6 @@
     <None Include="schemes\*.scheme" />
     <None Include="schemes\extmap.dat" />
     <None Include="scintillawrappers\ScintillaDocView.rc2" />
-    <None Include="tools.dat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

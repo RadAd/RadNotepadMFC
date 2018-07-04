@@ -46,6 +46,7 @@
 #define IDR_POPUP_SORT                  173
 #define IDB_CLASS_VIEW                  177
 #define IDR_MENU_IMAGES                 179
+#define IDR_TOOL_FIELDS                 179
 #define ID_TOOLS_MACRO                  181
 #define IDR_POPUP_OUTPUT                182
 #define IDR_PROPERTIES                  183
@@ -105,6 +106,10 @@
 #define ID_RETURN                       32861
 #define ID_EDIT_RETURN                  32863
 #define ID_FILE_CLOSEOTHERS             32868
+#define ID_FIELD_FILE                   32869
+#define ID_FIELD_PATH                   32870
+#define ID_FIELD_SELECTED               32871
+#define ID_TOOLS                        32872
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -112,8 +117,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        323
-#define _APS_NEXT_COMMAND_VALUE         32869
+#define _APS_NEXT_RESOURCE_VALUE        325
+#define _APS_NEXT_COMMAND_VALUE         32873
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

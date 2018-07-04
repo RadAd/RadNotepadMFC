@@ -9,7 +9,6 @@
 
 #include "..\resource.h"       // main symbols
 #include "Settings.h"
-#include "Tools.h"
 
 // CRadNotepadApp:
 // See RadNotepad.cpp for the implementation of this class
@@ -32,7 +31,6 @@ public:
     HMODULE m_hSciDLL;
     Settings m_Settings;
     BOOL m_SaveSettings;
-    std::vector<Tool> m_Tools;
 
 	virtual void PreLoadState();
 	virtual void LoadCustomState();

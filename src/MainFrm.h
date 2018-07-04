@@ -15,6 +15,8 @@ class CMainFrame : public CMDIFrameWndEx
 public:
     CMainFrame();
 
+    COutputWnd* GetWndOutput() { return &m_wndOutput; }
+
 // Attributes
 public:
 
@@ -66,13 +68,12 @@ protected:
     afx_msg void OnViewPane(UINT nID);
     afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnUpdateClear(CCmdUI* pCmdUI);
-    afx_msg void OnToolsTool(UINT nID);
-    afx_msg void OnUpdateToolsTool(CCmdUI *pCmdUI);
     afx_msg void OnUpdateDockingWindows(CCmdUI *pCmdUI);
     afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
     afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+
 public:
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };

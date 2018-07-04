@@ -13,6 +13,7 @@
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
 #include "RadDocManager.h"
+#include "RadUserTool.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -232,6 +233,8 @@ BOOL CRadNotepadApp::InitInstance()
 	theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,
 		RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
+    EnableUserTools(ID_TOOLS, ID_TOOLS_FIRSTTOOL, ID_TOOLS_LASTTOOL, RUNTIME_CLASS(CRadUserTool), IDR_TOOL_FIELDS, IDR_TOOL_FIELDS);
+
     ASSERT(m_pDocManager == NULL);
     m_pDocManager = new CRadDocManager();
 
@@ -311,7 +314,6 @@ void CRadNotepadApp::PreLoadState()
 
 void CRadNotepadApp::LoadCustomState()
 {
-    InitTools(m_Tools);
 }
 
 void CRadNotepadApp::SaveCustomState()
