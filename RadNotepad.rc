@@ -189,7 +189,7 @@ BEGIN
         END
         POPUP "Docking Windows"
         BEGIN
-            MENUITEM "<placeholder>",               ID_DOCKINGWINDOWS
+            MENUITEM "<placeholder>",               ID_VIEW_DOCKINGWINDOWS
         END
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "Save Settings on Exit",       ID_VIEW_SAVESETTINGSONEXIT

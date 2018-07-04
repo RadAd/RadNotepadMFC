@@ -72,7 +72,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
     ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, &CMainFrame::OnAfxWmOnGetTabTooltip)
     ON_REGISTERED_MESSAGE(WM_RADNOTEPAD, &CMainFrame::OnRadNotepad)
-    ON_UPDATE_COMMAND_UI(ID_DOCKINGWINDOWS, &CMainFrame::OnUpdateDockingWindows)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_DOCKINGWINDOWS, &CMainFrame::OnUpdateDockingWindows)
     ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
@@ -481,7 +481,7 @@ void CMainFrame::OnUpdateDockingWindows(CCmdUI *pCmdUI)
 {
     if (pCmdUI->m_pSubMenu != nullptr)
     {
-        pCmdUI->m_pMenu->DeleteMenu(ID_DOCKINGWINDOWS, MF_BYCOMMAND);
+        pCmdUI->m_pMenu->DeleteMenu(ID_VIEW_DOCKINGWINDOWS, MF_BYCOMMAND);
 
         CObList lstBars;
         GetDockingManager()->GetPaneList(lstBars, TRUE, RUNTIME_CLASS(CDockablePane), TRUE);
