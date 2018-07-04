@@ -59,6 +59,10 @@
 #define IDB_USER_IMAGES                 322
 #define IDC_LINE                        1000
 #define IDC_LIST1                       1000
+#define ID_VERSION                      1001
+#define ID_COPYRIGHT                    1002
+#define ID_VERSION_SCINTILLA            1003
+#define ID_COPYRIGHT_SCINTILLA          1004
 #define ID_FILE_REVERT                  32784
 #define ID_FILE_CLOSEALL                32788
 #define ID_FILE_SAVEALL                 32789
@@ -111,9 +115,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        325
+#define _APS_NEXT_RESOURCE_VALUE        326
 #define _APS_NEXT_COMMAND_VALUE         32876
-#define _APS_NEXT_CONTROL_VALUE         1001
+#define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
 #endif

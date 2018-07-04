@@ -324,6 +324,13 @@ void CRadNotepadApp::SaveCustomState()
 
 // CRadNotepadApp message handlers
 
+// App command to run the dialog
+void CRadNotepadApp::OnAppAbout()
+{
+    CAboutDlg aboutDlg;
+    aboutDlg.DoModal();
+}
+
 void CRadNotepadApp::OnFileCloseAll()
 {
     CloseAllDocuments(FALSE);
