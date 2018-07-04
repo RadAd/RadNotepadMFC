@@ -38,6 +38,7 @@ protected:
     afx_msg void OnEditCopy();
     afx_msg void OnEditClear();
     afx_msg void OnViewOutput();
+    afx_msg void OnReturn();
     afx_msg void OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult);
 };
 
@@ -72,5 +73,4 @@ protected:
     DECLARE_MESSAGE_MAP()
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnSize(UINT nType, int cx, int cy);
-    afx_msg void OnReturn();
 };

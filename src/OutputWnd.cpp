@@ -37,7 +37,6 @@ COutputWnd::~COutputWnd()
 BEGIN_MESSAGE_MAP(COutputWnd, CDockablePane)
     ON_WM_CREATE()
     ON_WM_SIZE()
-    ON_COMMAND(ID_RETURN, &COutputWnd::OnReturn)
 END_MESSAGE_MAP()
 
 int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -216,6 +215,7 @@ BEGIN_MESSAGE_MAP(COutputList, CListBox)
     ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
     ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
     ON_COMMAND(ID_VIEW_OUTPUTWND, OnViewOutput)
+    ON_COMMAND(ID_RETURN, OnReturn)
     ON_NOTIFY_REFLECT(SCN_HOTSPOTCLICK, OnHotSpotClick)
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
@@ -334,7 +334,7 @@ BOOL COutputWnd::PreTranslateMessage(MSG* pMsg)
     return CDockablePane::PreTranslateMessage(pMsg);
 }
 
-void COutputWnd::OnReturn()
+void COutputList::OnReturn()
 {
     CView* pView = CRadDocManager::GetActiveView();
     if (pView)

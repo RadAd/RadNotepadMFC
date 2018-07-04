@@ -180,7 +180,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Make Uppercase\tCtrl+Shift+U", ID_EDIT_MAKEUPPERCASE
         MENUITEM "Make Lowercase\tCtrl+U",      ID_EDIT_MAKELOWERCASE
-        MENUITEM "Return",                      ID_RETURN
     END
     POPUP "&View"
     BEGIN
@@ -267,6 +266,7 @@ BEGIN
         MENUITEM "&Clear",                      ID_EDIT_CLEAR
         MENUITEM SEPARATOR
         MENUITEM "&Hide",                       ID_VIEW_OUTPUTWND
+        MENUITEM "Return",                      ID_RETURN
     END
 END
 
@@ -313,7 +313,6 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
-    VK_ESCAPE,      ID_RETURN,              VIRTKEY, NOINVERT
 END
 
 IDR_EXPLORER ACCELERATORS
@@ -587,6 +586,7 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_VIEW_OUTPUTWND       "Hide the output window"
     ID_SORTPROPERTIES       "Sort properties\nSort"
     ID_PROPERTIES_RESET     "Reset to defaults\nReset"
     ID_EXPAND_ALL           "Expand All\nExpand"
@@ -619,6 +619,11 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_READONLY        "Toggle the read only state\nRead Only"
+END
+
+STRINGTABLE
+BEGIN
+    ID_RETURN               "Return to the main window"
 END
 
 #endif    // English (United States) resources
