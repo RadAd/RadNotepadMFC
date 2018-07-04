@@ -63,6 +63,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadApp, CWinAppEx)
     ON_UPDATE_COMMAND_UI(ID_FILE_SAVEALL, &CRadNotepadApp::OnUpdateFileSaveAll)
     ON_COMMAND(ID_FILE_CLOSEOTHERS, &CRadNotepadApp::OnFileCloseOthers)
     ON_UPDATE_COMMAND_UI(ID_FILE_CLOSEOTHERS, &CRadNotepadApp::OnUpdateFileCloseOthers)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_SAVESETTINGSONEXIT, &CRadNotepadApp::OnUpdateViewSaveSettingsOnExit)
+    ON_COMMAND(ID_VIEW_SAVESETTINGSONEXIT, &CRadNotepadApp::OnViewSaveSettingsOnExit)
 END_MESSAGE_MAP()
 
 
@@ -141,6 +143,8 @@ protected:
 
 BOOL CRadNotepadApp::InitInstance()
 {
+    m_bSaveState = FALSE;
+
     // Parse command line for standard shell commands, DDE, file open
     CRadCommandLineInfo cmdInfo;
     if (!m_Settings.bEmptyFileOnStartup)
@@ -205,9 +209,6 @@ BOOL CRadNotepadApp::InitInstance()
 		AfxMessageBox(IDP_OLE_INIT_FAILED);
 		return FALSE;
 	}
-
-    // TODO Load settings
-    LoadTheme(&m_Settings.user, &m_Settings.default);
 
     AfxEnableControlContainer();
 
@@ -279,10 +280,6 @@ BOOL CRadNotepadApp::InitInstance()
 
 int CRadNotepadApp::ExitInstance()
 {
-    // TODO Save settings
-    if (m_SaveSettings)
-        SaveTheme(&m_Settings.user, &m_Settings.default);
-
 	AfxOleTerm(FALSE);
 
     FreeLibrary(m_hSciDLL);
@@ -314,10 +311,15 @@ void CRadNotepadApp::PreLoadState()
 
 void CRadNotepadApp::LoadCustomState()
 {
+    // TODO Load settings
+    LoadTheme(&m_Settings.user, &m_Settings.default);
 }
 
 void CRadNotepadApp::SaveCustomState()
 {
+    // TODO Save settings
+    if (m_SaveSettings)
+        SaveTheme(&m_Settings.user, &m_Settings.default);
 }
 
 // CRadNotepadApp message handlers
@@ -355,4 +357,14 @@ void CRadNotepadApp::OnFileCloseOthers()
 void CRadNotepadApp::OnUpdateFileCloseOthers(CCmdUI *pCmdUI)
 {
     pCmdUI->Enable(CRadDocManager::GetActiveDocument() != nullptr);
+}
+
+void CRadNotepadApp::OnUpdateViewSaveSettingsOnExit(CCmdUI *pCmdUI)
+{
+    pCmdUI->SetCheck(m_bSaveState);
+}
+
+void CRadNotepadApp::OnViewSaveSettingsOnExit()
+{
+    m_bSaveState = !m_bSaveState;
 }
