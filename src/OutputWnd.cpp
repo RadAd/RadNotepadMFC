@@ -217,6 +217,8 @@ BEGIN_MESSAGE_MAP(COutputList, CListBox)
     ON_COMMAND(ID_VIEW_OUTPUTWND, OnViewOutput)
     ON_COMMAND(ID_RETURN, OnReturn)
     ON_NOTIFY_REFLECT(SCN_HOTSPOTCLICK, OnHotSpotClick)
+    ON_UPDATE_COMMAND_UI(ID_POPUP_WORDWRAP, &COutputList::OnUpdatePopupWordWrap)
+    ON_COMMAND(ID_POPUP_WORDWRAP, &COutputList::OnPopupWordWrap)
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // COutputList message handlers
@@ -349,4 +351,17 @@ BOOL COutputWnd::OnCommand(WPARAM wParam, LPARAM lParam)
         return TRUE;
 
     return CDockablePane::OnCommand(wParam, lParam);
+}
+
+void COutputList::OnUpdatePopupWordWrap(CCmdUI *pCmdUI)
+{
+    pCmdUI->SetCheck(GetWrapMode() != SC_WRAP_NONE);
+}
+
+
+void COutputList::OnPopupWordWrap()
+{
+    int wm = GetWrapMode();
+    wm = wm == SC_WRAP_WORD ? SC_WRAP_NONE : SC_WRAP_WORD;
+    SetWrapMode(wm);
 }

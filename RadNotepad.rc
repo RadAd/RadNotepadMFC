@@ -267,6 +267,7 @@ BEGIN
         MENUITEM "&Clear",                      ID_EDIT_CLEAR
         MENUITEM SEPARATOR
         MENUITEM "&Hide",                       ID_VIEW_OUTPUTWND
+        MENUITEM "&Word Wrap",                  ID_POPUP_WORDWRAP
         MENUITEM "Return",                      ID_RETURN
     END
 END
