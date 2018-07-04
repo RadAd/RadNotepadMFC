@@ -484,6 +484,8 @@ void CMainFrame::OnUpdateDockingWindows(CCmdUI *pCmdUI)
     {
         pCmdUI->m_pMenu->DeleteMenu(ID_VIEW_DOCKINGWINDOWS, MF_BYCOMMAND);
 
+        CMFCToolBarImages* pImages = CMFCToolBar::GetImages();
+
         CObList lstBars;
         GetDockingManager()->GetPaneList(lstBars, TRUE, RUNTIME_CLASS(CDockablePane), TRUE);
         for (POSITION pos = lstBars.GetHeadPosition(); pos != NULL;)
@@ -495,6 +497,15 @@ void CMainFrame::OnUpdateDockingWindows(CCmdUI *pCmdUI)
                 pPane->GetPaneName(title);
                 pCmdUI->m_pSubMenu->AppendMenu(MF_STRING, pPane->GetDlgCtrlID(), title);
                 pCmdUI->m_pSubMenu->CheckMenuItem(pPane->GetDlgCtrlID(), (pPane->IsVisible() ? MF_CHECKED : MF_UNCHECKED) |  MF_BYCOMMAND);
+                if (GetCmdMgr()->GetCmdImage(pPane->GetDlgCtrlID(), FALSE) < 0)
+                {
+                    HICON hIcon = pPane->GetPaneIcon(FALSE);
+                    int i = pImages->AddIcon(hIcon);
+                    if (i == -1)
+                        i = AddIcon(pImages, hIcon);
+                    // TODO This is faliing (i == -1) on some computers
+                    GetCmdMgr()->SetCmdImage(pPane->GetDlgCtrlID(), i, FALSE);
+                }
             }
         }
     }
