@@ -42,8 +42,6 @@ protected:
 	afx_msg void OnUpdateSortProperties(CCmdUI* pCmdUI);
 	afx_msg void OnPropertiesReset();
 	afx_msg void OnUpdatePropertiesReset(CCmdUI* pCmdUI);
-	afx_msg void OnProperties2();
-	afx_msg void OnUpdateProperties2(CCmdUI* pCmdUI);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg LRESULT OnPropertyChanged(WPARAM wParam, LPARAM lParam);

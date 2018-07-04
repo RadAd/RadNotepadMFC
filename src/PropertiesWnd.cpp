@@ -467,8 +467,6 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
 	ON_UPDATE_COMMAND_UI(ID_SORTPROPERTIES, OnUpdateSortProperties)
 	ON_COMMAND(ID_PROPERTIES_RESET, OnPropertiesReset)
 	ON_UPDATE_COMMAND_UI(ID_PROPERTIES_RESET, OnUpdatePropertiesReset)
-	ON_COMMAND(ID_PROPERTIES2, OnProperties2)
-	ON_UPDATE_COMMAND_UI(ID_PROPERTIES2, OnUpdateProperties2)
 	ON_WM_SETFOCUS()
 	ON_WM_SETTINGCHANGE()
     ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
@@ -595,17 +593,6 @@ void CPropertiesWnd::OnPropertiesReset()
 void CPropertiesWnd::OnUpdatePropertiesReset(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(m_pSettings->user != m_pSettings->default);
-}
-
-void CPropertiesWnd::OnProperties2()
-{
-	// TODO: Add your command handler code here
-    theApp.NotifySettingsChanged();
-}
-
-void CPropertiesWnd::OnUpdateProperties2(CCmdUI* /*pCmdUI*/)
-{
-	// TODO: Add your command update UI handler code here
 }
 
 void CPropertiesWnd::InitPropList()

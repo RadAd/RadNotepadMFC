@@ -31,7 +31,6 @@
 #define ID_VIEW_PROPERTIESWND           150
 #define ID_SORTPROPERTIES               151
 #define ID_PROPERTIES_RESET             152
-#define ID_PROPERTIES2                  153
 #define ID_EXPAND_ALL                   154
 #define IDS_FILE_VIEW                   155
 #define IDS_CLASS_VIEW                  156
@@ -111,6 +110,7 @@
 #define ID_FIELD_SELECTED               32871
 #define ID_TOOLS                        32872
 #define ID_VIEW_SAVESETTINGSONEXIT      32873
+#define ID_BUTTON32874                  32874
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -119,7 +119,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        325
-#define _APS_NEXT_COMMAND_VALUE         32874
+#define _APS_NEXT_COMMAND_VALUE         32875
 #define _APS_NEXT_CONTROL_VALUE         1001
 #define _APS_NEXT_SYMED_VALUE           310
 #endif
