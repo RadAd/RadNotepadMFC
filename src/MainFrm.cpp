@@ -392,6 +392,8 @@ BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle, CWnd* pParent
         return FALSE;
     }
 
+    m_wndProperties.InitLanguages();
+
     if (afxUserToolsManager->GetUserTools().IsEmpty())
         CRadToolBarsCustomizeDialog::CreateDefaultTools();
 

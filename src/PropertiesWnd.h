@@ -11,6 +11,7 @@ class CPropertiesWnd : public CDockablePane
 public:
 	CPropertiesWnd();
 
+    void InitLanguages();
 	void AdjustLayout();
 
 // Attributes

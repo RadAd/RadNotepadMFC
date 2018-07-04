@@ -479,6 +479,22 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CResourceViewBar message handlers
 
+void CPropertiesWnd::InitLanguages()
+{
+    std::vector<Language>& vecLanguage = m_pSettings->user.vecLanguage;
+    std::vector<Language*> vecSortLanguage; // = vecLanguage;
+    for (Language& rLanguage : vecLanguage)
+        vecSortLanguage.push_back(&rLanguage);
+    std::sort(vecSortLanguage.begin(), vecSortLanguage.end(), CompareLanguageTitle);
+
+    for (Language* pLanguage : vecSortLanguage)
+    {
+        CString name = pLanguage->internal ? _T("Output: ") + pLanguage->title : _T("Language: ") + pLanguage->title;
+        int i = m_wndObjectCombo.AddString(name);
+        m_wndObjectCombo.SetItemData(i, (DWORD_PTR) pLanguage);
+    }
+}
+
 void CPropertiesWnd::AdjustLayout()
 {
 	if (GetSafeHwnd () == NULL || (AfxGetMainWnd() != NULL && AfxGetMainWnd()->IsIconic()))
@@ -515,20 +531,6 @@ int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_wndObjectCombo.AddString(_T("Application"));
 	m_wndObjectCombo.AddString(_T("Editor"));
-    {
-        std::vector<Language>& vecLanguage = theApp.m_Settings.user.vecLanguage;
-        std::vector<Language*> vecSortLanguage; // = vecLanguage;
-        for (Language& rLanguage : vecLanguage)
-            vecSortLanguage.push_back(&rLanguage);
-        std::sort(vecSortLanguage.begin(), vecSortLanguage.end(), CompareLanguageTitle);
-
-        for (Language* pLanguage : vecSortLanguage)
-        {
-            CString name = pLanguage->internal ? _T("Output: ") + pLanguage->title : _T("Language: ") + pLanguage->title;
-            int i = m_wndObjectCombo.AddString(name);
-            m_wndObjectCombo.SetItemData(i, (DWORD_PTR) pLanguage);
-        }
-    }
 	m_wndObjectCombo.SetCurSel(0);
 
 	CRect rectCombo;
