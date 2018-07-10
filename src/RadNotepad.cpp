@@ -212,8 +212,6 @@ BOOL CRadNotepadApp::InitInstance()
 
     AfxEnableControlContainer();
 
-	EnableTaskbarInteraction();
-
 	// AfxInitRichEdit2() is required to use RichEdit control
 	// AfxInitRichEdit2();
 
@@ -235,6 +233,7 @@ BOOL CRadNotepadApp::InitInstance()
 		RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
 
     EnableUserTools(ID_TOOLS, ID_TOOLS_FIRSTTOOL, ID_TOOLS_LASTTOOL, RUNTIME_CLASS(CRadUserTool), IDR_TOOL_FIELDS, IDR_TOOL_FIELDS);
+    EnableTaskbarInteraction(GetProfileInt(_T("Settings"), _T("EnableTaskbarInteraction"), 1));
 
     ASSERT(m_pDocManager == NULL);
     m_pDocManager = new CRadDocManager();
