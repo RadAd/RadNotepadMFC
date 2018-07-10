@@ -35,6 +35,8 @@ public:
 	virtual void PreLoadState();
 	virtual void LoadCustomState();
 	virtual void SaveCustomState();
+    virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName);
+    virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU);
 
     afx_msg void OnAppAbout();
 	DECLARE_MESSAGE_MAP()

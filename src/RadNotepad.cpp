@@ -321,6 +321,37 @@ void CRadNotepadApp::SaveCustomState()
         SaveTheme(&m_Settings.user, &m_Settings.default);
 }
 
+CDocument* CRadNotepadApp::OpenDocumentFile(LPCTSTR lpszFileName)
+{
+    return OpenDocumentFile(lpszFileName, TRUE);
+}
+
+CDocument* CRadNotepadApp::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU)
+{
+    CRadNotepadDoc* ret = nullptr;
+
+    const wchar_t* p = _tcsrchr(lpszFileName, _T(':'));
+    if (p != nullptr && (p - lpszFileName) > 1)
+    {
+        size_t len = (p - lpszFileName);
+        TCHAR szFileName[MAX_PATH];
+        _tcsncpy_s(szFileName, lpszFileName, len);
+        szFileName[len] = _T('\0');
+
+        int line = _tstoi(p + 1) - 1;
+
+        ret = DYNAMIC_DOWNCAST(CRadNotepadDoc, CWinAppEx::OpenDocumentFile(szFileName, bAddToMRU));
+
+        if (ret != nullptr && line >= 0)
+            ret->GetView()->GetCtrl().GotoLine(line);
+    }
+    else
+    {
+        ret = DYNAMIC_DOWNCAST(CRadNotepadDoc, CWinAppEx::OpenDocumentFile(lpszFileName, bAddToMRU));
+    }
+    return ret;
+}
+
 // CRadNotepadApp message handlers
 
 // App command to run the dialog
