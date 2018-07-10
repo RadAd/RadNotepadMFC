@@ -723,8 +723,27 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
         }
         break;
 
+    case HINT_REVERT_PRE:
+        {
+            //RevertDataMapT* pRevertData = DYNAMIC_DOWNCAST(CMap<CView*, CView*, int, int>, pHint);
+            // TODO Support multiple selections
+            RevertDataMapT* pRevertData = dynamic_cast<RevertDataMapT*>(pHint);
+            RevertData& data = (*pRevertData)[this];
+            data.selStart = GetCtrl().GetSelectionStart();
+            data.selEnd = GetCtrl().GetSelectionEnd();
+            data.firstVisibleLine = GetCtrl().GetFirstVisibleLine();
+        }
+        break;
+
     case HINT_REVERT:
-        Invalidate();
+        {
+            RevertDataMapT* pRevertData = dynamic_cast<RevertDataMapT*>(pHint);
+            const RevertData& data = (*pRevertData)[this];
+            GetCtrl().SetSelectionStart(data.selStart);
+            GetCtrl().SetSelectionEnd(data.selEnd);
+            GetCtrl().SetFirstVisibleLine(data.firstVisibleLine);
+            Invalidate();
+        }
         break;
     }
 }

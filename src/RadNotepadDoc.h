@@ -1,6 +1,14 @@
 
 #pragma once
 
+struct RevertData
+{
+    Sci_Position selStart;
+    Sci_Position selEnd;
+    int firstVisibleLine;
+};
+typedef CMap<CView*, CView*, RevertData, RevertData&> RevertDataMapT;
+
 class CRadNotepadDoc : public CScintillaDoc
 {
 protected: // create from serialization only

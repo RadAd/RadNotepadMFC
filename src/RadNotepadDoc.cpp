@@ -459,8 +459,10 @@ void CRadNotepadDoc::SyncModified()
 
 void CRadNotepadDoc::OnFileRevert()
 {
+    RevertDataMapT revertData;
+    UpdateAllViews(nullptr, HINT_REVERT_PRE, &revertData);
     OnOpenDocument(GetPathName());
-    UpdateAllViews(nullptr, HINT_REVERT);
+    UpdateAllViews(nullptr, HINT_REVERT, &revertData);
 }
 
 
