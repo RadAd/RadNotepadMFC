@@ -69,6 +69,7 @@ protected:
     afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnUpdateClear(CCmdUI* pCmdUI);
     afx_msg void OnUpdateDockingWindows(CCmdUI *pCmdUI);
+    afx_msg void OnUpdateViewMargin(CCmdUI *pCmdUI);
     afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
     afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);

@@ -13,6 +13,34 @@
 #define new DEBUG_NEW
 #endif
 
+// Copied from CMFCToolBarImages::AddIcon because it is failing if pImages->IsScaled()
+static int AddIcon(CMFCToolBarImages* pImages, HICON hIcon)
+{
+    CWindowDC dc(NULL);
+
+    CDC dcMem;
+    dcMem.CreateCompatibleDC(NULL);
+
+    CBitmap bmpMem;
+
+    CSize sizeIcon = pImages->GetImageSize();
+
+    bmpMem.CreateCompatibleBitmap(&dc, sizeIcon.cx, sizeIcon.cy);
+
+    CBitmap* pBmpOriginal = dcMem.SelectObject(&bmpMem);
+
+    dcMem.FillRect(CRect(0, 0, sizeIcon.cx, sizeIcon.cy), &(GetGlobalData()->brBtnFace));
+
+    if (hIcon != NULL)
+    {
+        dcMem.DrawState(CPoint(0, 0), sizeIcon, hIcon, DSS_NORMAL, (CBrush*) NULL);
+    }
+
+    dcMem.SelectObject(pBmpOriginal);
+
+    return pImages->AddImage(bmpMem);
+}
+
 UINT NEAR WM_RADNOTEPAD = RegisterWindowMessage(_T("RADNOTEPAD"));
 
 static LRESULT CALLBACK MDIClientHookWndProc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp, UINT_PTR /*uIdSubclass*/, DWORD_PTR dwRefData)
@@ -73,6 +101,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, &CMainFrame::OnAfxWmOnGetTabTooltip)
     ON_REGISTERED_MESSAGE(WM_RADNOTEPAD, &CMainFrame::OnRadNotepad)
     ON_UPDATE_COMMAND_UI(ID_VIEW_DOCKINGWINDOWS, &CMainFrame::OnUpdateDockingWindows)
+    ON_UPDATE_COMMAND_UI_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CMainFrame::OnUpdateViewMargin)
     ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
 
@@ -195,6 +224,28 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     // Enable toolbar and docking window menu replacement
     EnablePaneMenu(TRUE, ID_VIEW_CUSTOMIZE, strCustomize, ID_VIEW_TOOLBAR, FALSE, TRUE);
+
+    {   // Add panel icons to toolbar images
+        CMFCToolBarImages* pImages = CMFCToolBar::GetImages();
+        CObList lstBars;
+        GetDockingManager()->GetPaneList(lstBars, TRUE, RUNTIME_CLASS(CDockablePane), TRUE);
+        for (POSITION pos = lstBars.GetHeadPosition(); pos != NULL;)
+        {
+            CDockablePane* pPane = DYNAMIC_DOWNCAST(CDockablePane, lstBars.GetNext(pos));
+            if (pPane != NULL)
+            {
+                if (GetCmdMgr()->GetCmdImage(pPane->GetDlgCtrlID(), FALSE) < 0)
+                {
+                    HICON hIcon = pPane->GetPaneIcon(FALSE);
+                    int i = pImages->AddIcon(hIcon);
+                    if (i == -1)
+                        i = AddIcon(pImages, hIcon);
+                    // TODO This is faliing (i == -1) on some computers
+                    GetCmdMgr()->SetCmdImage(pPane->GetDlgCtrlID(), i, FALSE);
+                }
+            }
+        }
+    }
 
     // enable quick (Alt+drag) toolbar customization
     CMFCToolBar::EnableQuickCustomization();
@@ -348,6 +399,38 @@ void CMainFrame::OnWindowManager()
 void CMainFrame::OnViewCustomize()
 {
     CMFCToolBarsCustomizeDialog* pDlgCust = new CRadToolBarsCustomizeDialog(this, TRUE /* scan menus */);
+
+    pDlgCust->RemoveButton(_T("View"), ID_VIEW_DOCKINGWINDOWS);
+    CObList lstBars;
+    GetDockingManager()->GetPaneList(lstBars, TRUE, RUNTIME_CLASS(CDockablePane), TRUE);
+    for (POSITION pos = lstBars.GetHeadPosition(); pos != NULL;)
+    {
+        CDockablePane* pPane = DYNAMIC_DOWNCAST(CDockablePane, lstBars.GetNext(pos));
+        if (pPane != NULL)
+        {
+            CString title;
+            pPane->GetPaneName(title);
+
+            CMFCToolBarButton button(pPane->GetDlgCtrlID(), GetCmdMgr()->GetCmdImage(pPane->GetDlgCtrlID(), FALSE), title);
+            pDlgCust->AddButton(_T("Docking Windows"), button);
+        }
+    }
+
+    for (UINT nID = ID_MARGINS_1; nID <= ID_MARGINS_5; ++nID)
+    {
+        pDlgCust->RemoveButton(_T("View"), nID);
+
+        const Theme* pTheme = &theApp.m_Settings.user;
+        size_t i = nID - ID_MARGINS_1;
+        const std::vector<Margin>& vecMargin = pTheme->vecMargin;
+        if (i >= 0 && i < vecMargin.size())
+        {
+            const Margin& margin = vecMargin[i];
+            CMFCToolBarButton button(nID, -1, margin.name);
+            pDlgCust->AddButton(_T("View"), button);
+        }
+    }
+
     pDlgCust->EnableUserDefinedToolbars();
     pDlgCust->Create();
 }
@@ -451,41 +534,11 @@ static CString ExpandEnvironmentStrings(LPCTSTR str)
     return ret;
 }
 
-// Copied from CMFCToolBarImages::AddIcon because it is failing if pImages->IsScaled()
-int AddIcon(CMFCToolBarImages* pImages, HICON hIcon)
-{
-    CWindowDC dc(NULL);
-
-    CDC dcMem;
-    dcMem.CreateCompatibleDC(NULL);
-
-    CBitmap bmpMem;
-
-    CSize sizeIcon = pImages->GetImageSize();
-
-    bmpMem.CreateCompatibleBitmap(&dc, sizeIcon.cx, sizeIcon.cy);
-
-    CBitmap* pBmpOriginal = dcMem.SelectObject(&bmpMem);
-
-    dcMem.FillRect(CRect(0, 0, sizeIcon.cx, sizeIcon.cy), &(GetGlobalData()->brBtnFace));
-
-    if (hIcon != NULL)
-    {
-        dcMem.DrawState(CPoint(0, 0), sizeIcon, hIcon, DSS_NORMAL, (CBrush*) NULL);
-    }
-
-    dcMem.SelectObject(pBmpOriginal);
-
-    return pImages->AddImage(bmpMem);
-}
-
 void CMainFrame::OnUpdateDockingWindows(CCmdUI *pCmdUI)
 {
     if (pCmdUI->m_pSubMenu != nullptr)
     {
         pCmdUI->m_pMenu->DeleteMenu(ID_VIEW_DOCKINGWINDOWS, MF_BYCOMMAND);
-
-        CMFCToolBarImages* pImages = CMFCToolBar::GetImages();
 
         CObList lstBars;
         GetDockingManager()->GetPaneList(lstBars, TRUE, RUNTIME_CLASS(CDockablePane), TRUE);
@@ -498,18 +551,23 @@ void CMainFrame::OnUpdateDockingWindows(CCmdUI *pCmdUI)
                 pPane->GetPaneName(title);
                 pCmdUI->m_pSubMenu->AppendMenu(MF_STRING, pPane->GetDlgCtrlID(), title);
                 pCmdUI->m_pSubMenu->CheckMenuItem(pPane->GetDlgCtrlID(), (pPane->IsVisible() ? MF_CHECKED : MF_UNCHECKED) |  MF_BYCOMMAND);
-                if (GetCmdMgr()->GetCmdImage(pPane->GetDlgCtrlID(), FALSE) < 0)
-                {
-                    HICON hIcon = pPane->GetPaneIcon(FALSE);
-                    int i = pImages->AddIcon(hIcon);
-                    if (i == -1)
-                        i = AddIcon(pImages, hIcon);
-                    // TODO This is faliing (i == -1) on some computers
-                    GetCmdMgr()->SetCmdImage(pPane->GetDlgCtrlID(), i, FALSE);
-                }
             }
         }
     }
+}
+
+void CMainFrame::OnUpdateViewMargin(CCmdUI *pCmdUI)
+{
+    const Theme* pTheme = &theApp.m_Settings.user;
+    size_t i = pCmdUI->m_nID - ID_MARGINS_1;
+    const std::vector<Margin>& vecMargin = pTheme->vecMargin;
+    if (i >= 0 && i < vecMargin.size())
+    {
+        const Margin& margin = vecMargin[i];
+        pCmdUI->SetText(margin.name);
+    }
+    else if (pCmdUI->m_pMenu != nullptr)
+        pCmdUI->m_pMenu->RemoveMenu(pCmdUI->m_nID, MF_BYCOMMAND);
 }
 
 static void Erase(std::vector<CWnd*>& m_MDIStack, CWnd* pWndMDIChild)
