@@ -229,6 +229,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
                     ::CloseHandle(hFile);
                 }
             }
+            m_UserImages.SetImageSize(m_wndToolBar.GetImageSize());
             if (PathFileExists(szPath) && m_UserImages.Load(szPath))
             {
                 CMFCToolBar::SetUserImages(&m_UserImages);
