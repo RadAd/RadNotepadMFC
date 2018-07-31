@@ -304,7 +304,7 @@
     <None Include="res\RadNotepad.rc2" />
     <None Include="schemes\*.scheme" />
     <None Include="schemes\extmap.dat" />
-    <None Include="scintillawrappers\ScintillaDocView.rc2" />
+    <None Include="src\scintillawrappers\ScintillaDocView.rc2" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

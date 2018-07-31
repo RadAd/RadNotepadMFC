@@ -216,13 +216,20 @@ class CMFCThemeProperty : public CMFCPropertyGridProperty
 public:
     // TODO How to transform std::initializer_list<const ThemeItem*> into std::initializer_list<const COLORREF*>
     //CMFCThemeProperty(const CString& strGroupName, ThemeItem* pTheme, const std::initializer_list<const ThemeItem*>& pDefaultTheme)
-    CMFCThemeProperty(const CString& strGroupName, ThemeItem* pTheme, const ThemeItem* pDefaultTheme1, const ThemeItem* pDefaultTheme2, const ThemeItem* pDefaultTheme3)
+    CMFCThemeProperty(const CString& strGroupName, const CString* strClassName, ThemeItem* pTheme, const ThemeItem* pDefaultTheme1, const ThemeItem* pDefaultTheme2, const ThemeItem* pDefaultTheme3)
         : CMFCPropertyGridProperty(strGroupName, 0, TRUE)
         , m_pDefaultTheme { pDefaultTheme1, pDefaultTheme2, pDefaultTheme3 }
         , m_pBackground(CreateProperty(_T("Background"), &pTheme->back, { pn(pDefaultTheme1, back), pn(pDefaultTheme2, back), pn(pDefaultTheme3, back) }))
         , m_pForeground(CreateProperty(_T("Foreground"), &pTheme->fore, { pn(pDefaultTheme1, fore), pn(pDefaultTheme2, fore), pn(pDefaultTheme3, fore) }))
         , m_pFont(CreateProperty(_T("Font"), &pTheme->font, { pn(pDefaultTheme1, font), pn(pDefaultTheme2, font), pn(pDefaultTheme3, font) }))
     {
+        if (strClassName != nullptr)
+        {
+            CMFCPropertyGridProperty* pClass = new CMFCPropertyGridProperty(_T("Class"), COleVariant((LPCTSTR) *strClassName));
+            pClass->Enable(FALSE);
+            AddSubItem(pClass);
+        }
+
         AddSubItem(m_pBackground);
         AddSubItem(m_pForeground);
         AddSubItem(m_pFont);
@@ -365,9 +372,9 @@ private:
     CMFCPropertyGridFontProperty* m_pFont;
 };
 
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, ThemeItem* pTheme, const ThemeItem* pDefaultTheme1, const ThemeItem* pDefaultTheme2, const ThemeItem* pDefaultTheme3)
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString* strClassName, ThemeItem* pTheme, const ThemeItem* pDefaultTheme1, const ThemeItem* pDefaultTheme2, const ThemeItem* pDefaultTheme3)
 {
-    return new CMFCThemeProperty(strName, pTheme, pDefaultTheme1, pDefaultTheme2, pDefaultTheme3);
+    return new CMFCThemeProperty(strName, strClassName, pTheme, pDefaultTheme1, pDefaultTheme2, pDefaultTheme3);
 }
 
 void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
@@ -614,6 +621,7 @@ void CPropertiesWnd::InitPropList()
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
+#pragma warning(suppress:4456)
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
                 pGroup->AllowEdit(FALSE);
                 pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pLanguage->editor.cCaretFG, { &pTheme->editor.cCaretFG, &m_pSettings->user.tDefault.fore }));
@@ -650,29 +658,31 @@ void CPropertiesWnd::InitPropList()
             for (Style& s : pLanguage->vecStyle)
             {
                 const StyleClass* os = GetStyleClass(pTheme, s.sclass);
-                pGroup->AddSubItem(CreateProperty(s.name, &s.theme, pn(os, theme), &pTheme->tDefault, nullptr));
+                pGroup->AddSubItem(CreateProperty(s.name, pn(os, description), &s.theme, pn(os, theme), &pTheme->tDefault, nullptr));
             }
             for (GroupStyle& gs : pLanguage->vecGroupStyle)
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
+#pragma warning(suppress:4456)
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(gs.name);
                 for (Style& s : gs.vecStyle)
                 {
                     const StyleClass* os = GetStyleClass(pTheme, s.sclass);
-                    pGroup->AddSubItem(CreateProperty(s.name, &s.theme, pn(os, theme), &pTheme->tDefault, nullptr));
+                    pGroup->AddSubItem(CreateProperty(s.name, pn(os, description), &s.theme, pn(os, theme), &pTheme->tDefault, nullptr));
                 }
                 pParent->AddSubItem(pGroup);
             }
             if (!pLanguage->vecBase.empty())
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
+#pragma warning(suppress:4456)
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Common"));
                 for (Style& s : pLanguage->vecBase)
                 {
                     const Style* os = GetKey(pTheme->vecBase, s.id);
                     CString sclass = Merge(s.sclass, pn(os, sclass), CString(), CString());
                     const StyleClass* osc = GetStyleClass(pTheme, sclass);
-                    pGroup->AddSubItem(CreateProperty(s.name, &s.theme, pn(os, theme), pn(osc, theme), &pTheme->tDefault));
+                    pGroup->AddSubItem(CreateProperty(s.name, pn(osc, description), &s.theme, pn(os, theme), pn(osc, theme), &pTheme->tDefault));
                 }
                 pParent->AddSubItem(pGroup);
             }
@@ -711,6 +721,7 @@ void CPropertiesWnd::InitPropList()
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Editor"));
             {
                 CMFCPropertyGridProperty* pParent = pGroup;
+#pragma warning(suppress:4456)
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
                 pGroup->AllowEdit(FALSE);
                 pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cCaretFG, { &m_pSettings->user.tDefault.fore }));
@@ -743,11 +754,11 @@ void CPropertiesWnd::InitPropList()
 
         {
             CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Styles"));
-            pGroup1->AddSubItem(CreateProperty(_T("Default"), &pTheme->tDefault, nullptr, nullptr, nullptr));
+            pGroup1->AddSubItem(CreateProperty(_T("Default"), nullptr, &pTheme->tDefault, nullptr, nullptr, nullptr));
             for (StyleClass& sc : pTheme->vecStyleClass)
             {
                 if (!sc.description.IsEmpty())
-                    pGroup1->AddSubItem(CreateProperty(sc.description, &sc.theme, &pTheme->tDefault, nullptr, nullptr));
+                    pGroup1->AddSubItem(CreateProperty(sc.description, nullptr, &sc.theme, &pTheme->tDefault, nullptr, nullptr));
             }
             {
                 CMFCPropertyGridProperty* pParent = pGroup1;
@@ -755,7 +766,7 @@ void CPropertiesWnd::InitPropList()
                 for (Style& s : pTheme->vecBase)
                 {
                     const StyleClass* osc = GetStyleClass(pTheme, s.sclass);
-                    pGroup->AddSubItem(CreateProperty(s.name, &s.theme, pn(osc, theme), &pTheme->tDefault, nullptr));
+                    pGroup->AddSubItem(CreateProperty(s.name, nullptr, &s.theme, pn(osc, theme), &pTheme->tDefault, nullptr));
                 }
                 pParent->AddSubItem(pGroup);
             }

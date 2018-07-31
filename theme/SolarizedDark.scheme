@@ -14,6 +14,7 @@
     <style-class bold="true" fore="4a413a" name="controlchars"/>
     <style-class back="002b36" fore="839496" name="default"/>
     <style-class fore="dc322f" name="error"/>
+    <style-class fore="808000" name="find"/>
     <style-class fore="268bd2" name="function"/>
     <style-class fore="d38234" name="identifier"/>
     <style-class bold="true" fore="859900" name="keyword"/>

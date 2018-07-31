@@ -349,6 +349,19 @@ CDocument* CRadNotepadApp::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU
     {
         ret = DYNAMIC_DOWNCAST(CRadNotepadDoc, CWinAppEx::OpenDocumentFile(lpszFileName, bAddToMRU));
     }
+
+    if (bAddToMRU && ret != nullptr && !PathFileExists(lpszFileName))
+    {
+        for (int nIndex = 0; nIndex < m_pRecentFileList->GetSize(); ++nIndex)
+        {
+            if ((*m_pRecentFileList)[nIndex] == lpszFileName)
+            {
+                m_pRecentFileList->Remove(nIndex);
+                break;
+            }
+        }
+    }
+
     return ret;
 }
 
