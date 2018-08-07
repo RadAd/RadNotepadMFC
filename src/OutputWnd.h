@@ -38,9 +38,7 @@ protected:
     afx_msg void OnEditCopy();
     afx_msg void OnEditClear();
     afx_msg void OnViewOutput();
-    afx_msg void OnReturn();
     afx_msg void OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult);
-public:
     afx_msg void OnUpdatePopupWordWrap(CCmdUI *pCmdUI);
     afx_msg void OnPopupWordWrap();
 };

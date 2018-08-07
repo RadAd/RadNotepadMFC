@@ -4,7 +4,6 @@
 #include "OutputWnd.h"
 #include "RadNotepad.h"
 #include "RadNotepadDoc.h"
-#include "RadDocManager.h"
 #include "Theme.h"
 
 #include "..\resource.h"
@@ -215,7 +214,6 @@ BEGIN_MESSAGE_MAP(COutputList, CListBox)
     ON_COMMAND(ID_EDIT_COPY, OnEditCopy)
     ON_COMMAND(ID_EDIT_CLEAR, OnEditClear)
     ON_COMMAND(ID_VIEW_OUTPUTWND, OnViewOutput)
-    ON_COMMAND(ID_RETURN, OnReturn)
     ON_NOTIFY_REFLECT(SCN_HOTSPOTCLICK, OnHotSpotClick)
     ON_UPDATE_COMMAND_UI(ID_POPUP_WORDWRAP, &COutputList::OnUpdatePopupWordWrap)
     ON_COMMAND(ID_POPUP_WORDWRAP, &COutputList::OnPopupWordWrap)
@@ -334,13 +332,6 @@ BOOL COutputWnd::PreTranslateMessage(MSG* pMsg)
         return ::TranslateAccelerator(m_hWnd, m_hAccel, pMsg);
 
     return CDockablePane::PreTranslateMessage(pMsg);
-}
-
-void COutputList::OnReturn()
-{
-    CView* pView = CRadDocManager::GetActiveView();
-    if (pView)
-        pView->SetFocus();
 }
 
 BOOL COutputWnd::OnCommand(WPARAM wParam, LPARAM lParam)

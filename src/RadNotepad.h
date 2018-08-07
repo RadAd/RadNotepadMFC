@@ -21,8 +21,8 @@ public:
 
 // Overrides
 public:
-	virtual BOOL InitInstance();
-	virtual int ExitInstance();
+	virtual BOOL InitInstance() override;
+	virtual int ExitInstance() override;
 
 public:
     void NotifySettingsChanged();
@@ -32,11 +32,12 @@ public:
     Settings m_Settings;
     BOOL m_SaveSettings;
 
-	virtual void PreLoadState();
-	virtual void LoadCustomState();
-	virtual void SaveCustomState();
-    virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName);
-    virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU);
+    virtual BOOL SaveState(LPCTSTR lpszSectionName = NULL, CFrameImpl* pFrameImpl = NULL) override;
+	virtual void PreLoadState() override;
+	virtual void LoadCustomState() override;
+	virtual void SaveCustomState() override;
+    virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName) override;
+    virtual CDocument* OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU) override;
 
     afx_msg void OnAppAbout();
 	DECLARE_MESSAGE_MAP()

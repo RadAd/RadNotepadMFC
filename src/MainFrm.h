@@ -16,6 +16,8 @@ public:
     CMainFrame();
 
     COutputWnd* GetWndOutput() { return &m_wndOutput; }
+    CMFCToolBarComboBoxButton* GetHistoryButton() const;
+    void SaveSearch(LPCTSTR lpszSectionName);
 
 // Attributes
 public:
@@ -52,6 +54,7 @@ protected:
     std::vector<CWnd*> m_MDIStack;
     CMFCMenuBar       m_wndMenuBar;
     CMFCToolBar       m_wndToolBar;
+    CMFCToolBar       m_searchToolBar;
     CMFCStatusBar     m_wndStatusBar;
     CMFCToolBarImages m_UserImages;
     CFileView         m_wndFileView;
@@ -63,6 +66,7 @@ protected:
 protected:
     DECLARE_MESSAGE_MAP()
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
     afx_msg void OnWindowManager();
     afx_msg void OnViewCustomize();
     afx_msg void OnViewPane(UINT nID);
@@ -72,10 +76,9 @@ protected:
     afx_msg void OnUpdateViewMargin(CCmdUI *pCmdUI);
     afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
     afx_msg LRESULT OnAfxWmOnGetTabTooltip(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnAfxWmResetToolbar(WPARAM wParam, LPARAM lParam);
     afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-
-public:
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 };
 

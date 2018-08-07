@@ -8,6 +8,7 @@
 #include "RadDocManager.h"
 #include "RadWaitCursor.h"
 #include "RadToolBarsCustomizeDialog.h"
+#include "ToolBarHistoryButton.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -91,6 +92,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_WM_CREATE()
     ON_WM_SETTINGCHANGE()
     ON_WM_CONTEXTMENU()
+    ON_MESSAGE(WM_SETMESSAGESTRING, &CMainFrame::OnSetMessageString)
     ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
     ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
     ON_COMMAND_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnViewPane)
@@ -99,6 +101,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CMainFrame::OnUpdateClear)
     ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
     ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, &CMainFrame::OnAfxWmOnGetTabTooltip)
+    ON_REGISTERED_MESSAGE(AFX_WM_RESETTOOLBAR, &CMainFrame::OnAfxWmResetToolbar)
     ON_REGISTERED_MESSAGE(WM_RADNOTEPAD, &CMainFrame::OnRadNotepad)
     ON_UPDATE_COMMAND_UI(ID_VIEW_DOCKINGWINDOWS, &CMainFrame::OnUpdateDockingWindows)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CMainFrame::OnUpdateViewMargin)
@@ -174,6 +177,20 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     ASSERT(bNameValid);
     m_wndToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
 
+    CMFCToolBarComboBoxButton::SetFlatMode(FALSE);
+
+    if (!m_searchToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC, CRect(1, 1, 1, 1), IDR_SEARCH) ||
+        !m_searchToolBar.LoadToolBar(IDR_SEARCH))
+    {
+        TRACE0("Failed to create toolbar\n");
+        return -1;      // fail to create
+    }
+
+    //CString strToolBarName;
+    bNameValid = strToolBarName.LoadString(IDS_TOOLBAR_SEARCH);
+    ASSERT(bNameValid);
+    m_searchToolBar.SetWindowText(strToolBarName);
+
     // Allow user-defined toolbars operations:
     InitUserToolbars(NULL, uiFirstUserToolBarId, uiLastUserToolBarId);
 
@@ -186,9 +203,11 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
     m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
+    m_searchToolBar.EnableDocking(CBRS_ALIGN_ANY);
     EnableDocking(CBRS_ALIGN_ANY);
     DockPane(&m_wndMenuBar);
     DockPane(&m_wndToolBar);
+    DockPane(&m_searchToolBar);
 
     // enable Visual Studio 2005 style docking window behavior
     CDockingManager::SetDockingMode(DT_SMART);
@@ -297,6 +316,17 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return 0;
 }
 
+CMFCToolBarComboBoxButton* CMainFrame::GetHistoryButton() const
+{
+    int i = m_searchToolBar.CommandToIndex(ID_SEARCH_TEXT);
+    return i >= 0 ? dynamic_cast<CMFCToolBarComboBoxButton*>(m_searchToolBar.GetButton(i)) : nullptr;
+}
+
+void CMainFrame::SaveSearch(LPCTSTR lpszSectionName)
+{
+    m_searchToolBar.SaveState(lpszSectionName);
+}
+
 INT_PTR CMainFrame::DoWindowsDialog()
 {
     // Same as ShowWindowsDialog() but returns result
@@ -388,6 +418,32 @@ void CMainFrame::Dump(CDumpContext& dc) const
 #endif //_DEBUG
 
 // CMainFrame message handlers
+
+LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
+{
+    static LONG Wait = 0; // TODO Make this a member variable ?
+
+    bool bWarning = wParam == IDS_SEARCH_NOT_FOUND;
+    LONG Now = GetMessageTime();
+    if (bWarning || Now > Wait)
+    {
+        CMFCStatusBar* pStatusBar = DYNAMIC_DOWNCAST(CMFCStatusBar, GetMessageBar());
+        if (pStatusBar)
+        {
+            COLORREF colText = bWarning ? GetSysColor(COLOR_MENUTEXT) : -1;
+            COLORREF colBg = bWarning ? GetSysColor(COLOR_MENUHILIGHT) : -1;
+
+            pStatusBar->SetPaneTextColor(0, colText, FALSE);
+            pStatusBar->SetPaneBackgroundColor(0, colBg, FALSE);
+        }
+        if (bWarning)
+            Wait = Now + 1 * 1000;
+
+        return CMDIFrameWndEx::OnSetMessageString(wParam, lParam);
+    }
+    else
+        return 0;
+}
 
 void CMainFrame::OnWindowManager()
 {
@@ -518,6 +574,18 @@ afx_msg LRESULT CMainFrame::OnAfxWmOnGetTabTooltip(WPARAM /*wParam*/, LPARAM lPa
     CChildFrame* pChildFrame = DYNAMIC_DOWNCAST(CChildFrame, pInfo->m_pTabWnd->GetTabWnd(pInfo->m_nTabIndex));
     if (pChildFrame != nullptr)
         pInfo->m_strText = pChildFrame->GetActiveDocument()->GetPathName();
+    return 0;
+}
+
+afx_msg LRESULT CMainFrame::OnAfxWmResetToolbar(WPARAM wParam, LPARAM /*lParam*/)
+{
+    if (wParam == IDR_SEARCH)
+    {
+        CToolBarHistoryButton searchText(ID_SEARCH_TEXT, -1, CBS_DROPDOWN | CBS_AUTOHSCROLL, 200);
+        searchText.EnableWindow();
+        searchText.SetDropDownHeight(125);
+        m_searchToolBar.ReplaceButton(searchText.m_nID, searchText);
+    }
     return 0;
 }
 

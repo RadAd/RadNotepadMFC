@@ -7,6 +7,8 @@
 #define ID_INDICATOR_LINE               101
 #define IDS_FILE_REVERT                 102
 #define IDS_TAB_MENU                    103
+#define IDS_SEARCH_NOT_FOUND            104
+#define IDS_TOOLBAR_SEARCH              105
 #define IDR_POPUP_EDIT                  119
 #define IDS_TOOLBAR_STANDARD            124
 #define IDS_TOOLBAR_CUSTOMIZE           125
@@ -57,6 +59,7 @@
 #define IDR_OUTPUT                      320
 #define IDR_POPUP_TAB                   321
 #define IDB_USER_IMAGES                 322
+#define IDR_SEARCH                      326
 #define IDC_LINE                        1000
 #define IDC_LIST1                       1000
 #define ID_VERSION                      1001
@@ -99,7 +102,7 @@
 #define ID_MARGINS_3                    32858
 #define ID_MARGINS_4                    32859
 #define ID_MARGINS_5                    32860
-#define ID_RETURN                       32861
+#define ID_VIEW_RETURN                  32861
 #define ID_FILE_CLOSEOTHERS             32868
 #define ID_FIELD_FILE                   32869
 #define ID_FIELD_PATH                   32870
@@ -108,6 +111,10 @@
 #define ID_VIEW_SAVESETTINGSONEXIT      32873
 #define ID_BUTTON32874                  32874
 #define ID_POPUP_WORDWRAP               32875
+#define ID_SEARCH_TEXT                  32876
+#define ID_SEARCH_PREV                  32878
+#define ID_SEARCH_NEXT                  32879
+#define ID_SEARCH_INCREMENTAL           32884
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -115,8 +122,8 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        326
-#define _APS_NEXT_COMMAND_VALUE         32876
+#define _APS_NEXT_RESOURCE_VALUE        328
+#define _APS_NEXT_COMMAND_VALUE         32887
 #define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

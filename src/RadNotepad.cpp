@@ -302,6 +302,19 @@ void CRadNotepadApp::NotifySettingsChanged()
 
 // CRadNotepadApp customization load/save methods
 
+BOOL CRadNotepadApp::SaveState(LPCTSTR lpszSectionName, CFrameImpl* pFrameImpl)
+{
+    if (!m_bSaveState)
+    {
+        CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, m_pMainWnd);
+        CString strSection = GetRegSectionPath();
+        pMainFrame->SaveSearch(strSection);
+        return TRUE;
+    }
+    else
+        return CWinAppEx::SaveState(lpszSectionName, pFrameImpl);
+}
+
 void CRadNotepadApp::PreLoadState()
 {
     GetContextMenuManager()->AddMenu(IDS_EDIT_MENU, IDR_POPUP_EDIT);

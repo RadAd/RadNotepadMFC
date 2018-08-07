@@ -44,6 +44,8 @@ IDI_OUTPUT_WND          ICON                    "res\\output_wnd_hc.ico"
 
 IDI_PROPERTIES_WND      ICON                    "res\\properties_wnd_hc.ico"
 
+IDD_SAVE_MODIFIED       ICON                    "res\\save.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -61,6 +63,10 @@ IDR_EXPLORER            BITMAP                  "res\\explorer_hc.bmp"
 IDR_MENU_IMAGES         BITMAP                  "res\\menuimages_hc.bmp"
 
 IDR_PROPERTIES          BITMAP                  "res\\properties_hc.bmp"
+
+IDB_USER_IMAGES         BITMAP                  "res\\UserImages.bmp"
+
+IDR_SEARCH              BITMAP                  "res\\search.bmp"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -123,6 +129,13 @@ BEGIN
     BUTTON      ID_PROPERTIES_RESET
 END
 
+IDR_SEARCH TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_SEARCH_TEXT
+    BUTTON      ID_SEARCH_PREV
+    BUTTON      ID_SEARCH_NEXT
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -179,6 +192,7 @@ BEGIN
         MENUITEM "Find Previous Current Word\tCtrl+Shift+F3", ID_EDIT_FINDPREVIOUSCURRENTWORD
         MENUITEM "Find Matching Brace\tCtrl+]", ID_EDIT_FINDMATCHINGBRACE
         MENUITEM "&Replace...\tCtrl+H",         ID_EDIT_REPLACE
+        MENUITEM "Incremental Search",          ID_SEARCH_INCREMENTAL
         MENUITEM SEPARATOR
         MENUITEM "Toggle Bookmark\tCtrl+F2",    ID_EDIT_TOGGLEBOOKMARK
         MENUITEM "Previous Bookmark\tShift+F2", ID_EDIT_PREVIOUSBOOKMARK
@@ -223,10 +237,11 @@ BEGIN
         MENUITEM "White Space",                 ID_VIEW_WHITESPACE
         MENUITEM "End of Line",                 ID_VIEW_ENDOFLINE
         MENUITEM "Word Wrap",                   ID_VIEW_WORDWRAP
+        MENUITEM "Return",                      ID_VIEW_RETURN
     END
     POPUP "&Tools"
     BEGIN
-        MENUITEM "<placeholder>",               ID_TOOLS
+        MENUITEM "<placeholder>",               ID_TOOLS, GRAYED
     END
     POPUP "&Window"
     BEGIN
@@ -274,7 +289,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "&Hide",                       ID_VIEW_OUTPUTWND
         MENUITEM "&Word Wrap",                  ID_POPUP_WORDWRAP
-        MENUITEM "Return",                      ID_RETURN
     END
 END
 
@@ -285,6 +299,16 @@ BEGIN
         MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM "Close All",                   ID_FILE_CLOSEALL
         MENUITEM "Close Others",                ID_FILE_CLOSEOTHERS
+    END
+END
+
+IDR_TOOL_FIELDS MENU
+BEGIN
+    POPUP "Field"
+    BEGIN
+        MENUITEM "File",                        ID_FIELD_FILE
+        MENUITEM "Path",                        ID_FIELD_PATH
+        MENUITEM "Selected",                    ID_FIELD_SELECTED
     END
 END
 
@@ -321,6 +345,10 @@ BEGIN
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    "I",            ID_SEARCH_INCREMENTAL,  VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_2,       ID_SEARCH_INCREMENTAL,  VIRTKEY, CONTROL, NOINVERT
+    VK_ESCAPE,      ID_VIEW_RETURN,         VIRTKEY, NOINVERT
+    "R",            ID_VIEW_RETURN,         VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_EXPLORER ACCELERATORS
@@ -332,7 +360,6 @@ END
 
 IDR_OUTPUT ACCELERATORS
 BEGIN
-    VK_ESCAPE,      ID_RETURN,              VIRTKEY, NOINVERT
     "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
 END
 
@@ -364,6 +391,18 @@ BEGIN
     EDITTEXT        IDC_LINE,7,18,143,15,ES_AUTOHSCROLL | ES_NUMBER
     DEFPUSHBUTTON   "Go To",IDOK,45,35,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,100,35,50,14
+END
+
+IDD_SAVE_MODIFIED DIALOGEX 0, 0, 309, 176
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Save Modified Items"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Do you want to save these modified items?",IDC_STATIC,7,7,138,8
+    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,19,295,130,WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
+    DEFPUSHBUTTON   "Yes",IDOK,144,155,50,14
+    PUSHBUTTON      "No",IDNO,198,155,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,252,155,50,14
 END
 
 
@@ -427,6 +466,14 @@ BEGIN
         LEFTMARGIN, 7
         TOPMARGIN, 7
     END
+
+    IDD_SAVE_MODIFIED, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -446,6 +493,16 @@ BEGIN
     0
 END
 
+IDD_SAVE_MODIFIED AFX_DIALOG_LAYOUT
+BEGIN
+    0,
+    0, 0, 0, 0,
+    0, 0, 100, 100,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -458,6 +515,8 @@ BEGIN
     ID_INDICATOR_LINE       "Line: %ld, Col: %ld, Char: %ld, Sel: %ld"
     IDS_FILE_REVERT         "File has changed. Revert?"
     IDS_TAB_MENU            "Tab"
+    IDS_SEARCH_NOT_FOUND    "Not Found"
+    IDS_TOOLBAR_SEARCH      "Search"
 END
 
 STRINGTABLE
@@ -590,7 +649,7 @@ END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_PREVIEW_CLOSE   "{selected}"
+    AFX_IDS_PREVIEW_CLOSE   "Search"
 END
 
 STRINGTABLE
@@ -629,6 +688,8 @@ BEGIN
     ID_FIELD_FILE           "{file}"
     ID_FIELD_PATH           "{path}"
     ID_FIELD_SELECTED       "{selected}"
+    ID_SEARCH_PREV          "Find the specified text up\nSearch Prev"
+    ID_SEARCH_NEXT          "Find the specified text down\nSearch Next"
 END
 
 STRINGTABLE
@@ -638,7 +699,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_RETURN               "Return to the main window"
+    ID_VIEW_RETURN          "Return to the main window"
 END
 
 #endif    // English (United States) resources
@@ -651,93 +712,6 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENA)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_AUS
 #pragma code_page(1252)
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDD_SAVE_MODIFIED       ICON                    "res\\save.ico"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_USER_IMAGES         BITMAP                  "res\\UserImages.bmp"
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Menu
-//
-
-IDR_TOOL_FIELDS MENU
-BEGIN
-    POPUP "Field"
-    BEGIN
-        MENUITEM "File",                        ID_FIELD_FILE
-        MENUITEM "Path",                        ID_FIELD_PATH
-        MENUITEM "Selected",                    ID_FIELD_SELECTED
-    END
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Dialog
-//
-
-IDD_SAVE_MODIFIED DIALOGEX 0, 0, 309, 176
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
-CAPTION "Save Modified Items"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    LTEXT           "Do you want to save these modified items?",IDC_STATIC,7,7,138,8
-    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,7,19,295,130,WS_EX_NOPARENTNOTIFY | WS_EX_TRANSPARENT
-    DEFPUSHBUTTON   "Yes",IDOK,144,155,50,14
-    PUSHBUTTON      "No",IDNO,198,155,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,252,155,50,14
-END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// DESIGNINFO
-//
-
-#ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO
-BEGIN
-    IDD_SAVE_MODIFIED, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 302
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 169
-    END
-END
-#endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// AFX_DIALOG_LAYOUT
-//
-
-IDD_SAVE_MODIFIED AFX_DIALOG_LAYOUT
-BEGIN
-    0,
-    0, 0, 0, 0,
-    0, 0, 100, 100,
-    100, 100, 0, 0,
-    100, 100, 0, 0,
-    100, 100, 0, 0
-END
-
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

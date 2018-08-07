@@ -249,6 +249,7 @@
     <ClInclude Include="src\targetver.h" />
     <ClInclude Include="src\Theme.h" />
     <ClInclude Include="src\ViewTree.h" />
+    <ClInclude Include="src\ToolBarHistoryButton.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\AboutDlg.cpp" />
@@ -279,6 +280,7 @@
     </ClCompile>
     <ClCompile Include="src\Theme.cpp" />
     <ClCompile Include="src\ViewTree.cpp" />
+    <ClCompile Include="src\ToolBarHistoryButton.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RadNotepad.rc" />
@@ -296,6 +298,7 @@
     <Image Include="res\output_wnd_hc.ico" />
     <Image Include="res\properties_hc.bmp" />
     <Image Include="res\properties_wnd_hc.ico" />
+    <Image Include="res\search.bmp" />
     <Image Include="res\sort_hc.bmp" />
     <Image Include="res\Toolbar256.bmp" />
     <Image Include="res\UserImages.bmp" />

@@ -25,9 +25,12 @@ public:
     virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
     virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/) override;
 
-    virtual void OnCharAdded(_Inout_ SCNotification* pSCNotification);
-    virtual void OnModified(_Inout_ SCNotification* pSCNotification);
-    virtual void OnUpdateUI(_Inout_ SCNotification* pSCNotification);
+    virtual void OnCharAdded(_Inout_ SCNotification* pSCNotification) override;
+    virtual void OnModified(_Inout_ SCNotification* pSCNotification) override;
+    virtual void OnUpdateUI(_Inout_ SCNotification* pSCNotification) override;
+
+    virtual BOOL FindText(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression) override;
+    virtual void TextNotFound(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression, _In_ BOOL bReplaced) override;
 protected:
 
 // Implementation
@@ -79,6 +82,13 @@ protected:
     afx_msg void OnUpdateSchemeNone(CCmdUI *pCmdUI);
     afx_msg void OnScheme(UINT nID);
     afx_msg void OnUpdateScheme(CCmdUI *pCmdUI);
+    afx_msg void OnSearchNext();
+    afx_msg void OnSearchTextEditChange();
+    afx_msg void OnUpdateSearchNext(CCmdUI *pCmdUI);
+    afx_msg void OnSearchPrev();
+    afx_msg void OnUpdateSearchPrev(CCmdUI *pCmdUI);
+    afx_msg void OnSearchIncremental();
+    afx_msg void OnViewReturn();
 };
 
 #ifndef _DEBUG  // debug version in RadNotepadView.cpp

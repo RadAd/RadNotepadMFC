@@ -7,6 +7,7 @@
 
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
+#include "MainFrm.h"
 #include "GoToLineDlg.h"
 #include <algorithm>
 
@@ -25,6 +26,29 @@
 
 #define ID_VIEW_FIRSTSCHEME             33100
 #define ID_VIEW_LASTSCHEME              33199
+
+namespace
+{
+    void AddSearchTextToHistory(CMFCToolBarComboBoxButton* pButton)
+    {
+        int sel1 = pButton->GetCurSel();
+        if (sel1 != CB_ERR && _tcscmp(pButton->GetItem(sel1), pButton->GetText()) != 0)
+            sel1 = CB_ERR;
+        if (sel1 != 0)
+        {
+            CString search = pButton->GetText();
+            pButton->DeleteItem(sel1);
+            int sel = (int) pButton->AddSortedItem(search); // CToolBarHistoryButton::AddSortedItem always inserts in front
+            if (sel != 0)
+            {   // Item exists, delete and reinsert in correct position
+                pButton->DeleteItem(sel);
+                sel = (int) pButton->AddSortedItem(search);
+            }
+        }
+        // TODO Trim history to 100 items
+    }
+};
+
 
 // CRadNotepadView
 
@@ -66,6 +90,14 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_UPDATE_COMMAND_UI(ID_VIEW_SCHEMENONE, &CRadNotepadView::OnUpdateSchemeNone)
     ON_COMMAND_RANGE(ID_VIEW_FIRSTSCHEME, ID_VIEW_LASTSCHEME, &CRadNotepadView::OnScheme)
     ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_FIRSTSCHEME, ID_VIEW_LASTSCHEME, &CRadNotepadView::OnUpdateScheme)
+    ON_COMMAND(ID_SEARCH_NEXT, &CRadNotepadView::OnSearchNext)
+    ON_UPDATE_COMMAND_UI(ID_SEARCH_NEXT, &CRadNotepadView::OnUpdateSearchNext)
+    ON_COMMAND(ID_SEARCH_PREV, &CRadNotepadView::OnSearchPrev)
+    ON_UPDATE_COMMAND_UI(ID_SEARCH_PREV, &CRadNotepadView::OnUpdateSearchPrev)
+    ON_COMMAND(ID_SEARCH_TEXT, &CRadNotepadView::OnSearchNext)
+    ON_CONTROL(CBN_EDITCHANGE, ID_SEARCH_TEXT, &CRadNotepadView::OnSearchTextEditChange)
+    ON_COMMAND(ID_SEARCH_INCREMENTAL, &CRadNotepadView::OnSearchIncremental) // TODO Move to view
+    ON_COMMAND(ID_VIEW_RETURN, &CRadNotepadView::OnViewReturn)
 END_MESSAGE_MAP()
 
 // CRadNotepadView construction/destruction
@@ -147,6 +179,23 @@ void CRadNotepadView::OnUpdateUI(_Inout_ SCNotification* pSCNotification)
         else
             rCtrl.BraceBadLight(INVALID_POSITION);
     }
+}
+
+BOOL CRadNotepadView::FindText(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression)
+{
+    CFrameWnd* pMainWnd = DYNAMIC_DOWNCAST(CFrameWnd, AfxGetMainWnd());
+    pMainWnd->SetMessageText(AFX_IDS_IDLEMESSAGE);
+
+    return CScintillaView::FindText(lpszFind, bNext, bCase, bWord, bRegularExpression);
+}
+
+void CRadNotepadView::TextNotFound(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression, _In_ BOOL bReplaced)
+{
+    CScintillaView::TextNotFound(lpszFind, bNext, bCase, bWord, bRegularExpression, bReplaced);
+
+    CFrameWnd* pMainWnd = DYNAMIC_DOWNCAST(CFrameWnd, AfxGetMainWnd());
+    // TODO Want this message to stick for a little while
+    pMainWnd->SetMessageText(IDS_SEARCH_NOT_FOUND);
 }
 
 // CRadNotepadView printing
@@ -542,50 +591,33 @@ extern CScintillaEditState g_scintillaEditState;
 
 void CRadNotepadView::OnEditFindPrevious()
 {
-    if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
-        TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
-    else
-    {
-        CScintillaCtrl& rCtrl = GetCtrl();
-        int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
-        rCtrl.EnsureVisible(nLine);
-        if (g_scintillaEditState.pFindReplaceDlg != nullptr)
-            AdjustFindDialogPosition();
-    }
+    OnFindNext(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression);
 }
 
 void CRadNotepadView::OnEditFindNextCurrentWord()
 {
+    CString strFind = GetCurrentWord();
+
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();
+    pButton->SetText(strFind);
+    AddSearchTextToHistory(pButton);
+
     m_bFirstSearch = TRUE;
-    g_scintillaEditState.strFind = GetCurrentWord();
-    g_scintillaEditState.bNext = TRUE;
-    if (!FindText(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
-        TextNotFound(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
-    else
-    {
-        CScintillaCtrl& rCtrl = GetCtrl();
-        int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
-        rCtrl.EnsureVisible(nLine);
-        if (g_scintillaEditState.pFindReplaceDlg != nullptr)
-            AdjustFindDialogPosition();
-    }
+    OnFindNext(strFind, TRUE, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression);
 }
 
 void CRadNotepadView::OnEditFindPreviousCurrentWord()
 {
+    CString strFind = GetCurrentWord();
+
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();
+    pButton->SetText(strFind);
+    AddSearchTextToHistory(pButton);
+
     m_bFirstSearch = TRUE;
-    g_scintillaEditState.strFind = GetCurrentWord();
-    g_scintillaEditState.bNext = TRUE;
-    if (!FindText(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
-        TextNotFound(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
-    else
-    {
-        CScintillaCtrl& rCtrl = GetCtrl();
-        int nLine = rCtrl.LineFromPosition(rCtrl.GetSelectionStart());
-        rCtrl.EnsureVisible(nLine);
-        if (g_scintillaEditState.pFindReplaceDlg != nullptr)
-            AdjustFindDialogPosition();
-    }
+    OnFindNext(strFind, FALSE, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression);
 }
 
 void CRadNotepadView::OnEditFindMatchingBrace()
@@ -739,11 +771,65 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
         {
             RevertDataMapT* pRevertData = dynamic_cast<RevertDataMapT*>(pHint);
             const RevertData& data = (*pRevertData)[this];
-            GetCtrl().SetSelectionStart(data.selStart);
-            GetCtrl().SetSelectionEnd(data.selEnd);
+            GetCtrl().SetSel(data.selStart, data.selEnd);
             GetCtrl().SetFirstVisibleLine(data.firstVisibleLine);
             Invalidate();
         }
         break;
     }
+}
+
+void CRadNotepadView::OnSearchNext()
+{
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();
+    AddSearchTextToHistory(pButton);
+    SetFocus();
+    OnFindNext(pButton->GetText(), TRUE, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression);
+}
+
+void CRadNotepadView::OnSearchTextEditChange()
+{
+    Sci_Position sel = GetCtrl().GetSelectionStart();
+    GetCtrl().SetSel(sel, sel);
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();
+    //AddSearchTextToHistory(pButton);
+    OnFindNext(pButton->GetText(), TRUE, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression);
+}
+
+void CRadNotepadView::OnUpdateSearchNext(CCmdUI *pCmdUI)
+{
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();
+    pCmdUI->Enable(pButton->GetText()[0] != _T('\0'));
+}
+
+void CRadNotepadView::OnSearchPrev()
+{
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();
+    AddSearchTextToHistory(pButton);
+    SetFocus();
+    OnFindNext(pButton->GetText(), FALSE, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression);
+}
+
+void CRadNotepadView::OnUpdateSearchPrev(CCmdUI *pCmdUI)
+{
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();
+    pCmdUI->Enable(pButton->GetText()[0] != _T('\0'));
+}
+
+void CRadNotepadView::OnSearchIncremental()
+{
+    CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
+    CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();
+    if (pButton != nullptr)
+        pButton->GetComboBox()->SetFocus();
+}
+
+void CRadNotepadView::OnViewReturn()
+{
+    SetFocus();
 }
