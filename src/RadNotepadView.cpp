@@ -45,7 +45,7 @@ namespace
                 sel = (int) pButton->AddSortedItem(search);
             }
         }
-        // TODO Trim history to 100 items
+        // --- TODO Trim history to 100 items
     }
 };
 
@@ -591,7 +591,9 @@ extern CScintillaEditState g_scintillaEditState;
 
 void CRadNotepadView::OnEditFindPrevious()
 {
-    OnFindNext(g_scintillaEditState.strFind, !g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression);
+    BOOL bNext = g_scintillaEditState.bNext;
+    OnFindNext(g_scintillaEditState.strFind, !bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression);
+    g_scintillaEditState.bNext = bNext;
 }
 
 void CRadNotepadView::OnEditFindNextCurrentWord()
