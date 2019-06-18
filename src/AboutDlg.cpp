@@ -38,7 +38,7 @@ static void GetVersionData(HINSTANCE hInstance, VersionInfo* vi)
         UINT	cbTranslate;
         VerQueryValue(Info, TEXT("\\VarFileInfo\\Translation"), (LPVOID*) &lpTranslate, &cbTranslate);
 
-        for (int i = 0; i < (cbTranslate / sizeof(struct LANGANDCODEPAGE)); i++)
+        for (int i = 0; i < (int) (cbTranslate / sizeof(struct LANGANDCODEPAGE)); i++)
         {
             TCHAR SubBlock[50];
             TCHAR	*String;
