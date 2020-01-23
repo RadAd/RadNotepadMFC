@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Theme.h"
 #include <SciLexer.h>
+#include <string>
 
 #if 0
 static inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
