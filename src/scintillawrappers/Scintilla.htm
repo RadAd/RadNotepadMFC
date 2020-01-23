@@ -3,13 +3,13 @@
 
 <head>
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
-<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.49</title>
+<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.59</title>
 <link href="naughter.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
 
-<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.49</h2>
+<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.59</h2>
 <h2><i>Freeware MFC wrapper classes for the Scintilla edit control</i></h2>
 <p>These classes provides a MFC wrapping for the Scintilla edit control (<a href="http://www.scintilla.org">http://www.scintilla.org</a>). 
 This control provides an open source cross platform edit control. Some of the features 
@@ -41,7 +41,7 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Features"></a>Features</h2>
 <ul>
-	<li>Implements all the functionality provided by Scintilla v4.0.4.</li>
+	<li>Implements all the functionality provided by Scintilla v4.2.3.</li>
 	<li>The CScintillaCtrl wrapper class observes the same semantics as the built 
 	in MFC &quot;CEdit&quot; wrapper class.</li>
 	<li>Uses the direct access functions provided by Scintilla to improve performance. 
@@ -89,7 +89,7 @@ the control in MFC projects on Windows.</p>
 	to make calls to the class.</li>
 	<li>If you want to use the document / view wrappers then also include ScintillaDocView.h 
 	and ScintillaDocView.cpp in your project.</li>
-	<li>As of v1.44, the classes are now designed for VC 2013 or later. They will 
+	<li>As of v1.50, the classes are now designed for VC 2017 or later. They will 
 	not compile on earlier releases of VC.</li>
 	<li>Your code will need to include MFC either statically or dynamically.</li>
 	<li>If you are linking to Scintilla dynamically, then you should call LoadLibrary 
@@ -121,14 +121,96 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2><a name="History"></a>History</h2>
-<p><b>V1.49 (3 May 2018)</b></p>
+<p><b>v1.59 (28 December 2019)</b></p>
+<ul>
+	<li>Fixed some further Clang-Tidy static code analysis warnings in the code.
+	</li>
+</ul>
+<p><b>v1.58 (27 December 2019)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v4.2.3. New messages wrapped 
+	include: SCI_SETTARGETSTARTVIRTUALSPACE, SCI_GETTARGETSTARTVIRTUALSPACE, 
+	SCI_SETTARGETENDVIRTUALSPACE, SCI_GETTARGETENDVIRTUALSPACE, 
+	SCI_GETSELECTIONNSTARTVIRTUALSPACE &amp; SCI_GETSELECTIONNENDVIRTUALSPACE.</li>
+	<li>Fixed various Clang-Tidy static code analysis warnings in the code.</li>
+</ul>
+<p><b>v1.57 (3 November 2019)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v4.2.1. New messages wrapped 
+	include: SCI_SETTABMINIMUMWIDTH and SCI_GETTABMINIMUMWIDTH. </li>
+	<li>Updated initialization of various structs to use C++ 11 list 
+	initialization</li>
+</ul>
+<p><b>v1.56 (23 August 2019)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v4.2.0. Various API definitions 
+	have been updated to use Sci_Position instead of int parameters. No new 
+	actual messages were added.</li>
+</ul>
+<p><b>v1.55 (25 June 2019)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v4.1.7. New messages wrapped 
+	include: SCI_SETCHARACTERCATEGORYOPTIMIZATION, 
+	SCI_GETCHARACTERCATEGORYOPTIMIZATION, SCI_FOLDDISPLAYTEXTGETSTYLE, 
+	SCI_SETDEFAULTFOLDDISPLAYTEXT &amp; SCI_GETDEFAULTFOLDDISPLAYTEXT.</li>
+</ul>
+<p><b>v1.54 (2 April 2019)</b></p>
+<ul>
+	<li>Verified the code works with the latest Scintilla v4.1.4. No new 
+	messages were added for this release of scintilla.</li>
+</ul>
+<p><b>v1.53 (23 February 2019)</b></p>
+<ul>
+	<li>Fixed a number of compiler warnings when the code is compiled with VS 
+	2019 Preview</li>
+	<li>Optimized the code in CScintillaView::PrintHeader to use CTime instead 
+	of COleDateTime when getting the current date and time. Thanks to Markus 
+	Nissl for reporting this issue. </li>
+</ul>
+<p><b>v1.52 (19 January 2019)</b></p>
+<ul>
+	<li>Updated copyright details </li>
+	<li>Updated class to work with Scintilla v4.1.3. New messages wrapped 
+	include: SCI_SETCOMMANDEVENTS &amp; SCI_GETCOMMANDEVENTS. </li>
+	<li>Added support for SCN_AUTOCSELECTIONCHANGE notification.</li>
+	<li>Added code to suppress C4263 off by default compiler warning. Thanks to 
+	Karagoez Yusuf for reporting this issue. </li>
+</ul>
+<p><b>v1.51 (9 September 2018)</b></p>
+<ul>
+	<li>Fixed a number of compiler warnings when using VS 2017 15.8.2</li>
+	<li>Updated class to work with Scintilla v4.1.1. New messages wrapped 
+	include: SCI_COUNTCODEUNITS, SCI_POSITIONRELATIVECODEUNITS, 
+	SCI_GETLINECHARACTERINDEX, SCI_ALLOCATELINECHARACTERINDEX, 
+	SCI_RELEASELINECHARACTERINDEX, SCI_LINEFROMINDEXPOSITION &amp; 
+	SCI_INDEXPOSITIONFROMLINE</li>
+</ul>
+<p><b>v1.50 (15 July 2018)</b></p>
+<ul>
+	<li>Fixed a number of C++ core guidelines compiler warnings. These changes 
+	mean that the code will now only compile on VC 2017 or later. </li>
+	<li>Code page is now explicitly set to ANSI when building for ANSI. This is 
+	necessary because as of Scintilla 4 the default code page is now UTF-8. 
+	Thanks to Karagoez Yusuf for reporting this issue. </li>
+	<li>CScintillaCtrl::SetProperty has been renamed SetScintillaProperty to 
+	avoid clashing with CWnd::SetProperty </li>
+	<li>CScintillaCtrl::GetProperty has been renamed GetScintillaProperty to 
+	avoid clashing with CWnd::GetProperty</li>
+	<li>Renamed CScintillaView::CreateControl method to CreateScintillaControl. </li>
+	<li>Renamed CScintillaView::OnKillFocus method to OnScintillaKillFocus. </li>
+	<li>Renamed CScintillaView::OnSetFocus method to OnScintillaSetFocus.</li>
+	<li>Updated class to work with Scintilla v4.1.0. New messages wrapped 
+	include: SCI_GETDOCUMENTOPTIONS</li>
+	<li>Reworked CScintillaView::m_aPageStart variable to now use std::vector</li>
+</ul>
+<p><b>v1.49 (3 May 2018)</b></p>
 <ul>
 	<li>Added support for SCN_MARGINRIGHTCLICK notification. Thanks to Karagoez 
 	Yusuf for reporting this issue.</li>
 	<li>Verified the code works with the latest Scintilla v4.0.4. No new 
 	messages were added for this release of scintilla.</li>
 </ul>
-<p><b>V1.48 (18 March 2018)</b></p>
+<p><b>v1.48 (18 March 2018)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v4.0.3. New parameters to 
 	SCI_CREATEDOCUMENT &amp; SCI_CREATELOADER messages. New messages wrapped 
@@ -137,7 +219,7 @@ the control in MFC projects on Windows.</p>
 	<li>SCI_ADDREFDOCUMENT and SCI_RELEASEDOCUMENT wrappers now use void* 
 	for the document parameter. </li>
 </ul>
-<p><b>V1.47 (28 January 2018)</b></p>
+<p><b>v1.47 (28 January 2018)</b></p>
 <ul>
 	<li>Added code to OnEditRepeat, OnFindNext and OnReplaceSel methods to 
 	ensure that the text just found or replaced is visible. This is necessary 
@@ -146,20 +228,20 @@ the control in MFC projects on Windows.</p>
 	<li>The OnEditRepeat method now calls AdjustFindDialogPosition to ensure it 
 	is moved if necessary. Thanks to Michael Thompson for reporting this issue. </li>
 </ul>
-<p><b>V1.46 (3 January 2018)</b></p>
+<p><b>v1.46 (3 January 2018)</b></p>
 <ul>
 	<li>Updated copyright details. </li>
 	<li>Removed Unicode versions of MarginSetStyles &amp; AnnotationSetStyles 
 	methods as these methods take byte buffers and do not take text data. Thanks 
 	to Karagoez Yusuf for reporting this issue. </li>
 </ul>
-<p><b>V1.45 (27 December 2017)</b></p>
+<p><b>v1.45 (27 December 2017)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v4.0.2. Some messages have been 
 	removed in 4.0.2 including SCI_SETSTYLEBITS, SCI_GETSTYLEBITS &amp; 
 	SCI_GETSTYLEBITSNEEDED.</li>
 </ul>
-<p><b>V1.44 (31 August 2017)</b></p>
+<p><b>v1.44 (31 August 2017)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v4.0.0. New messages wrapped 
 	include: SCI_GETNAMEDSTYLES, SCI_NAMEOFSTYLE, SCI_TAGSOFSTYLE &amp; 
@@ -167,7 +249,7 @@ the control in MFC projects on Windows.</p>
 	SCI_SETTWOPHASEDRAW</li>
 	<li>Fixed up a number of compiler warnings when the code is compiled for x64 </li>
 </ul>
-<p><b>V1.43 (12 June 2017)</b></p>
+<p><b>v1.43 (12 June 2017)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v3.7.5. New messages wrapped include: 
 	SCI_GETCARETLINEFRAME, SCI_SETCARETLINEFRAME &amp; SCI_LINEREVERSE</li>
@@ -181,12 +263,12 @@ the control in MFC projects on Windows.</p>
 	<li>Updated the demo app included in the download to show how 
 	CScintillaView::CreateControl can be used. Thanks to Michael Thompson for 
 	prompting this update.</li>
-</ul><p><b>V1.42 (3 April 2017)</b></p>
+</ul><p><b>v1.42 (3 April 2017)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v3.7.4. New messages wrapped include: 
 	SCI_SETACCESSIBILITY &amp; SCI_GETACCESSIBILITY </li>
 </ul>
-<p><b>V1.41 (4 March 2017)</b></p>
+<p><b>v1.41 (4 March 2017)</b></p>
 <ul>
 	<li>Updated copyright details </li>
 	<li>Updated class to work with Scintilla v3.7.3. The only change to support 
@@ -207,7 +289,7 @@ the control in MFC projects on Windows.</p>
 	has also been removed from CScintillaView::AssertValid. Thanks to Kenny Lau 
 	for reporting this issue. </li>
 </ul>
-<p><b>V1.40 (20 December 2016)</b></p>
+<p><b>v1.40 (20 December 2016)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v3.7.1. New messages wrapped include: 
 	SCI_GETTABDRAWMODE, SCI_SETTABDRAWMODE, SCI_TOGGLEFOLDSHOWTEXT &amp; SCI_FOLDDISPLAYTEXTSETSTYLE. 
@@ -223,13 +305,13 @@ the control in MFC projects on Windows.</p>
 	if Scintilla's support for C++11 regex should be used in the find / replace 
 	functionality. Thanks to Markus Nissl for suggesting this update. </li>
 </ul>
-<p><b>V1.39 (20 November 2016)</b></p>
+<p><b>v1.39 (20 November 2016)</b></p>
 <ul>
 	<li>Addition of a new CScintillaView::CreateControl virtual method. This allows 
 	the customization of the creation of the CScintillaCtrl instance at runtime 
 	in the view class. Thanks to Markus Nißl for providing this nice addition.</li>
 </ul>
-<p><b>V1.38 (16 October 2016)</b></p>
+<p><b>v1.38 (16 October 2016)</b></p>
 <ul>
 	<li>Replaced all occurrences of NULL with nullptr throughout the codebase. This 
 	now means that the minimum requirement to compile the code is Visual Studio 
@@ -238,11 +320,11 @@ the control in MFC projects on Windows.</p>
 	SCI_SETMARGINBACKN, SCI_GETMARGINBACKN, SCI_SETMARGINS, SCI_GETMARGINS, SCI_MULTIEDGEADDLINE, 
 	SCI_MULTIEDGECLEARALL, SCI_SETMOUSEWHEELCAPTURES &amp; SCI_GETMOUSEWHEELCAPTURES.</li>
 </ul>
-<p><b>V1.37 (25 July 2016)</b></p>
+<p><b>v1.37 (25 July 2016)</b></p>
 <ul>
 	<li>Added SAL annotations to all the code</li>
 </ul>
-<p><b>V1.36 (11 July 2016)</b></p>
+<p><b>v1.36 (11 July 2016)</b></p>
 <ul>
 	<li>Verified class against Scintilla v3.6.6. As no new messages were introduced 
 	between v3.6.3 and v3.6.6 no changes were required in the code. </li>
@@ -250,13 +332,13 @@ the control in MFC projects on Windows.</p>
 	this functionality with a new pair of getter / setter methods called GetCallDirect 
 	and SetCallDirect. Thanks to Chad Marlow for prompting this update </li>
 </ul>
-<p><b>V1.35 (23 January 2016)</b></p>
+<p><b>v1.35 (23 January 2016)</b></p>
 <ul>
 	<li>Updated copyright details. </li>
 	<li>Updated class to work with Scintilla v3.6.3. New messages wrapped include: 
 	SCI_SETIDLESTYLING &amp; SCI_GETIDLESTYLING </li>
 </ul>
-<p><b>V1.34 (19 September 2015)</b></p>
+<p><b>v1.34 (19 September 2015)</b></p>
 <ul>
 	<li>Updated the code to clean compile on VC 2015</li>
 	<li>Updated class to work with Scintilla v3.6.1. New messages wrapped include: 
@@ -270,7 +352,7 @@ the control in MFC projects on Windows.</p>
 	This is to mirror the ongoing changes in Scintilla to enable support for documents 
 	larger than 2GB. </li>
 </ul>
-<p><b>V1.33 (26 January 2015)</b></p>
+<p><b>v1.33 (26 January 2015)</b></p>
 <ul>
 	<li>Updated copyright details </li>
 	<li>Updated the code to clean compile on VC 2013 </li>
@@ -284,7 +366,7 @@ the control in MFC projects on Windows.</p>
 	<li>Added virtual methods for SCN_FOCUSIN &amp; SCN_FOCUSOUT notifications.
 	</li>
 </ul>
-<p><b>V1.32 (16 June 2013)</b></p>
+<p><b>v1.32 (16 June 2013)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v3.3.3. New messages wrapped include: 
 	SCI_SCROLLRANGE, SCI_FOLDLINE, SCI_FOLDCHILDREN, SCI_EXPANDCHILDREN, SCI_FOLDALL, 
@@ -300,13 +382,13 @@ the control in MFC projects on Windows.</p>
 	size to retrieve the data into. Thanks to Bengt Vagnhammar for reporting this 
 	bug. </li>
 </ul>
-<p><b>V1.31 (23 February 2013)</b></p>
+<p><b>v1.31 (23 February 2013)</b></p>
 <ul>
 	<li>PrivateLexerCall method now uses a void* parameter instead of an int. This 
 	prevents a pointer truncation issue on 64bit platforms. Thanks to Simon Smith 
 	for reporting this issue. </li>
 </ul>
-<p><b>V1.30 (18 January 2013)</b></p>
+<p><b>v1.30 (18 January 2013)</b></p>
 <ul>
 	<li>Updated copyright details</li>
 	<li>Added virtual methods for SCN_INDICATORCLICK, SCN_INDICATORRELEASE, SCN_AUTOCCHARDELETED, 
@@ -326,7 +408,7 @@ the control in MFC projects on Windows.</p>
 	<li>The demo app now loads the SciLexer.dll from the application directory only. 
 	This avoids DLL planting security issues. </li>
 </ul>
-<p><b>V1.29 (15 August 2012)</b></p>
+<p><b>v1.29 (15 August 2012)</b></p>
 <ul>
 	<li>Updated copyright details </li>
 	<li>Updated class to work with Scintilla v3.2.1. New Messaged wrapped include: 
@@ -340,7 +422,7 @@ the control in MFC projects on Windows.</p>
 	<li>GetDocPointer method now also returns a void* instead of an int return value</li>
 	<li>Updated the code to clean compile on VC 2012</li>
 </ul>
-<p><b>V1.28 (12 December 2011)</b></p>
+<p><b>v1.28 (12 December 2011)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v3.0.2. New messages wrapped include: 
 	SCI_MARKERSETBACKSELECTED, SCI_MARKERENABLEHIGHLIGHT, SCI_STYLESETSIZEFRACTIONAL, 
@@ -353,7 +435,7 @@ the control in MFC projects on Windows.</p>
 	SCI_SETTECHNOLOGY, SCI_GETTECHNOLOGY &amp; SCI_CREATELOADER Messages dropped 
 	include: SCI_SETUSEPALETTE &amp; SCI_GETUSEPALETTE </li>
 </ul>
-<p><b>V1.27 (1 April 2011)</b></p>
+<p><b>v1.27 (1 April 2011)</b></p>
 <ul>
 	<li>Updated copyright details. </li>
 	<li>Updated class to work with Scintilla v2.25. New messages wrapped include: 
@@ -361,7 +443,7 @@ the control in MFC projects on Windows.</p>
 	<li>Updated CScintillaFindReplaceDlg::Create to use AfxFindResourceHandle instead 
 	of AfxGetResourceHandle. Thanks to Nißl Markus for reporting this nice addition.</li>
 </ul>
-<p><b>V1.26 (22 November 2010)</b></p>
+<p><b>v1.26 (22 November 2010)</b></p>
 <ul>
 	<li>Updated copyright details. </li>
 	<li>Updated sample app to clean compile on VC 2010 </li>
@@ -373,7 +455,7 @@ the control in MFC projects on Windows.</p>
 	SCI_PROPERTYNAMES, SCI_PROPERTYTYPE, SCI_DESCRIBEPROPERTY, SCI_DESCRIBEKEYWORDSETS. 
 	Also there were some parameter changes to existing messages.</li>
 </ul>
-<p><b>V1.25 (3 October 2009)</b></p>
+<p><b>v1.25 (3 October 2009)</b></p>
 <ul>
 	<li>Fixed a bug in CScintillaCtrl::Create where a crash can occur in a Unicode 
 	build if the CreateEx call fails (for example, if the Scintilla DLL was not 
@@ -409,11 +491,11 @@ the control in MFC projects on Windows.</p>
 	<li>Updated the project file to remove the now defunct manifest file. Thanks 
 	to &quot;marshal&quot; for reporting this issue.</li>
 </ul>
-<p><b>V1.24 (11 February 2009)</b></p>
+<p><b>v1.24 (11 February 2009)</b></p>
 <ul>
 	<li>Updated the project file to remove VC 6 upgrade settings.</li>
 </ul>
-<p><b>V1.23 (20 January 2009)</b></p>
+<p><b>v1.23 (20 January 2009)</b></p>
 <ul>
 	<li>Updated copyright details</li>
 	<li>Fixed a bug in CScintillaView::SameAsSelected where it did not correctly 
@@ -422,7 +504,7 @@ the control in MFC projects on Windows.</p>
 	encoded characters. This made it impossible to replace multibyte character sequences 
 	in find / replace operations. Thanks to Alexei Letov for reporting this bug.</li>
 </ul>
-<p><b>V1.22 (1 November 2008)</b></p>
+<p><b>v1.22 (1 November 2008)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v1.77. New messages wrapped include: 
 	SCI_GETCHARACTERPOINTER, SCI_SETKEYSUNICODE &amp; SCI_GETKEYSUNICODE</li>
@@ -432,14 +514,14 @@ the control in MFC projects on Windows.</p>
 	provided by the wrapper class. In the process the need for the GetLineEx function 
 	has been removed. Thanks to Alexei Letov for prompting this update.</li>
 </ul>
-<p><b>V1.21 (15 June 2008)</b></p>
+<p><b>v1.21 (15 June 2008)</b></p>
 <ul>
 	<li>Code now compiles cleanly using Code Analysis (/analyze)</li>
 	<li>Updated code to compile correctly using _ATL_CSTRING_EXPLICIT_CONSTRUCTORS 
 	define</li>
 	<li>The code now only supports VC 2005 or later.</li>
 </ul>
-<p><b>V1.20 (19 March 2008)</b></p>
+<p><b>v1.20 (19 March 2008)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v1.76. New messages wrapped include: 
 	SCI_COPYALLOWLINE.</li>
@@ -452,7 +534,7 @@ the control in MFC projects on Windows.</p>
 	Thanks to Steve Arnold for reporting this bug.</li>
 	<li>Fixed a level 4 warning when the code is compiled on VC 6.</li>
 </ul>
-<p><b>V1.19 (28 November 2007)</b></p>
+<p><b>v1.19 (28 November 2007)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v1.75. New messages wrapped include: 
 	SCI_INDICSETUNDER, SCI_INDICGETUNDER, new behavior for SCI_SETINDENTATIONGUIDES &amp; 
@@ -465,7 +547,7 @@ the control in MFC projects on Windows.</p>
 	to show another style of auto completion. Thanks to Alessandro Limonta for suggesting 
 	this update.</li>
 </ul>
-<p><b>V1.18 (11 June 2007)</b></p>
+<p><b>v1.18 (11 June 2007)</b></p>
 <ul>
 	<li>Demo program included in the download is now compiled with VC 2005 SP1</li>
 	<li>Addition of a SCINTILLADOCVIEW_EXT_CLASS preprocessor to allow the classes 
@@ -483,7 +565,7 @@ the control in MFC projects on Windows.</p>
 	SCI_GETSELEOLFILLED, SCI_SETSELEOLFILLED, SCI_GETHOTSPOTACTIVEFORE, SCI_GETHOTSPOTACTIVEBACK, 
 	SCI_GETHOTSPOTACTIVEUNDERLINE &amp; SCI_GETHOTSPOTSINGLELINE</li>
 </ul>
-<p><b>V1.17 (17 September 2006)</b></p>
+<p><b>v1.17 (17 September 2006)</b></p>
 <ul>
 	<li>Updated the CScintillaView::OnReplaceSel and CScintillaView::OnReplaceAll 
 	implementations to use TargetFromSelection and ReplaceTargetRE/ReplaceTarget. 
@@ -506,7 +588,7 @@ the control in MFC projects on Windows.</p>
 	of the IDR_SCINTITYPE string resource. Thanks to Matt Spear for reporting this 
 	issue.</li>
 </ul>
-<p><b>V1.16 (29 June 2006)</b></p>
+<p><b>v1.16 (29 June 2006)</b></p>
 <ul>
 	<li>Removed common control 6 manifest as this conflicts with VC 2005 compilation.</li>
 	<li>Code now uses new C++ style casts rather than old style C casts where necessary.
@@ -518,33 +600,33 @@ the control in MFC projects on Windows.</p>
 	<li>Code now supports persisting margin settings. Thanks to Krasimir Stoychev 
 	for this update.</li>
 </ul>
-<p><b>V1.15 (6 June 2006)</b></p>
+<p><b>v1.15 (6 June 2006)</b></p>
 <ul>
 	<li>Updated the wrapper classes to work correctly when compiled for Unicode.</li>
 </ul>
-<p><b>V1.14 (5 June 2006)</b></p>
+<p><b>v1.14 (5 June 2006)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v1.69. New messages wrapped include: 
 	SCI_MARKERSETALPHA, SCI_GETSELALPHA and SCI_SETSELALPHA.</li>
 </ul>
-<p><b>V1.13 (22 May 2006)</b></p>
+<p><b>v1.13 (22 May 2006)</b></p>
 <ul>
 	<li>Fixed a flicker issue when the CScintillaView is resized. Thanks to Michael 
 	Gunlock for reporting this issue.</li>
 </ul>
-<p><b>V1.12 (14 March 2006)</b></p>
+<p><b>v1.12 (14 March 2006)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v1.68. New messages wrapped include: 
 	SCI_CALLTIPUSESTYLE, SCI_SETCARETLINEBACKALPHA and SCI_GETCARETLINEBACKALPHA.</li>
 	<li>Updated the internal function CScintillaView::SameAsSelected to support 
 	regular expressions. Thanks to Greg Smith for this update.</li>
 </ul>
-<p><b>V1.11 (2 February 2006)</b></p>
+<p><b>v1.11 (2 February 2006)</b></p>
 <ul>
 	<li>Minor update to CScintillaView to allow deletion of text when there is nothing 
 	selected. Thanks to Alexander Kirillov for reporting this bug.</li>
 </ul>
-<p><b>V1.10 (16 January 2006)</b></p>
+<p><b>v1.10 (16 January 2006)</b></p>
 <ul>
 	<li>Removed an unused &quot;rSetup&quot; variable in CScintillaView::PrintPage</li>
 	<li>Optimized code in CScintillaView::PrintPage and CScintillaView::OnFilePageSetup 
@@ -563,7 +645,7 @@ the control in MFC projects on Windows.</p>
 	older versions of MFC. Since Win32s is no longer supported by MFC, there is 
 	no need to use this mechanism any more.</li>
 </ul>
-<p><b>V1.09 (8 January 2006)</b></p>
+<p><b>v1.09 (8 January 2006)</b></p>
 <ul>
 	<li>Find / Replace dialog and associated state is now maintained outside of 
 	CScintillaView. This means that if you have multiple CScintillaView's in your 
@@ -573,13 +655,13 @@ the control in MFC projects on Windows.</p>
 	<li>Find / replace dialog is now closed when the last CScintillaView is destroyed. 
 	Thanks to Greg Smith for reporting this issue.</li>
 </ul>
-<p><b>V1.08 (6 January 2006)</b></p>
+<p><b>v1.08 (6 January 2006)</b></p>
 <ul>
 	<li>Removed some unnecessary code from CScintillaView::OnEndPrinting. Thanks 
 	to Greg Smith for spotting this issue.</li>
 	<li>Updated the documentation to use the same style as the web site</li>
 </ul>
-<p><b>V1.07 (3 January 2006)</b></p>
+<p><b>v1.07 (3 January 2006)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v1.67. New messages wrapped include: 
 	SCI_MARKERADDSET, SCI_SETPASTECONVERTENDINGS, SCI_GETPASTECONVERTENDINGS, SCI_SELECTIONDUPLICATE 
@@ -602,7 +684,7 @@ the control in MFC projects on Windows.</p>
 	<li>A parameter which indicates whether text is being replaced or found is now 
 	sent to CScintillaView::TextNotFound.</li>
 </ul>
-<p><b>V1.06 (10 July 2005)</b></p>
+<p><b>v1.06 (10 July 2005)</b></p>
 <ul>
 	<li>Addition of a virtual function namely OnAutoCSelection which handles the 
 	SCN_AUTOCSELECTION notification message which was introduced in Scintilla v1.63. 
@@ -630,13 +712,13 @@ the control in MFC projects on Windows.</p>
 	the view class and WM_SIZE and WM_MOVE in the child frame class. Thanks to Markus 
 	Werle for spotting this issue.</li>
 </ul>
-<p><b>V1.05 (4 March 2005)</b></p>
+<p><b>v1.05 (4 March 2005)</b></p>
 <ul>
 	<li>Fix in CScintillaView::PrintPage which now sorts out the issue of print 
 	preview not working in the MFC doc / view wrappers for scintilla. Thanks to 
 	Frank Kiesel for reporting this fix.</li>
 </ul>
-<p><b>V1.04 (20 December 2004)</b></p>
+<p><b>v1.04 (20 December 2004)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v1.62.</li>
 	<li>Sample app now includes a common control 6 manifest</li>
@@ -647,7 +729,7 @@ the control in MFC projects on Windows.</p>
 	over text which is "author " case insensitively, a call tip with the text "PJ 
 	Naughter" is displayed.</li>
 </ul>
-<p><b>V1.03 (13 August 2004)</b></p>
+<p><b>v1.03 (13 August 2004)</b></p>
 <ul>
 	<li>Made all the remaining non virtual functions related to Find and Replace 
 	in CScintillaView virtual.</li>
@@ -658,11 +740,11 @@ the control in MFC projects on Windows.</p>
 	<li>Creation of the find / replace dialog now takes place in a new virtual function &quot;CScintillaViewCreateFindReplaceDialog&quot;. 
 	Again thanks to Dmitry Naumov for this update. </li>
 </ul>
-<p><b>V1.02 (6 June 2004)</b></p>
+<p><b>v1.02 (6 June 2004)</b></p>
 <ul>
 	<li>Updated class to work with Scintilla v1.61.</li>
 </ul>
-<p><b>V1.01 (18 March 2004)</b></p>
+<p><b>v1.01 (18 March 2004)</b></p>
 <ul>
 	<li>Updated the sample app's Find Next and Find Previous marker functions. Now 
 	correctly goes to the next and previous markers when a marker is on the current 
@@ -670,7 +752,7 @@ the control in MFC projects on Windows.</p>
 	<li>Updated the sample app's passing of messages to Scintilla from the top level 
 	CMainFrame window.</li>
 </ul>
-<p><b>V1.0 (18 March 2004)</b></p>
+<p><b>v1.0 (18 March 2004)</b></p>
 <ul>
 	<li>Initial public release.</li>
 </ul>
@@ -695,7 +777,8 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Contact"></a>Contacting the Author</h2>
 <p>PJ Naughter<br>Email: <a href="mailto:pjna@naughter.com">pjna@naughter.com</a><br>
-Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>3 May 2018</p>
+Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>28 
+December 2019</p>
 
 </body>
 

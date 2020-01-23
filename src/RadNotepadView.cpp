@@ -226,7 +226,7 @@ void CRadNotepadView::OnUpdateLine(CCmdUI* pCmdUI)
     const Sci_Position nPos = rCtrl.GetCurrentPos();
     const int nLine = rCtrl.LineFromPosition(nPos);
     const Sci_Position nLineStart = rCtrl.PositionFromLine(nLine);
-    const int nColumn = rCtrl.GetColumn(nPos);
+    const Sci_Position nColumn = rCtrl.GetColumn(nPos);
     const Sci_Position nAnchor = rCtrl.GetAnchor();
 
     CString sLine;
@@ -286,7 +286,7 @@ CStringW CRadNotepadView::GetTextRange(Sci_CharacterRange cr)
     //int nLen = rCtrl.GetTextRange(&tr);
     int nLen = tr.chrg.cpMax - tr.chrg.cpMin + 1;
     tr.lpstrText = ret.GetBufferSetLength(nLen);
-    nLen = rCtrl.GetTextRange(&tr);
+    /*Sci_Position nRange =*/ rCtrl.GetTextRange(&tr);
     ret.ReleaseBuffer();
 
     return CScintillaCtrl::UTF82W(ret, -1);
@@ -300,8 +300,8 @@ CStringW CRadNotepadView::GetCurrentWord(BOOL bSelect)
         if (bSelect)
         {
             Sci_Position nPos = rCtrl.GetCurrentPos();
-            int start = rCtrl.WordStartPosition(nPos, TRUE);
-            int end = rCtrl.WordEndPosition(nPos, TRUE);
+            Sci_Position start = rCtrl.WordStartPosition(nPos, TRUE);
+            Sci_Position end = rCtrl.WordEndPosition(nPos, TRUE);
             rCtrl.SetSel(start, end);
             return rCtrl.GetSelText();
         }

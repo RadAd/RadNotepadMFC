@@ -222,7 +222,7 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
         }
 
         for (const auto& prop : pLanguage->mapProperties)
-            rCtrl.SetProperty(prop.first, prop.second);
+            rCtrl.SetScintillaProperty(prop.first, prop.second);
         for (const Style& style : pLanguage->vecStyle)
             ApplyStyle(rCtrl, style, nullptr, pTheme);
         for (const GroupStyle& groupstyle : pLanguage->vecGroupStyle)

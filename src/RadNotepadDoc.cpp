@@ -301,7 +301,7 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
     else
     {
         //Get the length of the document
-        int nDocLength = rCtrl.GetLength();
+        Sci_Position nDocLength = rCtrl.GetLength();
         ULONGLONG nBytesWriteTotal = 0;
 
         //Write the data in blocks to disk
@@ -309,7 +309,7 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
         WriteBom(pFile, m_eEncoding);
         for (int i = 0; i<nDocLength; i += (BUFSIZE - 1)) // (BUFSIZE - 1) because data will be returned nullptr terminated
         {
-            int nGrabSize = nDocLength - i;
+            Sci_Position nGrabSize = nDocLength - i;
             if (nGrabSize > (BUFSIZE - 1))
                 nGrabSize = (BUFSIZE - 1);
 
@@ -322,7 +322,7 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
             rCtrl.GetTextRange(&tr);
 
             //Write it to disk
-            WriteText(pFile, Buffer, nGrabSize, m_eEncoding);
+            WriteText(pFile, Buffer, (int) nGrabSize, m_eEncoding);
             nBytesWriteTotal += nGrabSize;
             pMsgWnd->SetPaneProgress(nIndex, static_cast<long>(nBytesWriteTotal * 100 / nDocLength));
 
