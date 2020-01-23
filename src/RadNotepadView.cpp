@@ -329,6 +329,8 @@ void CRadNotepadView::OnInitialUpdate()
     CRadNotepadDoc* pDoc = GetDocument();
     CString strFileName = pDoc->GetPathName();
     PCTSTR strExt = PathFindExtension(strFileName);
+    if (strExt[0] == _T('\0'))
+        strExt = PathFindFileName(strFileName);
 
     m_pLanguage = GetLanguageForExt(&theApp.m_Settings.user, strExt);
     if (m_pLanguage == nullptr)
@@ -727,6 +729,8 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
         {
             CString strFileName = pDoc->GetPathName();
             PCTSTR strExt = PathFindExtension(strFileName);
+            if (strExt[0] == _T('\0'))
+                strExt = PathFindFileName(strFileName);
 
             m_pLanguage = GetLanguageForExt(&theApp.m_Settings.user, strExt);
 
