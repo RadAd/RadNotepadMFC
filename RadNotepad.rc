@@ -119,7 +119,11 @@ BEGIN
     BUTTON      ID_EDIT_MAKEUPPERCASE
     BUTTON      ID_EDIT_MAKELOWERCASE
     BUTTON      ID_EDIT_TOGGLEBOOKMARK
+    BUTTON      ID_WINDOW_NEW
     BUTTON      ID_WINDOW_SPLIT
+    BUTTON      ID_VIEW_WHITESPACE
+    BUTTON      ID_VIEW_ENDOFLINE
+    BUTTON      ID_VIEW_WORDWRAP
 END
 
 IDR_PROPERTIES TOOLBAR 16, 15
@@ -680,6 +684,9 @@ BEGIN
     ID_FILE_REVERT          "Revert the active document to the current saved state\nRevert"
     ID_FILE_CLOSEALL        "Close all documents\nClose All"
     ID_FILE_SAVEALL         "Save all documents\nSave All"
+    ID_VIEW_WHITESPACE      "Toggle display of white space"
+    ID_VIEW_ENDOFLINE       "Toggle display of end of line"
+    ID_VIEW_WORDWRAP        "Toggle wrapping of long lines"
 END
 
 STRINGTABLE
