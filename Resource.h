@@ -115,6 +115,7 @@
 #define ID_SEARCH_PREV                  32878
 #define ID_SEARCH_NEXT                  32879
 #define ID_SEARCH_INCREMENTAL           32884
+#define ID_BUTTON32896                  32896
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -123,7 +124,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        328
-#define _APS_NEXT_COMMAND_VALUE         32896
+#define _APS_NEXT_COMMAND_VALUE         32897
 #define _APS_NEXT_CONTROL_VALUE         1005
 #define _APS_NEXT_SYMED_VALUE           310
 #endif

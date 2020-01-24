@@ -360,6 +360,7 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.ClearCmdKey(']' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));
 
     rCtrl.UsePopUp(SC_POPUP_NEVER);
+    rCtrl.SetWrapVisualFlags(SC_WRAPVISUALFLAG_END);
 
 #if 0
     //Setup auto completion
