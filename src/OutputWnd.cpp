@@ -323,6 +323,7 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     SetReadOnly(TRUE);
     SetHotspotActiveUnderline(TRUE);
+    SetWrapVisualFlags(SC_WRAPVISUALFLAG_END);
     return 0;
 }
 
