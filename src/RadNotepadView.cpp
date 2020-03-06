@@ -361,6 +361,7 @@ void CRadNotepadView::OnInitialUpdate()
 
     rCtrl.UsePopUp(SC_POPUP_NEVER);
     rCtrl.SetWrapVisualFlags(SC_WRAPVISUALFLAG_END);
+    rCtrl.SetTechnology(SC_TECHNOLOGY_DIRECTWRITE);
 
 #if 0
     //Setup auto completion
