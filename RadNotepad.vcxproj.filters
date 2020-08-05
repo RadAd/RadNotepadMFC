@@ -243,35 +243,6 @@
     <None Include="schemes\ada.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\asm.scheme" />
-    <None Include="schemes\au3.scheme" />
-    <None Include="schemes\bash.scheme" />
-    <None Include="schemes\cpp.scheme" />
-    <None Include="schemes\d.scheme" />
-    <None Include="schemes\docbook.scheme" />
-    <None Include="schemes\fortran.scheme" />
-    <None Include="schemes\latex.scheme" />
-    <None Include="schemes\lisp.scheme" />
-    <None Include="schemes\lua.scheme" />
-    <None Include="schemes\master.scheme" />
-    <None Include="schemes\matlab.scheme" />
-    <None Include="schemes\misc.scheme" />
-    <None Include="schemes\modula2.scheme" />
-    <None Include="schemes\nsis2.scheme" />
-    <None Include="schemes\pascal.scheme" />
-    <None Include="schemes\perl.scheme" />
-    <None Include="schemes\phpscript.scheme" />
-    <None Include="schemes\powershell.scheme" />
-    <None Include="schemes\python.scheme" />
-    <None Include="schemes\ruby.scheme" />
-    <None Include="schemes\specman.scheme" />
-    <None Include="schemes\sql.scheme" />
-    <None Include="schemes\tcl.scheme" />
-    <None Include="schemes\vb.scheme" />
-    <None Include="schemes\verilog.scheme" />
-    <None Include="schemes\vhdl.scheme" />
-    <None Include="schemes\WebFiles.scheme" />
-    <None Include="schemes\xml.scheme" />
     <None Include="schemes\ada.scheme">
       <Filter>Schemes</Filter>
     </None>
@@ -720,7 +691,6 @@
     <None Include="schemes\vhdl.scheme" />
     <None Include="schemes\WebFiles.scheme" />
     <None Include="schemes\xml.scheme" />
-    <None Include="schemes\extmap.dat" />
     <None Include="schemes\ada.scheme">
       <Filter>Schemes</Filter>
     </None>
@@ -14164,94 +14134,94 @@
     <None Include="schemes\vhdl.scheme" />
     <None Include="schemes\WebFiles.scheme" />
     <None Include="schemes\xml.scheme" />
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\asm.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\au3.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\bash.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\cpp.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\d.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\docbook.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\extmap.dat">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\fortran.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\latex.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\lisp.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\lua.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\master.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\matlab.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\misc.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\modula2.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\nsis2.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\pascal.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\perl.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\phpscript.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\powershell.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\python.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\ruby.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\specman.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\sql.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\tcl.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\vb.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\verilog.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\vhdl.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\WebFiles.scheme">
       <Filter>Schemes</Filter>
     </None>
-    <None Include="schemes\*.scheme">
+    <None Include="schemes\xml.scheme">
       <Filter>Schemes</Filter>
     </None>
   </ItemGroup>

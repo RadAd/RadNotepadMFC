@@ -4,7 +4,7 @@ Purpose: Defines the interface for MFC CView and CDocument derived wrapper class
          edit control (www.scintilla.org)
 Created: PJN / 19-03-2004
 
-Copyright (c) 2004 - 2019 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2020 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -55,7 +55,7 @@ public:
 
 //Methods
   BOOL Create(BOOL bFindDialogOnly, LPCTSTR lpszFindWhat, LPCTSTR lpszReplaceWith = nullptr, DWORD dwFlags = FR_DOWN, CWnd* pParentWnd = nullptr) override;
-  BOOL GetRegularExpression() const noexcept { return m_bRegularExpression; };
+  [[nodiscard]] BOOL GetRegularExpression() const noexcept { return m_bRegularExpression; };
   void SetRegularExpression(_In_ BOOL bRegularExpression) noexcept { m_bRegularExpression = bRegularExpression; };
 
 protected:
@@ -97,10 +97,10 @@ public:
 
 //Methods
   CScintillaCtrl& GetCtrl();
-  void            SetMargins(_In_ const CRect& rMargin) noexcept { m_rMargin = rMargin; };
-  CRect           GetMargins() const noexcept { return m_rMargin; };
-  BOOL            GetUseROFileAttributeDuringLoading() const noexcept { return m_bUseROFileAttributeDuringLoading; };
-  void            SetUseROFileAttributeDuringLoading(_In_ BOOL bUseROFileAttributeDuringLoading) noexcept { m_bUseROFileAttributeDuringLoading = bUseROFileAttributeDuringLoading; };
+  void SetMargins(_In_ const CRect& rMargin) noexcept { m_rMargin = rMargin; };
+  [[nodiscard]] CRect GetMargins() const noexcept { return m_rMargin; };
+  [[nodiscard]] BOOL GetUseROFileAttributeDuringLoading() const noexcept { return m_bUseROFileAttributeDuringLoading; };
+  void SetUseROFileAttributeDuringLoading(_In_ BOOL bUseROFileAttributeDuringLoading) noexcept { m_bUseROFileAttributeDuringLoading = bUseROFileAttributeDuringLoading; };
 
 #ifdef _DEBUG
   void Dump(CDumpContext& dc) const override;
@@ -234,7 +234,7 @@ protected: //create from serialization only
 
 //Attributes
 public:
-  virtual CScintillaView* GetView() const;
+  [[nodiscard]] virtual CScintillaView* GetView() const;
 
 //Implementation
 public:

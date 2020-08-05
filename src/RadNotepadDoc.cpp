@@ -316,7 +316,7 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
             //Get the data from the control
             Sci_TextRange tr;
             tr.chrg.cpMin = i;
-            tr.chrg.cpMax = i + nGrabSize;
+            tr.chrg.cpMax = static_cast<Sci_PositionCR>(i + nGrabSize);
             char Buffer[BUFSIZE];
             tr.lpstrText = Buffer;
             rCtrl.GetTextRange(&tr);

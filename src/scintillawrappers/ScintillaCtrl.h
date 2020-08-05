@@ -3,17 +3,17 @@ Module : ScintillaCtrl.h
 Purpose: Defines the interface for an MFC wrapper class for the Scintilla edit control (www.scintilla.org)
 Created: PJN / 19-03-2004
 
-Copyright (c) 2004 - 2019 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2020 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
 Copyright / Usage Details:
 
-You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise)
-when your product is released in binary form. You are allowed to modify the source code in any way you want
-except you cannot modify the copyright details at the top of each module. If you want to distribute source
-code with your application, then you are only allowed to distribute versions released by the author. This is
-to maintain a single distribution point for the source code.
+You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise) 
+when your product is released in binary form. You are allowed to modify the source code in any way you want 
+except you cannot modify the copyright details at the top of each module. If you want to distribute source 
+code with your application, then you are only allowed to distribute versions released by the author. This is 
+to maintain a single distribution point for the source code. 
 
 */
 
@@ -59,7 +59,7 @@ public:
   inline LRESULT Call(_In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam);
   LRESULT GetDirectFunction();
   LRESULT GetDirectPointer();
-  BOOL GetCallDirect() const noexcept;
+  [[nodiscard]] BOOL GetCallDirect() const noexcept;
   void SetCallDirect(_In_ BOOL bDirect) noexcept;
 
 //Unicode support
@@ -168,6 +168,8 @@ public:
   BOOL CanRedo();
   int MarkerLineFromHandle(_In_ int markerHandle);
   void MarkerDeleteHandle(_In_ int markerHandle);
+  int MarkerHandleFromLine(_In_ int line, _In_ int which);
+  int MarkerNumberFromLine(_In_ int line, _In_ int which);
   BOOL GetUndoCollection();
   int GetViewWS();
   void SetViewWS(_In_ int viewWS);
@@ -421,7 +423,7 @@ public:
   BOOL CallTipActive();
   Sci_Position CallTipPosStart();
   void CallTipSetPosStart(_In_ Sci_Position posStart);
-  void CallTipSetHlt(_In_ int highlightStart, _In_ int highlightEnd);
+  void CallTipSetHlt(_In_ Sci_Position highlightStart, _In_ Sci_Position highlightEnd);
   void CallTipSetBack(_In_ COLORREF back);
   void CallTipSetFore(_In_ COLORREF fore);
   void CallTipSetForeHlt(_In_ COLORREF fore);
@@ -700,8 +702,8 @@ public:
   void IndicatorClearRange(_In_ Sci_Position start, _In_ Sci_Position lengthClear);
   int IndicatorAllOnFor(_In_ Sci_Position pos);
   int IndicatorValueAt(_In_ int indicator, _In_ Sci_Position pos);
-  int IndicatorStart(_In_ int indicator, _In_ Sci_Position pos);
-  int IndicatorEnd(_In_ int indicator, _In_ Sci_Position pos);
+  Sci_Position IndicatorStart(_In_ int indicator, _In_ Sci_Position pos);
+  Sci_Position IndicatorEnd(_In_ int indicator, _In_ Sci_Position pos);
   void SetPositionCache(_In_ int size);
   int GetPositionCache();
   void CopyAllowLine();
@@ -861,6 +863,7 @@ public:
   int NameOfStyle(_In_ int style, _Inout_opt_ char* name);
   int TagsOfStyle(_In_ int style, _Inout_opt_ char* tags);
   int DescriptionOfStyle(_In_ int style, _Inout_opt_ char* description);
+  void SetILexer(_In_ void* ilexer);
   int GetBidirectional();
   void SetBidirectional(_In_ int bidirectional);
   int GetLineCharacterIndex();

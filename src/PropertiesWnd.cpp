@@ -178,8 +178,8 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     if (pBase != nullptr)
     {
         LPCTSTR items[] = { _T("Default"), _T("True"), _T("False") };
-        static const int values[] = { B3_UNDEFINED, B3_TRUE, B3_FALSE };
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values, ARRAYSIZE(values))], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
+        static const int values[] = { to_underlying(Bool3::B3_UNDEFINED), to_underlying(Bool3::B3_TRUE), to_underlying(Bool3::B3_FALSE) };
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(to_underlying(*pValue), values, ARRAYSIZE(values))], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
         for (LPCTSTR item : items)
             p->AddOption(item);
         p->AllowEdit(FALSE);
@@ -187,8 +187,8 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     else
     {
         LPCTSTR items[] = { _T("True"), _T("False") };
-        static const int values[] = { B3_TRUE, B3_FALSE };
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values, ARRAYSIZE(values))], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
+        static const int values[] = { to_underlying(Bool3::B3_TRUE), to_underlying(Bool3::B3_FALSE) };
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(to_underlying(*pValue), values, ARRAYSIZE(values))], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
         for (LPCTSTR item : items)
             p->AddOption(item);
         p->AllowEdit(FALSE);

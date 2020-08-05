@@ -10,24 +10,24 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
          PJN / 06-06-2004 1. Updated class to work with Scintilla v1.61
          PJN / 20-12-2004 1. Updated class to work with Scintilla v1.62.
                           2. Sample app now includes a common control 6 manifest
-                          3. Sample app now includes an example of scintilla autocompletion. When you type
-                          "scintilla is " case insensitively a autocompletion list is displayed which allows
-                          "very cool", "easy" or "way cool!!" to be entered.
+                          3. Sample app now includes an example of scintilla autocompletion. When you type 
+                          "scintilla is " case insensitively a autocompletion list is displayed which allows 
+                          "very cool", "easy" or "way cool!!" to be entered. 
                           4. Sample app now includes an example of scintilla calltips. Whenever you hover
-                          over text which is "author " case insensitively, a call tip with the text
+                          over text which is "author " case insensitively, a call tip with the text 
                           "PJ Naughter" is displayed.
          PJN / 10-07-2005 1. Updated class to work with Scintilla v1.64.
-                          2. Fixed a number of warnings when the code is compiled using Visual Studio .NET 2003.
-         PJN / 03-01-2006.1. Updated class to work with Scintilla v1.67. New messages wrapped include:
+                          2. Fixed a number of warnings when the code is compiled using Visual Studio .NET 2003. 
+         PJN / 03-01-2006.1. Updated class to work with Scintilla v1.67. New messages wrapped include: 
                           SCI_MARKERADDSET, SCI_SETPASTECONVERTENDINGS, SCI_GETPASTECONVERTENDINGS,
-                          SCI_SELECTIONDUPLICATE and SCI_GETSTYLEBITSNEEDED.
+                          SCI_SELECTIONDUPLICATE and SCI_GETSTYLEBITSNEEDED. 
                           2. Updated copyright messages
          PJN / 14-03-2006 1. Updated class to work with Scintilla v1.68. New messages wrapped include:
                           SCI_CALLTIPUSESTYLE, SCI_SETCARETLINEBACKALPHA and SCI_GETCARETLINEBACKALPHA.
          PJN / 05-06-2006 1. Updated class to work with Scintilla v1.69. New messages wrapped include:
-                          SCI_MARKERSETALPHA, SCI_GETSELALPHA and SCI_SETSELALPHA.
+                          SCI_MARKERSETALPHA, SCI_GETSELALPHA and SCI_SETSELALPHA. 
          PJN / 06-06-2006 1. Updated the wrapper class to work correctly when compiled for Unicode.
-         PJN / 29-06-2006 1. Code now uses new C++ style casts rather than old style C casts where necessary.
+         PJN / 29-06-2006 1. Code now uses new C++ style casts rather than old style C casts where necessary. 
                           2. Optimized CScintillaCtrl constructor code
                           3. Updated the code to clean compile in VC 2005
                           4. Fixed a bug in the sample program when you invoke Print Preview when compiled
@@ -36,19 +36,19 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           IDR_SCINTITYPE string resource. Thanks to Matt Spear for reporting this issue.
          PJN / 17-09-2006 1. Fixed a bug in UTF82W (and W2UTF8) where if GetLine is called in a Unicode build
                           for the end of the file (i.e. a line having a length of 0), the UTF82W function would
-                          allocate no buffer, but still erroneously write a one character terminating null. In
-                          addition, the caller (GetLine) will try to deallocate the buffer that was never
+                          allocate no buffer, but still erroneously write a one character terminating null. In 
+                          addition, the caller (GetLine) will try to deallocate the buffer that was never 
                           allocated. Thanks to Scott Kelley for spotting this nasty bug.
-                          2. Added of a GetLineEx method which explicitly sets the first WORD value in the text
+                          2. Added of a GetLineEx method which explicitly sets the first WORD value in the text 
                           string to the maximum size. This avoids client code from having to deal with the
                           weird semantics of the EM_GETLINE message. Thanks to Scott Kelley for providing this
                           nice addition.
                           3. Verified code implements all the functionality of Scintilla v1.71
          PJN / 11-06-2007 1. Updated copyright details.
                           2. CScintillaCtrl::GetSelText now uses CString::GetBufferSetLength to avoid having to
-                          allocate an intermediate buffer. Thanks to Jochen Neubeck for reporting this
+                          allocate an intermediate buffer. Thanks to Jochen Neubeck for reporting this 
                           optimization
-                          3. Addition of a SCINTILLACTRL_EXT_CLASS preprocessor macro to allow the classes to be
+                          3. Addition of a SCINTILLACTRL_EXT_CLASS preprocessor macro to allow the classes to be 
                           more easily used in an extension DLL.
                           4. Updated class to work with Scintilla v1.73. New messages wrapped include:
                           SCI_STYLEGETFORE, SCI_STYLEGETBACK, SCI_STYLEGETBOLD, SCI_STYLEGETITALIC, SCI_STYLEGETSIZE,
@@ -56,11 +56,11 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           SCI_STYLEGETCHARACTERSET, SCI_STYLEGETVISIBLE, SCI_STYLEGETCHANGEABLE, SCI_STYLEGETHOTSPOT,
                           SCI_GETSELEOLFILLED, SCI_SETSELEOLFILLED, SCI_GETHOTSPOTACTIVEFORE, SCI_GETHOTSPOTACTIVEBACK,
                           SCI_GETHOTSPOTACTIVEUNDERLINE & SCI_GETHOTSPOTSINGLELINE
-         PJN / 28-11-2007 1. Updated class to work with Scintilla v1.75. New messages wrapped include: SCI_INDICSETUNDER,
-                          SCI_INDICGETUNDER, new behavior for SCI_SETINDENTATIONGUIDES & SCI_GETINDENTATIONGUIDES,
-                          SCI_SETSCROLLWIDTHTRACKING, SCI_GETSCROLLWIDTHTRACKING, SCI_DELWORDRIGHTEND, SCI_SETCARETSTYLE,
-                          SCI_GETCARETSTYLE, SCI_SETINDICATORCURRENT, SCI_SETINDICATORVALUE, SCI_INDICATORFILLRANGE,
-                          SCI_INDICATORCLEARRANGE, SCI_INDICATORALLONFOR, SCI_INDICATORVALUEAT, SCI_INDICATORSTART,
+         PJN / 28-11-2007 1. Updated class to work with Scintilla v1.75. New messages wrapped include: SCI_INDICSETUNDER, 
+                          SCI_INDICGETUNDER, new behavior for SCI_SETINDENTATIONGUIDES & SCI_GETINDENTATIONGUIDES, 
+                          SCI_SETSCROLLWIDTHTRACKING, SCI_GETSCROLLWIDTHTRACKING, SCI_DELWORDRIGHTEND, SCI_SETCARETSTYLE, 
+                          SCI_GETCARETSTYLE, SCI_SETINDICATORCURRENT, SCI_SETINDICATORVALUE, SCI_INDICATORFILLRANGE, 
+                          SCI_INDICATORCLEARRANGE, SCI_INDICATORALLONFOR, SCI_INDICATORVALUEAT, SCI_INDICATORSTART, 
                           SCI_INDICATOREND, SCI_SETPOSITIONCACHE & SCI_GETPOSITIONCACHE.
                           2. The auto completion sample in CScintillaDemoView::OnCharAdded has been extended to show
                           another style of auto completion. Thanks to Alessandro Limonta for suggesting this update.
@@ -73,62 +73,62 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
          PJN / 15-06-2008 1. Code now compiles cleanly using Code Analysis (/analyze)
                           2. Updated code to compile correctly using _ATL_CSTRING_EXPLICIT_CONSTRUCTORS define
                           3. The code now only supports VC 2005 or later.
-         PJN / 01-11-2008 1. Updated class to work with Scintilla v1.77. New messages wrapped include:
+         PJN / 01-11-2008 1. Updated class to work with Scintilla v1.77. New messages wrapped include: 
                           SCI_GETCHARACTERPOINTER, SCI_SETKEYSUNICODE & SCI_GETKEYSUNICODE
-                          2. Reworked all the key Unicode functions which expose string length management and
-                          reimplemented them to use CStringW output parameters. Equivalent ASCII versions have also been
-                          provided. This new approach helps to raise the level of abstraction provided by the wrapper
-                          class. In the process the need for the GetLineEx function has been removed. Thanks to Alexei
+                          2. Reworked all the key Unicode functions which expose string length management and 
+                          reimplemented them to use CStringW output parameters. Equivalent ASCII versions have also been 
+                          provided. This new approach helps to raise the level of abstraction provided by the wrapper 
+                          class. In the process the need for the GetLineEx function has been removed. Thanks to Alexei 
                           Letov for prompting this update.
          PJN / 20-01-2009 1. Updated copyright details.
          PJN / 03-10-2009 1. Fixed a bug in CScintillaCtrl::Create where a crash can occur in a Unicode build if the CreateEx
                           call fails (for example, if the Scintilla DLL was not loaded). Thanks to Simon Smith for reporting
                           this bug
                           2. Updated class to work with Scintilla v2.01. New messages wrapped include:
-                          SCI_SETWRAPINDENTMODE, SCI_GETWRAPINDENTMODE, SCI_INDICSETALPHA, SCI_INDICGETALPHA, SCI_SETEXTRAASCENT,
-                          SCI_GETEXTRAASCENT, SCI_SETEXTRADESCENT, SCI_GETEXTRADESCENT, SCI_MARKERSYMBOLDEFINED, SCI_MARGINSETTEXT,
-                          SCI_MARGINGETTEXT, SCI_MARGINSETSTYLE, SCI_MARGINGETSTYLE, SCI_MARGINSETSTYLES, SCI_MARGINGETSTYLES,
-                          SCI_MARGINTEXTCLEARALL, SCI_MARGINSETSTYLEOFFSET, SCI_MARGINGETSTYLEOFFSET, SCI_ANNOTATIONSETTEXT,
-                          SCI_ANNOTATIONGETTEXT, SCI_ANNOTATIONSETSTYLE, SCI_ANNOTATIONGETSTYLE, SCI_ANNOTATIONSETSTYLES,
-                          SCI_ANNOTATIONGETSTYLES, SCI_ANNOTATIONGETLINES, SCI_ANNOTATIONCLEARALL, SCI_ANNOTATIONSETVISIBLE,
-                          SCI_ANNOTATIONGETVISIBLE, SCI_ANNOTATIONSETSTYLEOFFSET, SCI_ANNOTATIONGETSTYLEOFFSET,
-                          SCI_ADDUNDOACTION, SCI_CHARPOSITIONFROMPOINT, SCI_CHARPOSITIONFROMPOINTCLOSE, SCI_SETMULTIPLESELECTION,
-                          SCI_GETMULTIPLESELECTION, SCI_SETADDITIONALSELECTIONTYPING, SCI_GETADDITIONALSELECTIONTYPING,
-                          SCI_SETADDITIONALCARETSBLINK, SCI_GETADDITIONALCARETSBLINK, SCI_GETSELECTIONS, SCI_CLEARSELECTIONS,
-                          SCI_SETSELECTION, SCI_ADDSELECTION, SCI_SETMAINSELECTION, SCI_GETMAINSELECTION, SCI_SETSELECTIONNCARET,
-                          SCI_GETSELECTIONNCARET, SCI_SETSELECTIONNANCHOR, SCI_GETSELECTIONNANCHOR, SCI_SETSELECTIONNCARETVIRTUALSPACE,
-                          SCI_GETSELECTIONNCARETVIRTUALSPACE, SCI_SETSELECTIONNANCHORVIRTUALSPACE, SCI_GETSELECTIONNANCHORVIRTUALSPACE,
-                          SCI_SETSELECTIONNSTART, SCI_GETSELECTIONNSTART, SCI_SETSELECTIONNEND, SCI_GETSELECTIONNEND,
-                          SCI_SETRECTANGULARSELECTIONCARET, SCI_GETRECTANGULARSELECTIONCARET, SCI_SETRECTANGULARSELECTIONANCHOR,
-                          SCI_GETRECTANGULARSELECTIONANCHOR, SCI_SETRECTANGULARSELECTIONCARETVIRTUALSPACE, SCI_GETRECTANGULARSELECTIONCARETVIRTUALSPACE,
-                          SCI_SETRECTANGULARSELECTIONANCHORVIRTUALSPACE, SCI_GETRECTANGULARSELECTIONANCHORVIRTUALSPACE,
-                          SCI_SETVIRTUALSPACEOPTIONS, SCI_GETVIRTUALSPACEOPTIONS, SCI_SETRECTANGULARSELECTIONMODIFIER,
-                          SCI_GETRECTANGULARSELECTIONMODIFIER, SCI_SETADDITIONALSELFORE, SCI_SETADDITIONALSELBACK, SCI_SETADDITIONALSELALPHA,
+                          SCI_SETWRAPINDENTMODE, SCI_GETWRAPINDENTMODE, SCI_INDICSETALPHA, SCI_INDICGETALPHA, SCI_SETEXTRAASCENT, 
+                          SCI_GETEXTRAASCENT, SCI_SETEXTRADESCENT, SCI_GETEXTRADESCENT, SCI_MARKERSYMBOLDEFINED, SCI_MARGINSETTEXT, 
+                          SCI_MARGINGETTEXT, SCI_MARGINSETSTYLE, SCI_MARGINGETSTYLE, SCI_MARGINSETSTYLES, SCI_MARGINGETSTYLES, 
+                          SCI_MARGINTEXTCLEARALL, SCI_MARGINSETSTYLEOFFSET, SCI_MARGINGETSTYLEOFFSET, SCI_ANNOTATIONSETTEXT, 
+                          SCI_ANNOTATIONGETTEXT, SCI_ANNOTATIONSETSTYLE, SCI_ANNOTATIONGETSTYLE, SCI_ANNOTATIONSETSTYLES, 
+                          SCI_ANNOTATIONGETSTYLES, SCI_ANNOTATIONGETLINES, SCI_ANNOTATIONCLEARALL, SCI_ANNOTATIONSETVISIBLE, 
+                          SCI_ANNOTATIONGETVISIBLE, SCI_ANNOTATIONSETSTYLEOFFSET, SCI_ANNOTATIONGETSTYLEOFFSET, 
+                          SCI_ADDUNDOACTION, SCI_CHARPOSITIONFROMPOINT, SCI_CHARPOSITIONFROMPOINTCLOSE, SCI_SETMULTIPLESELECTION, 
+                          SCI_GETMULTIPLESELECTION, SCI_SETADDITIONALSELECTIONTYPING, SCI_GETADDITIONALSELECTIONTYPING, 
+                          SCI_SETADDITIONALCARETSBLINK, SCI_GETADDITIONALCARETSBLINK, SCI_GETSELECTIONS, SCI_CLEARSELECTIONS, 
+                          SCI_SETSELECTION, SCI_ADDSELECTION, SCI_SETMAINSELECTION, SCI_GETMAINSELECTION, SCI_SETSELECTIONNCARET, 
+                          SCI_GETSELECTIONNCARET, SCI_SETSELECTIONNANCHOR, SCI_GETSELECTIONNANCHOR, SCI_SETSELECTIONNCARETVIRTUALSPACE, 
+                          SCI_GETSELECTIONNCARETVIRTUALSPACE, SCI_SETSELECTIONNANCHORVIRTUALSPACE, SCI_GETSELECTIONNANCHORVIRTUALSPACE, 
+                          SCI_SETSELECTIONNSTART, SCI_GETSELECTIONNSTART, SCI_SETSELECTIONNEND, SCI_GETSELECTIONNEND, 
+                          SCI_SETRECTANGULARSELECTIONCARET, SCI_GETRECTANGULARSELECTIONCARET, SCI_SETRECTANGULARSELECTIONANCHOR, 
+                          SCI_GETRECTANGULARSELECTIONANCHOR, SCI_SETRECTANGULARSELECTIONCARETVIRTUALSPACE, SCI_GETRECTANGULARSELECTIONCARETVIRTUALSPACE, 
+                          SCI_SETRECTANGULARSELECTIONANCHORVIRTUALSPACE, SCI_GETRECTANGULARSELECTIONANCHORVIRTUALSPACE, 
+                          SCI_SETVIRTUALSPACEOPTIONS, SCI_GETVIRTUALSPACEOPTIONS, SCI_SETRECTANGULARSELECTIONMODIFIER, 
+                          SCI_GETRECTANGULARSELECTIONMODIFIER, SCI_SETADDITIONALSELFORE, SCI_SETADDITIONALSELBACK, SCI_SETADDITIONALSELALPHA, 
                           SCI_GETADDITIONALSELALPHA, SCI_SETADDITIONALCARETFORE, SCI_GETADDITIONALCARETFORE, SCI_ROTATESELECTION &
                           SCI_SWAPMAINANCHORCARET
          PJN / 22-11-2010 1. Updated copyright details.
                           2. Updated sample app to clean compile on VC 2010
                           3. Updated class to work with Scintilla v2.22. New messages wrapped include:
-                          SCI_SETWHITESPACESIZE, SCI_GETWHITESPACESIZE, SCI_SETFONTQUALITY, SCI_GETFONTQUALITY, SCI_SETFIRSTVISIBLELINE,
+                          SCI_SETWHITESPACESIZE, SCI_GETWHITESPACESIZE, SCI_SETFONTQUALITY, SCI_GETFONTQUALITY, SCI_SETFIRSTVISIBLELINE, 
                           SCI_SETMULTIPASTE, SCI_GETMULTIPASTE, SCI_GETTAG, SCI_AUTOCGETCURRENTTEXT, SCI_SETADDITIONALCARETSVISIBLE,
                           SCI_GETADDITIONALCARETSVISIBLE, SCI_CHANGELEXERSTATE, SCI_CONTRACTEDFOLDNEXT, SCI_VERTICALCENTRECARET,
-                          SCI_GETLEXERLANGUAGE, SCI_PRIVATELEXERCALL, SCI_PROPERTYNAMES, SCI_PROPERTYTYPE, SCI_DESCRIBEPROPERTY,
+                          SCI_GETLEXERLANGUAGE, SCI_PRIVATELEXERCALL, SCI_PROPERTYNAMES, SCI_PROPERTYTYPE, SCI_DESCRIBEPROPERTY, 
                           SCI_DESCRIBEKEYWORDSETS. Also there were some parameter changes to existing messages.
          PJN / 01-04-2011 1. Updated copyright details.
                           2. Updated class to work with Scintilla v2.25. New messages wrapped include:
                           SCI_SETMARGINCURSORN & SCI_GETMARGINCURSORN
-         PJN / 09-12-2011 1. Updated class to work with Scintilla v3.0.2. New messages wrapped include: SCI_MARKERSETBACKSELECTED,
-                          SCI_MARKERENABLEHIGHLIGHT, SCI_STYLESETSIZEFRACTIONAL, SCI_STYLEGETSIZEFRACTIONAL, SCI_STYLESETWEIGHT,
+         PJN / 09-12-2011 1. Updated class to work with Scintilla v3.0.2. New messages wrapped include: SCI_MARKERSETBACKSELECTED, 
+                          SCI_MARKERENABLEHIGHLIGHT, SCI_STYLESETSIZEFRACTIONAL, SCI_STYLEGETSIZEFRACTIONAL, SCI_STYLESETWEIGHT, 
                           SCI_STYLEGETWEIGHT, SCI_COUNTCHARACTERS, SCI_SETEMPTYSELECTION, SCI_CALLTIPSETPOSITION, SCI_GETALLLINESVISIBLE,
                           SCI_BRACEHIGHLIGHTINDICATOR, SCI_BRACEBADLIGHTINDICATOR, SCI_INDICSETOUTLINEALPHA, SCI_INDICGETOUTLINEALPHA,
-                          SCI_SETMARGINOPTIONS, SCI_GETMARGINOPTIONS, SCI_MOVESELECTEDLINESUP, SCI_MOVESELECTEDLINESDOWN, SCI_SETIDENTIFIER,
-                          SCI_GETIDENTIFIER, SCI_RGBAIMAGESETWIDTH, SCI_RGBAIMAGESETHEIGHT, SCI_MARKERDEFINERGBAIMAGE, SCI_REGISTERRGBAIMAGE,
+                          SCI_SETMARGINOPTIONS, SCI_GETMARGINOPTIONS, SCI_MOVESELECTEDLINESUP, SCI_MOVESELECTEDLINESDOWN, SCI_SETIDENTIFIER, 
+                          SCI_GETIDENTIFIER, SCI_RGBAIMAGESETWIDTH, SCI_RGBAIMAGESETHEIGHT, SCI_MARKERDEFINERGBAIMAGE, SCI_REGISTERRGBAIMAGE, 
                           SCI_SCROLLTOSTART, SCI_SCROLLTOEND, SCI_SETTECHNOLOGY, SCI_GETTECHNOLOGY & SCI_CREATELOADER
                           Messages dropped include: SCI_SETUSEPALETTE & SCI_GETUSEPALETTE
          PJN / 15-08-2012 1. Updated copyright details
                           2. Updated class to work with Scintilla v3.2.1 New Messaged wrapped include: SCI_DELETERANGE, SCI_GETWORDCHARS,
                           SCI_GETWHITESPACECHARS, SCI_SETPUNCTUATIONCHARS, SCI_GETPUNCTUATIONCHARS, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR,
-                          SCI_AUTOCGETCASEINSENSITIVEBEHAVIOUR, SCI_GETRANGEPOINTER, SCI_GETGAPPOSITION, SCI_FINDINDICATORSHOW,
+                          SCI_AUTOCGETCASEINSENSITIVEBEHAVIOUR, SCI_GETRANGEPOINTER, SCI_GETGAPPOSITION, SCI_FINDINDICATORSHOW, 
                           SCI_FINDINDICATORFLASH & SCI_FINDINDICATORHIDE.
                           3. SetDocPointer method now uses a void* parameter instead of an int. This prevents a pointer truncation issue
                           on 64bit platforms. Thanks to Kenny Liu for reporting this issue.
@@ -136,21 +136,21 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           5. Updated the code to clean compile on VC 2012
          PJN / 18-01-2013 1. Updated copyright details
                           2. Updated class to work with Scintilla v3.2.4. New messages wrapped include: SCI_GETSELECTIONEMPTY,
-                          SCI_RGBAIMAGESETSCALE, SCI_VCHOMEDISPLAY, SCI_VCHOMEDISPLAYEXTEND, SCI_GETCARETLINEVISIBLEALWAYS &
+                          SCI_RGBAIMAGESETSCALE, SCI_VCHOMEDISPLAY, SCI_VCHOMEDISPLAYEXTEND, SCI_GETCARETLINEVISIBLEALWAYS & 
                           SCI_SETCARETLINEVISIBLEALWAYS.
                           3. The classes are now encapsulated in a Scintilla namespace if the SCI_NAMESPACE define
-                          is defined. This is consistent with how the scintilla.h header file operates in the
+                          is defined. This is consistent with how the scintilla.h header file operates in the 
                           presence of this define. Thanks to Markus Nissl for prompting this update.
                           4. Updated the sample app to compile when the SCI_NAMESPACE define is defined.
-                          5. The sample app is now built by default with the SCI_NAMESPACE defined. This means that all the
+                          5. The sample app is now built by default with the SCI_NAMESPACE defined. This means that all the 
                           classes of the author will appear in the "Scintilla" namespace.
-                          6. The demo app now loads the SciLexer.dll from the application directory only. This avoids DLL planting security
+                          6. The demo app now loads the SciLexer.dll from the application directory only. This avoids DLL planting security 
                           issues.
          PJN / 23-02-2013 1. PrivateLexerCall method now uses a void* parameter instead of an int. This prevents a pointer truncation issue
                           on 64bit platforms. Thanks to Simon Smith for reporting this issue.
-         PJN / 18-01-2013 1. Updated class to work with Scintilla v3.3.3. New messages wrapped include: SCI_SCROLLRANGE, SCI_FOLDLINE,
+         PJN / 18-01-2013 1. Updated class to work with Scintilla v3.3.3. New messages wrapped include: SCI_SCROLLRANGE, SCI_FOLDLINE, 
                           SCI_FOLDCHILDREN, SCI_EXPANDCHILDREN, SCI_FOLDALL, SCI_SETAUTOMATICFOLD, SCI_GETAUTOMATICFOLD, SCI_AUTOCSETORDER,
-                          SCI_AUTOCGETORDER, SCI_RELEASEALLEXTENDEDSTYLES, SCI_ALLOCATEEXTENDEDSTYLES, SCI_SETLINEENDTYPESALLOWED,
+                          SCI_AUTOCGETORDER, SCI_RELEASEALLEXTENDEDSTYLES, SCI_ALLOCATEEXTENDEDSTYLES, SCI_SETLINEENDTYPESALLOWED, 
                           SCI_GETLINEENDTYPESALLOWED, SCI_GETLINEENDTYPESACTIVE, SCI_GETLINEENDTYPESSUPPORTED, SCI_ALLOCATESUBSTYLES,
                           SCI_GETSUBSTYLESSTART, SCI_GETSUBSTYLESLENGTH, SCI_FREESUBSTYLES, SCI_SETIDENTIFIERS, SCI_DISTANCETOSECONDARYSTYLES &
                           SCI_GETSUBSTYLEBASES.
@@ -161,17 +161,17 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
          PJN / 26-01-2015 1. Updated copyright details
                           2. Updated the code to clean compile on VC 2013
                           3. Updated class to work with Scintilla v3.5.3. New messages wrapped include: SCI_CHANGEINSERTION,
-                          SCI_CLEARTABSTOPS, SCI_ADDTABSTOP, SCI_GETNEXTTABSTOP, SCI_GETIMEINTERACTION, SCI_SETIMEINTERACTION,
-                          SCI_CALLTIPSETPOSSTART, SCI_GETPHASESDRAW, SCI_SETPHASESDRAW, SCI_POSITIONRELATIVE, SCI_AUTOCSETMULTI,
-                          SCI_AUTOCGETMULTI, SCI_SETMOUSESELECTIONRECTANGULARSWITCH, SCI_GETMOUSESELECTIONRECTANGULARSWITCH,
-                          SCI_DROPSELECTIONN, SCI_SETREPRESENTATION, SCI_GETREPRESENTATION, SCI_CLEARREPRESENTATION,
-                          SCI_GETSTYLEFROMSUBSTYLE & SCI_GETPRIMARYSTYLEFROMSTYLE
-         PJN / 19-09-2015 1. Updated class to work with Scintilla v3.6.1. New messages wrapped include: SCI_INDICSETHOVERSTYLE,
-                          SCI_INDICGETHOVERSTYLE, SCI_INDICSETHOVERFORE, SCI_INDICGETHOVERFORE, SCI_INDICSETFLAGS,
+                          SCI_CLEARTABSTOPS, SCI_ADDTABSTOP, SCI_GETNEXTTABSTOP, SCI_GETIMEINTERACTION, SCI_SETIMEINTERACTION, 
+                          SCI_CALLTIPSETPOSSTART, SCI_GETPHASESDRAW, SCI_SETPHASESDRAW, SCI_POSITIONRELATIVE, SCI_AUTOCSETMULTI, 
+                          SCI_AUTOCGETMULTI, SCI_SETMOUSESELECTIONRECTANGULARSWITCH, SCI_GETMOUSESELECTIONRECTANGULARSWITCH, 
+                          SCI_DROPSELECTIONN, SCI_SETREPRESENTATION, SCI_GETREPRESENTATION, SCI_CLEARREPRESENTATION, 
+                          SCI_GETSTYLEFROMSUBSTYLE & SCI_GETPRIMARYSTYLEFROMSTYLE 
+         PJN / 19-09-2015 1. Updated class to work with Scintilla v3.6.1. New messages wrapped include: SCI_INDICSETHOVERSTYLE, 
+                          SCI_INDICGETHOVERSTYLE, SCI_INDICSETHOVERFORE, SCI_INDICGETHOVERFORE, SCI_INDICSETFLAGS, 
                           SCI_INDICGETFLAGS, SCI_SETTARGETRANGE, SCI_GETTARGETTEXT, SCI_TARGETWHOLEDOCUMENT, SCI_ISRANGEWORD.
-                          SCI_MULTIPLESELECTADDNEXT & SCI_MULTIPLESELECTADDEACH.
+                          SCI_MULTIPLESELECTADDNEXT & SCI_MULTIPLESELECTADDEACH. 
                           Removed messages include: SCI_SETKEYSUNICODE & SCI_GETKEYSUNICODE
-                          2. All APIs which use a logical document position which previously used a C long has now been replaced with the
+                          2. All APIs which use a logical document position which previously used a C long has now been replaced with the 
                           Scintilla define "Sci_Position". This is to mirror the ongoing changes in Scintilla to enable support for documents
                           larger than 2GB.
          PJN / 23-01-2016 1. Updated copyright details.
@@ -179,30 +179,30 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           SCI_GETIDLESTYLING
          PJN / 11-07-2016 1. Verified class against Scintilla v3.6.6. As no new messages were introduced between v3.6.3 and v3.6.6 no
                           changes were required in the code.
-                          2. Removed the bDirect parameter from all the method calls and instead replaced this functionality with a
+                          2. Removed the bDirect parameter from all the method calls and instead replaced this functionality with a 
                           new pair of getter / setter methods called GetCallDirect and SetCallDirect. Thanks to Chad Marlow for prompting this
                           update
          PJN / 25-07-2016 1. Added SAL annotations to all the code
-         PJN / 16-10-2016 1. Replaced all occurrences of NULL with nullptr throughout the codebase. This now means that the minimum
+         PJN / 16-10-2016 1. Replaced all occurrences of NULL with nullptr throughout the codebase. This now means that the minimum 
                           requirement to compile the code is Visual Studio 2010 or later. Thanks to Markus Nissl for requesting this update.
-                          2. Updated class to work with Scintilla v3.7.0. New messages wrapped include: SCI_SETMARGINBACKN,
-                          SCI_GETMARGINBACKN, SCI_SETMARGINS, SCI_GETMARGINS, SCI_MULTIEDGEADDLINE, SCI_MULTIEDGECLEARALL,
+                          2. Updated class to work with Scintilla v3.7.0. New messages wrapped include: SCI_SETMARGINBACKN, 
+                          SCI_GETMARGINBACKN, SCI_SETMARGINS, SCI_GETMARGINS, SCI_MULTIEDGEADDLINE, SCI_MULTIEDGECLEARALL, 
                           SCI_SETMOUSEWHEELCAPTURES & SCI_GETMOUSEWHEELCAPTURES.
-         PJN / 20-12-2016 1. Updated class to work with Scintilla v3.7.1. New messages wrapped include: SCI_GETTABDRAWMODE, SCI_SETTABDRAWMODE,
-                          SCI_TOGGLEFOLDSHOWTEXT & SCI_FOLDDISPLAYTEXTSETSTYLE. The parameter to support the SCI_USEPOPUP message has been
+         PJN / 20-12-2016 1. Updated class to work with Scintilla v3.7.1. New messages wrapped include: SCI_GETTABDRAWMODE, SCI_SETTABDRAWMODE, 
+                          SCI_TOGGLEFOLDSHOWTEXT & SCI_FOLDDISPLAYTEXTSETSTYLE. The parameter to support the SCI_USEPOPUP message has been 
                           changed from a BOOL to an int.
                           2. Updated code to use Sci_RangeToFormat typedef instead of RangeToFormat
                           3. Updated code to use Sci_TextToFind typedef instead of TextToFind
-                          4. Updated code to no longer use Scintilla namespace which has been removed from
+                          4. Updated code to no longer use Scintilla namespace which has been removed from 
                           Scintilla.h
          PJN / 04-03-2017 1. Updated copyright details
-                          2. Updated class to work with Scintilla v3.7.3. The only change to support this version was to have now no return
+                          2. Updated class to work with Scintilla v3.7.3. The only change to support this version was to have now no return 
                           value from the SetSelection and AddSelection methods
                           3. Updated the download to include the correct VC 2010 project files. Thanks to Kenny Lau for reporting this
                           issue.
-         PJN / 03-04-2017 1. Updated class to work with Scintilla v3.7.4. New messages wrapped include: SCI_SETACCESSIBILITY &
+         PJN / 03-04-2017 1. Updated class to work with Scintilla v3.7.4. New messages wrapped include: SCI_SETACCESSIBILITY & 
                           SCI_GETACCESSIBILITY
-         PJN / 12-06-2017 1. Updated class to work with Scintilla v3.7.5. New messages wrapped include: SCI_GETCARETLINEFRAME,
+         PJN / 12-06-2017 1. Updated class to work with Scintilla v3.7.5. New messages wrapped include: SCI_GETCARETLINEFRAME, 
                           SCI_SETCARETLINEFRAME & SCI_LINEREVERSE
          PJN / 31-08-2017 1. Updated class to work with Scintilla v4.0.0. New messages wrapped include: SCI_GETNAMEDSTYLES, SCI_NAMEOFSTYLE,
                           SCI_TAGSOFSTYLE & SCI_DESCRIPTIONOFSTYLE. Messages removed include SCI_GETTWOPHASEDRAW & SCI_SETTWOPHASEDRAW
@@ -226,10 +226,10 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           5. Updated class to work with Scintilla v4.1.0. New messages wrapped include: SCI_GETDOCUMENTOPTIONS
          PJN / 09-09-2018 1. Fixed a number of compiler warnings when using VS 2017 15.8.2
                           2. Updated class to work with Scintilla v4.1.1. New messages wrapped include: SCI_COUNTCODEUNITS,
-                          SCI_POSITIONRELATIVECODEUNITS, SCI_GETLINECHARACTERINDEX, SCI_ALLOCATELINECHARACTERINDEX,
+                          SCI_POSITIONRELATIVECODEUNITS, SCI_GETLINECHARACTERINDEX, SCI_ALLOCATELINECHARACTERINDEX, 
                           SCI_RELEASELINECHARACTERINDEX, SCI_LINEFROMINDEXPOSITION & SCI_INDEXPOSITIONFROMLINE
          PJN / 19-01-2019 1. Updated copyright details
-                          2. Updated class to work with Scintilla v4.1.3. New messages wrapped include: SCI_SETCOMMANDEVENTS &
+                          2. Updated class to work with Scintilla v4.1.3. New messages wrapped include: SCI_SETCOMMANDEVENTS & 
                           SCI_GETCOMMANDEVENTS.
                           3. Added code to suppress C4263 off by default compiler warning. Thanks to Karagoez Yusuf for reporting this issue.
          PJN / 23-02-2019 1. Fixed a number of compiler warnings when the code is compiled with VS 2019 Preview
@@ -238,26 +238,37 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
          PJN / 25-06-2019 1. Updated class to work with Scintilla v4.1.7. New messages wrapped include: SCI_SETCHARACTERCATEGORYOPTIMIZATION,
                           SCI_GETCHARACTERCATEGORYOPTIMIZATION, SCI_FOLDDISPLAYTEXTGETSTYLE, SCI_SETDEFAULTFOLDDISPLAYTEXT &
                           SCI_GETDEFAULTFOLDDISPLAYTEXT.
-         PJN / 23-08-2019 1. Updated class to work with Scintilla v4.2.0. Various API definitions have been updated to use Sci_Position
+         PJN / 23-08-2019 1. Updated class to work with Scintilla v4.2.0. Various API definitions have been updated to use Sci_Position 
                           instead of int parameters. No new actual messages were added.
          PJN / 03-11-2019 1. Updated class to work with Scintilla v4.2.1. New messages wrapper include: SCI_SETTABMINIMUMWIDTH and
                           SCI_GETTABMINIMUMWIDTH.
                           2. Updated initialization of various structs to use C++ 11 list initialization
-         PJN / 27-12-2019 1. Updated class to work with Scintilla v4.2.3. New messages wrapped include: SCI_SETTARGETSTARTVIRTUALSPACE,
-                          SCI_GETTARGETSTARTVIRTUALSPACE, SCI_SETTARGETENDVIRTUALSPACE, SCI_GETTARGETENDVIRTUALSPACE,
+         PJN / 27-12-2019 1. Updated class to work with Scintilla v4.2.3. New messages wrapped include: SCI_SETTARGETSTARTVIRTUALSPACE, 
+                          SCI_GETTARGETSTARTVIRTUALSPACE, SCI_SETTARGETENDVIRTUALSPACE, SCI_GETTARGETENDVIRTUALSPACE, 
                           SCI_GETSELECTIONNSTARTVIRTUALSPACE & SCI_GETSELECTIONNENDVIRTUALSPACE.
                           2. Fixed various Clang-Tidy static code analysis warnings in the code.
+         PJN / 21-03-2020 1. Updated copyright details.
+                          2. Fixed more Clang-Tidy static code analysis warnings in the code.
+                          3. Updated class to work with Scintilla v4.3.2. New messages wrapped include: SCI_SETILEXER
+         PJN / 07-05-2020 1. Added missing static_casts in the GetSelectionNStartVirtualSpace and 
+                          GetSelectionNEndVirtualSpace methods. Thanks to Yusuf Karagöz for reporting this issue.
+                          2. Updated class to work with Scintilla v4.3.3. New messages wrapped include: SCI_MARKERHANDLEFROMLINE and 
+                          SCI_MARKERNUMBERFROMLINE.
+                          3. Changed two parameters to CallTipSetHlt method to be Sci_Position from int.
+                          4. Changed return value from IndicatorStart method to be Sci_Position from int.
+                          5. Changed return value from IndicatorEnd method to be Sci_Position from int.
+         PJN / 14-06-2020 1. Verified the code against Scintilla v4.4.3.
 
-Copyright (c) 2004 - 2019 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2020 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
 Copyright / Usage Details:
 
-You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise)
-when your product is released in binary form. You are allowed to modify the source code in any way you want
-except you cannot modify the copyright details at the top of each module. If you want to distribute source
-code with your application, then you are only allowed to distribute versions released by the author. This is
+You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise) 
+when your product is released in binary form. You are allowed to modify the source code in any way you want 
+except you cannot modify the copyright details at the top of each module. If you want to distribute source 
+code with your application, then you are only allowed to distribute versions released by the author. This is 
 to maintain a single distribution point for the source code.
 
 */
@@ -364,7 +375,7 @@ CStringA CScintillaCtrl::W2UTF8(_In_NLS_string_(nLength) const wchar_t* pszText,
 #pragma warning(suppress: 26429)
   char* const pszUTF8Text = sUTF.GetBuffer(nUTF8Length + 1); //include an extra byte because we may be null terminating the string ourselves
   int nCharsWritten = WideCharToMultiByte(CP_UTF8, 0, pszText, nLength, pszUTF8Text, nUTF8Length, nullptr, nullptr);
-
+  
   //Ensure we null terminate the text if WideCharToMultiByte doesn't do it for us
   if (nLength != -1)
   {
@@ -392,7 +403,7 @@ CStringW CScintillaCtrl::UTF82W(_In_NLS_string_(nLength) const char* pszText, _I
 #pragma warning(suppress: 26429)
   wchar_t* pszWText = sWideString.GetBuffer(nWideLength + 1); //include an extra byte because we may be null terminating the string ourselves
   int nCharsWritten = MultiByteToWideChar(CP_UTF8, 0, pszText, nLength, pszWText, nWideLength);
-
+  
   //Ensure we null terminate the text if MultiByteToWideChar doesn't do it for us
   if (nLength != -1)
   {
@@ -1384,6 +1395,16 @@ int CScintillaCtrl::MarkerLineFromHandle(_In_ int markerHandle)
 void CScintillaCtrl::MarkerDeleteHandle(_In_ int markerHandle)
 {
   Call(SCI_MARKERDELETEHANDLE, static_cast<WPARAM>(markerHandle), 0);
+}
+
+int CScintillaCtrl::MarkerHandleFromLine(_In_ int line, _In_ int which)
+{
+  return static_cast<int>(Call(SCI_MARKERHANDLEFROMLINE, static_cast<WPARAM>(line), static_cast<LPARAM>(which)));
+}
+
+int CScintillaCtrl::MarkerNumberFromLine(_In_ int line, _In_ int which)
+{
+  return static_cast<int>(Call(SCI_MARKERNUMBERFROMLINE, static_cast<WPARAM>(line), static_cast<LPARAM>(which)));
 }
 
 BOOL CScintillaCtrl::GetUndoCollection()
@@ -2651,7 +2672,7 @@ void CScintillaCtrl::CallTipSetPosStart(_In_ Sci_Position posStart)
   Call(SCI_CALLTIPSETPOSSTART, static_cast<WPARAM>(posStart), 0);
 }
 
-void CScintillaCtrl::CallTipSetHlt(_In_ int highlightStart, _In_ int highlightEnd)
+void CScintillaCtrl::CallTipSetHlt(_In_ Sci_Position highlightStart, _In_ Sci_Position highlightEnd)
 {
   Call(SCI_CALLTIPSETHLT, static_cast<WPARAM>(highlightStart), static_cast<LPARAM>(highlightEnd));
 }
@@ -4048,14 +4069,14 @@ int CScintillaCtrl::IndicatorValueAt(_In_ int indicator, _In_ Sci_Position pos)
   return static_cast<int>(Call(SCI_INDICATORVALUEAT, static_cast<WPARAM>(indicator), static_cast<LPARAM>(pos)));
 }
 
-int CScintillaCtrl::IndicatorStart(_In_ int indicator, _In_ Sci_Position pos)
+Sci_Position CScintillaCtrl::IndicatorStart(_In_ int indicator, _In_ Sci_Position pos)
 {
-  return static_cast<int>(Call(SCI_INDICATORSTART, static_cast<WPARAM>(indicator), static_cast<LPARAM>(pos)));
+  return static_cast<Sci_Position>(Call(SCI_INDICATORSTART, static_cast<WPARAM>(indicator), static_cast<LPARAM>(pos)));
 }
 
-int CScintillaCtrl::IndicatorEnd(_In_ int indicator, _In_ Sci_Position pos)
+Sci_Position CScintillaCtrl::IndicatorEnd(_In_ int indicator, _In_ Sci_Position pos)
 {
-  return static_cast<int>(Call(SCI_INDICATOREND, static_cast<WPARAM>(indicator), static_cast<LPARAM>(pos)));
+  return static_cast<Sci_Position>(Call(SCI_INDICATOREND, static_cast<WPARAM>(indicator), static_cast<LPARAM>(pos)));
 }
 
 void CScintillaCtrl::SetPositionCache(_In_ int size)
@@ -4417,7 +4438,7 @@ Sci_Position CScintillaCtrl::GetSelectionNStart(_In_ int selection)
 
 Sci_Position CScintillaCtrl::GetSelectionNStartVirtualSpace(_In_ int selection)
 {
-  return Call(SCI_GETSELECTIONNSTARTVIRTUALSPACE, static_cast<WPARAM>(selection), 0);
+  return static_cast<Sci_Position>(Call(SCI_GETSELECTIONNSTARTVIRTUALSPACE, static_cast<WPARAM>(selection), 0));
 }
 
 void CScintillaCtrl::SetSelectionNEnd(_In_ int selection, _In_ Sci_Position caret)
@@ -4427,7 +4448,7 @@ void CScintillaCtrl::SetSelectionNEnd(_In_ int selection, _In_ Sci_Position care
 
 Sci_Position CScintillaCtrl::GetSelectionNEndVirtualSpace(_In_ int selection)
 {
-  return Call(SCI_GETSELECTIONNENDVIRTUALSPACE, static_cast<WPARAM>(selection), 0);
+  return static_cast<Sci_Position>(Call(SCI_GETSELECTIONNENDVIRTUALSPACE, static_cast<WPARAM>(selection), 0));
 }
 
 Sci_Position CScintillaCtrl::GetSelectionNEnd(_In_ int selection)
@@ -4855,6 +4876,11 @@ int CScintillaCtrl::TagsOfStyle(_In_ int style, _Inout_opt_ char* tags)
 int CScintillaCtrl::DescriptionOfStyle(_In_ int style, _Inout_opt_ char* description)
 {
   return static_cast<int>(Call(SCI_DESCRIPTIONOFSTYLE, static_cast<WPARAM>(style), reinterpret_cast<LPARAM>(description)));
+}
+
+void CScintillaCtrl::SetILexer(_In_ void* ilexer)
+{
+  Call(SCI_SETILEXER, 0, reinterpret_cast<LPARAM>(ilexer));
 }
 
 int CScintillaCtrl::GetBidirectional()

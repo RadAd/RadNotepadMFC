@@ -309,8 +309,8 @@ CStringW CRadNotepadView::GetCurrentWord(BOOL bSelect)
         {
             Sci_Position nPos = rCtrl.GetCurrentPos();
             Sci_CharacterRange cr;
-            cr.cpMin = rCtrl.WordStartPosition(nPos, TRUE);
-            cr.cpMax = rCtrl.WordEndPosition(nPos, TRUE);
+            cr.cpMin = static_cast<Sci_PositionCR>(rCtrl.WordStartPosition(nPos, TRUE));
+            cr.cpMax = static_cast<Sci_PositionCR>(rCtrl.WordEndPosition(nPos, TRUE));
             return GetTextRange(cr);
         }
     }
@@ -351,8 +351,8 @@ void CRadNotepadView::OnInitialUpdate()
 
     const ThemeEditor& pThemeEditor = m_pLanguage != nullptr ? m_pLanguage->editor : pTheme->editor;
 
-    m_bHighlightMatchingBraces = Merge(pThemeEditor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces, B3_UNDEFINED, B3_FALSE) == B3_TRUE;
-    m_bAutoIndent = Merge(pThemeEditor.bAutoIndent, &pTheme->editor.bAutoIndent, B3_UNDEFINED, B3_FALSE) == B3_TRUE;
+    m_bHighlightMatchingBraces = Merge(pThemeEditor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces, Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
+    m_bAutoIndent = Merge(pThemeEditor.bAutoIndent, &pTheme->editor.bAutoIndent, Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
 
     rCtrl.ClearCmdKey('[' | (SCMOD_CTRL << 16));
     rCtrl.ClearCmdKey('[' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));

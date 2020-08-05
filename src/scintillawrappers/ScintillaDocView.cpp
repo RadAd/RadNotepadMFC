@@ -144,7 +144,7 @@ History: PJN / 12-08-2004 1. Made all the remaining non virtual functions relate
                           reporting this issue.
          PJN / 28-12-2019 1. Fixed some further Clang-Tidy static code analysis warnings in the code.
 
-Copyright (c) 2004 - 2019 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2020 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -190,7 +190,7 @@ CScintillaEditState::CScintillaEditState() noexcept : pFindReplaceDlg(nullptr),
 
 
 #pragma warning(suppress: 26433 26440)
-BEGIN_MESSAGE_MAP(CScintillaFindReplaceDlg, CFindReplaceDialog)
+BEGIN_MESSAGE_MAP(CScintillaFindReplaceDlg, CFindReplaceDialog) //NOLINT(modernize-avoid-c-arrays)
   ON_BN_CLICKED(IDC_REGULAR_EXPRESSION, &CScintillaFindReplaceDlg::OnRegularExpression)
   ON_WM_NCDESTROY()
 END_MESSAGE_MAP()
@@ -220,7 +220,7 @@ BOOL CScintillaFindReplaceDlg::OnInitDialog()
 
   //Should we check the regular expression check box
 #pragma warning(suppress: 26466)
-  CButton* pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
+  auto pCtrl = static_cast<CButton*>(GetDlgItem(IDC_REGULAR_EXPRESSION));
 #pragma warning(suppress: 26496)
   AFXASSUME(pCtrl != nullptr);
   pCtrl->SetCheck(m_bRegularExpression);
@@ -256,7 +256,7 @@ IMPLEMENT_DYNCREATE(CScintillaView, CView)
 const UINT _ScintillaMsgFindReplace = ::RegisterWindowMessage(FINDMSGSTRING);
 
 #pragma warning(suppress: 26440 26433)
-BEGIN_MESSAGE_MAP(CScintillaView, CView)
+BEGIN_MESSAGE_MAP(CScintillaView, CView) //NOLINT(modernize-avoid-c-arrays)
   ON_WM_PAINT()
   ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, &CScintillaView::OnUpdateNeedSel)
   ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, &CScintillaView::OnUpdateNeedPaste)
@@ -1766,7 +1766,7 @@ BOOL CScintillaView::OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult)
   if (pNMHdr->hwndFrom == rCtrl.GetSafeHwnd())
   {
 #pragma warning(suppress: 26490)
-    SCNotification* pSCNotification = reinterpret_cast<SCNotification*>(lParam);
+    auto pSCNotification = reinterpret_cast<SCNotification*>(lParam);
     switch (pNMHdr->code)
     {
       case SCN_STYLENEEDED:

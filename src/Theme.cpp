@@ -84,10 +84,10 @@ static inline void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const Theme
         rCtrl.StyleSetItalic(nStyle, TRUE);
     if (rTheme.font.lfUnderline)
         rCtrl.StyleSetUnderline(nStyle, TRUE);
-    if (rTheme.eolfilled != B3_UNDEFINED)
-        rCtrl.StyleSetEOLFilled(nStyle, rTheme.eolfilled == B3_TRUE);
-    if (rTheme.hotspot != B3_UNDEFINED)
-        rCtrl.StyleSetHotSpot(nStyle, rTheme.hotspot == B3_TRUE);
+    if (rTheme.eolfilled != Bool3::B3_UNDEFINED)
+        rCtrl.StyleSetEOLFilled(nStyle, rTheme.eolfilled == Bool3::B3_TRUE);
+    if (rTheme.hotspot != Bool3::B3_UNDEFINED)
+        rCtrl.StyleSetHotSpot(nStyle, rTheme.hotspot == Bool3::B3_TRUE);
 }
 
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName)
@@ -125,19 +125,19 @@ static inline void ApplyEditor(CScintillaCtrl& rCtrl, const ThemeEditor& rThemeE
     rCtrl.SetCaretStyle(Merge(rThemeEditor.nCaretStyle, pn(pBaseThemeEditor, nCaretStyle), -1, CARETSTYLE_LINE));
     rCtrl.SetCaretWidth(Merge(rThemeEditor.nCaretWidth, pn(pBaseThemeEditor, nCaretWidth), 0, 1));
 
-    rCtrl.SetUseTabs(Merge(rThemeEditor.bUseTabs, pn(pBaseThemeEditor, bUseTabs), B3_UNDEFINED, B3_FALSE) == B3_TRUE);
+    rCtrl.SetUseTabs(Merge(rThemeEditor.bUseTabs, pn(pBaseThemeEditor, bUseTabs), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     rCtrl.SetTabWidth(Merge(rThemeEditor.nTabWidth, pn(pBaseThemeEditor, nTabWidth), 0, 4));
 
     rCtrl.SetIndentationGuides(Merge(rThemeEditor.nIndentGuideType, pn(pBaseThemeEditor, nIndentGuideType), -1, SC_IV_LOOKBOTH));
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
-    bool bShowWS = Merge(rThemeEditor.bShowWhitespace, pn(pBaseThemeEditor, bShowWhitespace), B3_UNDEFINED, B3_FALSE) == B3_TRUE;
+    bool bShowWS = Merge(rThemeEditor.bShowWhitespace, pn(pBaseThemeEditor, bShowWhitespace), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
     rCtrl.SetViewWS(bShowWS ? Merge(rThemeEditor.nWhitespaceMode, pn(pBaseThemeEditor, nWhitespaceMode), 0, SCWS_VISIBLEALWAYS)  : SCWS_INVISIBLE);
-    rCtrl.SetViewEOL(Merge(rThemeEditor.bShowEOL, pn(pBaseThemeEditor, bShowEOL), B3_UNDEFINED, B3_FALSE) == B3_TRUE);
+    rCtrl.SetViewEOL(Merge(rThemeEditor.bShowEOL, pn(pBaseThemeEditor, bShowEOL), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     rCtrl.SetWhitespaceSize(Merge(rThemeEditor.nWhitespaceSize, pn(pBaseThemeEditor, nWhitespaceSize), 0, 1));
     rCtrl.SetTabDrawMode(Merge(rThemeEditor.nTabDrawMode, pn(pBaseThemeEditor, nTabDrawMode), 0, SCTD_LONGARROW));
 
-    rCtrl.SetWrapMode(Merge(rThemeEditor.bWordWrap, pn(pBaseThemeEditor, bWordWrap), B3_UNDEFINED, B3_FALSE) == B3_TRUE ? SC_WRAP_WORD : SC_WRAP_NONE);
+    rCtrl.SetWrapMode(Merge(rThemeEditor.bWordWrap, pn(pBaseThemeEditor, bWordWrap), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE ? SC_WRAP_WORD : SC_WRAP_NONE);
 }
 
 static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const Style* pBaseStyle, const Theme* pTheme)
@@ -169,14 +169,14 @@ int GetMarginWidth(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pB
 
 void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin)
 {
-    if (Merge(margin.show, pn(pBaseMargin, show), B3_UNDEFINED, B3_FALSE) == B3_TRUE)
+    if (Merge(margin.show, pn(pBaseMargin, show), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE)
     {
         int w = GetMarginWidth(rCtrl, margin, pBaseMargin);
         rCtrl.SetMarginWidthN(margin.id, w);
     }
     else
         rCtrl.SetMarginWidthN(margin.id, 0);
-    rCtrl.SetMarginSensitiveN(margin.id, Merge(margin.sensitive, pn(pBaseMargin, sensitive), B3_UNDEFINED, B3_FALSE) == B3_TRUE);
+    rCtrl.SetMarginSensitiveN(margin.id, Merge(margin.sensitive, pn(pBaseMargin, sensitive), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     int type = Merge(margin.type, pn(pBaseMargin, type), -1, -1);
     if (type >= 0)
         rCtrl.SetMarginTypeN(margin.id, type);
@@ -352,9 +352,9 @@ void LoadThemeItem(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeItem& rThemeItem)
             else if (bstrName == _T("italic"))
                 rThemeItem.font.lfItalic = pXMLChildNode->text == _T("true");
             else if (bstrName == _T("hotspot"))
-                rThemeItem.hotspot = pXMLChildNode->text == _T("true") ? B3_TRUE : B3_FALSE;
+                rThemeItem.hotspot = pXMLChildNode->text == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
             else if (bstrName == _T("eolfilled"))
-                rThemeItem.eolfilled = pXMLChildNode->text == _T("true") ? B3_TRUE : B3_FALSE;
+                rThemeItem.eolfilled = pXMLChildNode->text == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
             else
             {
                 CString msg;
@@ -417,7 +417,7 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     if (name == L"default")
                         pTheme->tDefault = rThemeItem;
                     else if (pStyleClass == nullptr)
-                        pTheme->vecStyleClass.push_back({ name, description, rThemeItem });
+                        pTheme->vecStyleClass.emplace_back(StyleClass{ name, description, rThemeItem });
                     else
                     {
                         if (!isnull(description))
@@ -609,13 +609,13 @@ void ProcessMargins(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Margin>& vecMar
                     if (!isnull(name))
                         pMargin->name = (LPCTSTR) name;
                     if (!isnull(show))
-                        pMargin->show = show == _T("true") ? B3_TRUE : B3_FALSE;
+                        pMargin->show = show == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
                     if (!isnull(width))
                         pMargin->width = _wtoi(width);
                     if (!isnull(width_text))
                         pMargin->width_text = (LPCTSTR) width_text;
                     if (!isnull(sensitive))
-                        pMargin->sensitive = sensitive == _T("true") ? B3_TRUE : B3_FALSE;
+                        pMargin->sensitive = sensitive == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
                     if (!isnull(stype))
                         pMargin->type = _wtoi(stype);
                     if (!isnull(mask))
@@ -797,7 +797,7 @@ void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     KeywordClass* pKeywordClass = Get(pTheme->vecKeywordClass, name);
                     if (pKeywordClass == nullptr)
                     {
-                        pTheme->vecKeywordClass.push_back({ name, keywords });
+                        pTheme->vecKeywordClass.emplace_back(KeywordClass({ name, keywords }));
                         pKeywordClass = &pTheme->vecKeywordClass.back();
                     }
                     else
@@ -848,7 +848,7 @@ void ProcessEditor(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeEditor& rThemeEditor)
                 _bstr_t width = GetAttribute(pXMLChildNode, _T("width"));
 
                 if (!isnull(use))
-                    rThemeEditor.bUseTabs = use == _T("true") ? B3_TRUE : B3_FALSE;
+                    rThemeEditor.bUseTabs = use == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
                 if (!isnull(width))
                     rThemeEditor.nTabWidth = _wtoi(width);
             }
@@ -868,9 +868,9 @@ void ProcessEditor(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeEditor& rThemeEditor)
                 _bstr_t eol = GetAttribute(pXMLChildNode, _T("eol"));
 
                 if (!isnull(show))
-                    rThemeEditor.bShowWhitespace = show == _T("true") ? B3_TRUE : B3_FALSE;
+                    rThemeEditor.bShowWhitespace = show == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
                 if (!isnull(eol))
-                    rThemeEditor.bShowEOL = show == _T("true") ? B3_TRUE : B3_FALSE;
+                    rThemeEditor.bShowEOL = show == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
                 if (!isnull(stype))
                     rThemeEditor.nWhitespaceMode = _wtoi(stype);
                 if (!isnull(size))
@@ -883,21 +883,21 @@ void ProcessEditor(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeEditor& rThemeEditor)
                 _bstr_t highlight = GetAttribute(pXMLChildNode, _T("highlight"));
 
                 if (!isnull(highlight))
-                    rThemeEditor.bHighlightMatchingBraces = highlight == _T("true") ? B3_TRUE : B3_FALSE;
+                    rThemeEditor.bHighlightMatchingBraces = highlight == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
             }
             else if (bstrName == _T("indent"))
             {
                 _bstr_t sauto = GetAttribute(pXMLChildNode, _T("auto"));
 
                 if (!isnull(sauto))
-                    rThemeEditor.bAutoIndent = sauto == _T("true") ? B3_TRUE : B3_FALSE;
+                    rThemeEditor.bAutoIndent = sauto == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
             }
             else if (bstrName == _T("wrap"))
             {
                 _bstr_t sauto = GetAttribute(pXMLChildNode, _T("enabled"));
 
                 if (!isnull(sauto))
-                    rThemeEditor.bWordWrap = sauto == _T("true") ? B3_TRUE : B3_FALSE;
+                    rThemeEditor.bWordWrap = sauto == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
             }
             else
             {
@@ -1386,10 +1386,10 @@ void SaveTheme(MSXML2::IXMLDOMElementPtr pNode, const ThemeItem& ti, const Theme
         pNode->setAttribute(_T("bold"), ti.font.lfWeight == FW_BOLD);
     if (ti.font.lfItalic != dti.font.lfItalic)
         pNode->setAttribute(_T("italic"), ti.font.lfItalic ? _T("true") : _T("false"));
-    if (ti.eolfilled != B3_UNDEFINED && ti.eolfilled != dti.eolfilled)
-        pNode->setAttribute(_T("eolfilled"), ti.eolfilled == B3_TRUE ? _T("true") : _T("false"));
-    if (ti.hotspot != B3_UNDEFINED && ti.hotspot != dti.hotspot)
-        pNode->setAttribute(_T("hotspot"), ti.hotspot == B3_TRUE ? _T("true") : _T("false"));
+    if (ti.eolfilled != Bool3::B3_UNDEFINED && ti.eolfilled != dti.eolfilled)
+        pNode->setAttribute(_T("eolfilled"), ti.eolfilled == Bool3::B3_TRUE ? _T("true") : _T("false"));
+    if (ti.hotspot != Bool3::B3_UNDEFINED && ti.hotspot != dti.hotspot)
+        pNode->setAttribute(_T("hotspot"), ti.hotspot == Bool3::B3_TRUE ? _T("true") : _T("false"));
 }
 
 void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<Style>& vecStyle, const std::vector<Style>& vecDefaultStyle)
@@ -1429,8 +1429,8 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
         MSXML2::IXMLDOMElementPtr pTabs = pDoc->createElement(L"tabs");
         pParent->insertBefore(pTabs, vtnull);
 
-        if (rThemeEditor.bUseTabs != B3_UNDEFINED && rThemeEditor.bUseTabs != rDefaultThemeEditor.bUseTabs)
-            pTabs->setAttribute(_T("use"), rThemeEditor.bUseTabs == B3_TRUE ? _T("true") : _T("false"));
+        if (rThemeEditor.bUseTabs != Bool3::B3_UNDEFINED && rThemeEditor.bUseTabs != rDefaultThemeEditor.bUseTabs)
+            pTabs->setAttribute(_T("use"), rThemeEditor.bUseTabs == Bool3::B3_TRUE ? _T("true") : _T("false"));
         if (rThemeEditor.nTabWidth != rDefaultThemeEditor.nTabWidth)
             pTabs->setAttribute(_T("width"), rThemeEditor.nTabWidth);
 
@@ -1451,10 +1451,10 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
         MSXML2::IXMLDOMElementPtr pWhitespace = pDoc->createElement(L"whitespace");
         pParent->insertBefore(pWhitespace, vtnull);
 
-        if (rThemeEditor.bShowWhitespace != B3_UNDEFINED && rThemeEditor.bShowWhitespace != rDefaultThemeEditor.bShowWhitespace)
-            pWhitespace->setAttribute(_T("show"), rThemeEditor.bShowWhitespace == B3_TRUE ? _T("true") : _T("false"));
-        if (rThemeEditor.bShowEOL != B3_UNDEFINED && rThemeEditor.bShowEOL != rDefaultThemeEditor.bShowWhitespace)
-            pWhitespace->setAttribute(_T("eol"), rThemeEditor.bShowEOL == B3_TRUE ? _T("true") : _T("false"));
+        if (rThemeEditor.bShowWhitespace != Bool3::B3_UNDEFINED && rThemeEditor.bShowWhitespace != rDefaultThemeEditor.bShowWhitespace)
+            pWhitespace->setAttribute(_T("show"), rThemeEditor.bShowWhitespace == Bool3::B3_TRUE ? _T("true") : _T("false"));
+        if (rThemeEditor.bShowEOL != Bool3::B3_UNDEFINED && rThemeEditor.bShowEOL != rDefaultThemeEditor.bShowWhitespace)
+            pWhitespace->setAttribute(_T("eol"), rThemeEditor.bShowEOL == Bool3::B3_TRUE ? _T("true") : _T("false"));
         if (rThemeEditor.nWhitespaceMode != rDefaultThemeEditor.nWhitespaceMode)
             pWhitespace->setAttribute(_T("type"), rDefaultThemeEditor.nWhitespaceMode);
         if (rThemeEditor.nWhitespaceSize != rDefaultThemeEditor.nWhitespaceSize)
@@ -1469,8 +1469,8 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
         MSXML2::IXMLDOMElementPtr pBraces = pDoc->createElement(L"braces");
         pParent->insertBefore(pBraces, vtnull);
 
-        if (rThemeEditor.bHighlightMatchingBraces != B3_UNDEFINED && rThemeEditor.bHighlightMatchingBraces != rDefaultThemeEditor.bHighlightMatchingBraces)
-            pBraces->setAttribute(_T("highlight"), rThemeEditor.bHighlightMatchingBraces == B3_TRUE ? _T("true") : _T("false"));
+        if (rThemeEditor.bHighlightMatchingBraces != Bool3::B3_UNDEFINED && rThemeEditor.bHighlightMatchingBraces != rDefaultThemeEditor.bHighlightMatchingBraces)
+            pBraces->setAttribute(_T("highlight"), rThemeEditor.bHighlightMatchingBraces == Bool3::B3_TRUE ? _T("true") : _T("false"));
 
         if (IsEmpty(pBraces, NODE_ATTRIBUTE))
             pParent->removeChild(pBraces);
@@ -1480,7 +1480,7 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
         pParent->insertBefore(pIndent, vtnull);
 
         if (rThemeEditor.bAutoIndent != rDefaultThemeEditor.bAutoIndent)
-            pIndent->setAttribute(_T("auto"), rThemeEditor.bAutoIndent);
+            pIndent->setAttribute(_T("auto"), to_underlying(rThemeEditor.bAutoIndent));
 
         if (IsEmpty(pIndent, NODE_ATTRIBUTE))
             pParent->removeChild(pIndent);
@@ -1490,7 +1490,7 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
         pParent->insertBefore(pWordWrap, vtnull);
 
         if (rThemeEditor.bWordWrap != rDefaultThemeEditor.bWordWrap)
-            pWordWrap->setAttribute(_T("auto"), rThemeEditor.bWordWrap);
+            pWordWrap->setAttribute(_T("auto"), to_underlying(rThemeEditor.bWordWrap));
 
         if (IsEmpty(pWordWrap, NODE_ATTRIBUTE))
             pParent->removeChild(pWordWrap);
@@ -1509,14 +1509,14 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
             pParent->insertBefore(pMargin, vtnull);
 
             pMargin->setAttribute(_T("key"), m.id);
-            if (m.show != B3_UNDEFINED && m.show != om->show)
-                pMargin->setAttribute(_T("show"), m.show == B3_TRUE ? _T("true") : _T("false"));
+            if (m.show != Bool3::B3_UNDEFINED && m.show != om->show)
+                pMargin->setAttribute(_T("show"), m.show == Bool3::B3_TRUE ? _T("true") : _T("false"));
             if (m.width != 0 && m.width != om->width)
                 pMargin->setAttribute(_T("width"), m.width);
             if (! m.width_text.IsEmpty() && m.width_text != om->width_text)
                 pMargin->setAttribute(_T("width-text"), m.width_text.GetString());
-            if (m.sensitive != B3_UNDEFINED && m.sensitive != om->sensitive)
-                pMargin->setAttribute(_T("sensitive"), m.sensitive == B3_TRUE ? _T("true") : _T("false"));
+            if (m.sensitive != Bool3::B3_UNDEFINED && m.sensitive != om->sensitive)
+                pMargin->setAttribute(_T("sensitive"), m.sensitive == Bool3::B3_TRUE ? _T("true") : _T("false"));
             if (m.type != -1 && m.type != om->type)
                 pMargin->setAttribute(_T("type"), m.type);
             if (om->mask != 0 && m.mask != om->mask)

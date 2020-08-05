@@ -13,7 +13,7 @@
 #define COLOR_LT_MAGENTA    RGB(0x80, 0x00, 0x80)
 #define COLOR_LT_YELLOW     RGB(0x80, 0x80, 0x00)
 
-enum Bool3
+enum class Bool3
 {
     B3_UNDEFINED = -1,
     B3_FALSE,
@@ -26,8 +26,8 @@ struct ThemeItem
         : fore(fore)
         , back(back)
         , font(font)
-        , eolfilled(B3_UNDEFINED)
-        , hotspot(B3_UNDEFINED)
+        , eolfilled(Bool3::B3_UNDEFINED)
+        , hotspot(Bool3::B3_UNDEFINED)
     {
     }
 
@@ -105,20 +105,20 @@ struct ThemeEditor
     int nCaretWidth = 0;
     COLORREF cCaretFG = COLOR_NONE;
 
-    Bool3 bUseTabs = B3_UNDEFINED;
+    Bool3 bUseTabs = Bool3::B3_UNDEFINED;
     int nTabWidth = 0;
     int nIndentGuideType = -1;
-    Bool3 bHighlightMatchingBraces = B3_UNDEFINED;
-    Bool3 bAutoIndent = B3_UNDEFINED;
+    Bool3 bHighlightMatchingBraces = Bool3::B3_UNDEFINED;
+    Bool3 bAutoIndent = Bool3::B3_UNDEFINED;
 
-    Bool3 bShowWhitespace = B3_UNDEFINED;
-    Bool3 bShowEOL = B3_UNDEFINED;
+    Bool3 bShowWhitespace = Bool3::B3_UNDEFINED;
+    Bool3 bShowEOL = Bool3::B3_UNDEFINED;
     int nWhitespaceMode = 0;
     int nTabDrawMode = 0;
     int nWhitespaceSize = 0;
     // TODO WhiteSpaceFore, WhiteSpaceBack
 
-    Bool3 bWordWrap = B3_UNDEFINED;
+    Bool3 bWordWrap = Bool3::B3_UNDEFINED;
 
     // Add view whitespace, eol, word wrap
 
@@ -156,10 +156,10 @@ struct Margin
 
     CString name;
     int id;
-    Bool3 show = B3_UNDEFINED;
+    Bool3 show = Bool3::B3_UNDEFINED;
     int width = 0;
     CString width_text;
-    Bool3 sensitive = B3_UNDEFINED;
+    Bool3 sensitive = Bool3::B3_UNDEFINED;
     int type = -1;
     int mask = 0;
 

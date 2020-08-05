@@ -3,13 +3,13 @@
 
 <head>
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
-<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.59</title>
+<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.61</title>
 <link href="naughter.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
 
-<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.59</h2>
+<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.62</h2>
 <h2><i>Freeware MFC wrapper classes for the Scintilla edit control</i></h2>
 <p>These classes provides a MFC wrapping for the Scintilla edit control (<a href="http://www.scintilla.org">http://www.scintilla.org</a>). 
 This control provides an open source cross platform edit control. Some of the features 
@@ -41,7 +41,7 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Features"></a>Features</h2>
 <ul>
-	<li>Implements all the functionality provided by Scintilla v4.2.3.</li>
+	<li>Implements all the functionality provided by Scintilla v4.4.3.</li>
 	<li>The CScintillaCtrl wrapper class observes the same semantics as the built 
 	in MFC &quot;CEdit&quot; wrapper class.</li>
 	<li>Uses the direct access functions provided by Scintilla to improve performance. 
@@ -121,6 +121,37 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2><a name="History"></a>History</h2>
+<p><b>v1.62 (14 June 2020)</b></p>
+<ul>
+	<li>Verified the code against Scintilla v4.4.3. </li>
+	<li>Updated the text when the demo application could not find the Scintilla 
+	SciLexer DLL.</li>
+	<li>The demo app supplied with this code now includes a prebuilt version of 
+	SciLexer.dll as a convenience.</li>
+</ul>
+<p><b>v1.61 (7 May 2020)</b></p>
+<ul>
+	<li>Added missing static_casts in the GetSelectionNStartVirtualSpace and 
+	GetSelectionNEndVirtualSpace methods. Thanks to Yusuf Karagöz for reporting 
+	this issue.</li>
+	<li>Updated class to work with Scintilla v4.3.3. New messages wrapped 
+	include: SCI_MARKERHANDLEFROMLINE and SCI_MARKERNUMBERFROMLINE.</li>
+	<li>Changed two parameters to CallTipSetHlt method to be Sci_Position from 
+	int.</li>
+	<li>Changed return value from IndicatorStart method to be Sci_Position from 
+	int.</li>
+	<li>Changed return value from IndicatorEnd method to be Sci_Position from 
+	int.</li>
+</ul>
+<p><b>v1.60 (21 March 2020)</b></p>
+<ul>
+	<li>Updated copyright details.
+	</li>
+	<li>Fixed more Clang-Tidy static code analysis warnings in the code.
+	</li>
+	<li>Updated class to work with Scintilla v4.3.2. New messages wrapped 
+	include: SCI_SETILEXER.</li>
+</ul>
 <p><b>v1.59 (28 December 2019)</b></p>
 <ul>
 	<li>Fixed some further Clang-Tidy static code analysis warnings in the code.
@@ -777,8 +808,7 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Contact"></a>Contacting the Author</h2>
 <p>PJ Naughter<br>Email: <a href="mailto:pjna@naughter.com">pjna@naughter.com</a><br>
-Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>28 
-December 2019</p>
+Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>14 June 2020</p>
 
 </body>
 
