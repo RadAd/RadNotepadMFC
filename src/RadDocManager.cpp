@@ -72,6 +72,12 @@ int CRadDocManager::GetModifiedDocumentCount() const
 
 BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD lFlags, BOOL bOpenFileDialog, CDocTemplate* /*pTemplate*/)
 {
+    CString strDefaultName;
+    ENSURE(strDefaultName.LoadString(AFX_IDS_UNTITLED));
+    strDefaultName += '*';
+    if (fileName == strDefaultName)
+        fileName.Empty();
+
     CString strDefaultExt = PathFindExtension(fileName);
     if (strDefaultExt.IsEmpty())
         strDefaultExt = _T("txt");
