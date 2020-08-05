@@ -385,7 +385,7 @@ END
 // Dialog
 //
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 171, 101
+IDD_ABOUTBOX DIALOGEX 0, 0, 171, 133
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "About RadNotepad"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -393,9 +393,11 @@ BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
     LTEXT           "%s, Version %s",ID_VERSION,42,14,114,8,SS_NOPREFIX
     LTEXT           "",ID_COPYRIGHT,42,26,114,16
-    DEFPUSHBUTTON   "OK",IDOK,114,80,50,14,WS_GROUP
-    LTEXT           "%s, Version %s",ID_VERSION_SCINTILLA,42,47,114,8,SS_NOPREFIX
-    LTEXT           "",ID_COPYRIGHT_SCINTILLA,42,59,114,16,SS_NOPREFIX
+    CONTROL         "Github Project",IDC_MFCLINK2,"MfcLink",WS_TABSTOP,42,46,114,11
+    LTEXT           "%s, Version %s",ID_VERSION_SCINTILLA,42,60,114,8,SS_NOPREFIX
+    LTEXT           "",ID_COPYRIGHT_SCINTILLA,42,71,114,16,SS_NOPREFIX
+    CONTROL         "www.scintilla.org",IDC_MFCLINK1,"MfcLink",WS_TABSTOP,42,90,114,14
+    DEFPUSHBUTTON   "OK",IDOK,114,112,50,14,WS_GROUP
 END
 
 IDD_GOTOLINE DIALOGEX 0, 0, 157, 56
@@ -428,8 +430,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,0,0
- PRODUCTVERSION 1,1,0,0
+ FILEVERSION 1,2,0,0
+ PRODUCTVERSION 1,2,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -445,13 +447,13 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "RadSoft"
-            VALUE "FileDescription", "RadNotepad"
-            VALUE "FileVersion", "1.1.0.0"
+            VALUE "FileDescription", "Text Editor"
+            VALUE "FileVersion", "1.2.0.0"
             VALUE "InternalName", "RadNotepad.exe"
             VALUE "LegalCopyright", "Copyright © 2018"
             VALUE "OriginalFilename", "RadNotepad.exe"
             VALUE "ProductName", "Rad Notepad"
-            VALUE "ProductVersion", "1.1.0.0"
+            VALUE "ProductVersion", "1.2.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -474,7 +476,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 164
         TOPMARGIN, 7
-        BOTTOMMARGIN, 94
+        BOTTOMMARGIN, 126
     END
 
     IDD_GOTOLINE, DIALOG
@@ -517,6 +519,40 @@ BEGIN
     100, 100, 0, 0,
     100, 100, 0, 0,
     100, 100, 0, 0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_ABOUTBOX DLGINIT
+BEGIN
+    IDC_MFCLINK2, 0x37c, 195, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x673e, 0x7469, 0x7568, 
+0x2e62, 0x6f63, 0x2f6d, 0x6152, 0x4164, 0x2f64, 0x6152, 0x4e64, 0x746f, 
+0x7065, 0x6461, 0x464d, 0x3c43, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x555f, 
+0x6c72, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x506c, 0x6572, 
+0x6966, 0x3e78, 0x7468, 0x7074, 0x3a73, 0x2f2f, 0x2f3c, 0x464d, 0x4c43, 
+0x6e69, 0x5f6b, 0x7255, 0x506c, 0x6572, 0x6966, 0x3e78, 0x4d3c, 0x4346, 
+0x694c, 0x6b6e, 0x545f, 0x6f6f, 0x746c, 0x7069, 0x3c3e, 0x4d2f, 0x4346, 
+0x694c, 0x6b6e, 0x545f, 0x6f6f, 0x746c, 0x7069, 0x3c3e, 0x464d, 0x4c43, 
+0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 0x6c6f, 0x6974, 
+0x3e70, 0x4146, 0x534c, 0x3c45, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x465f, 
+0x6c75, 0x546c, 0x7865, 0x5474, 0x6f6f, 0x746c, 0x7069, "\076" 
+    IDC_MFCLINK1, 0x37c, 165, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x3c3e, 0x4d2f, 0x4346, 
+0x694c, 0x6b6e, 0x555f, 0x6c72, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 
+0x7255, 0x506c, 0x6572, 0x6966, 0x3e78, 0x7468, 0x7074, 0x3a73, 0x2f2f, 
+0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 0x506c, 0x6572, 0x6966, 
+0x3e78, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x545f, 0x6f6f, 0x746c, 0x7069, 
+0x3c3e, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x545f, 0x6f6f, 0x746c, 0x7069, 
+0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 
+0x6f54, 0x6c6f, 0x6974, 0x3e70, 0x4146, 0x534c, 0x3c45, 0x4d2f, 0x4346, 
+0x694c, 0x6b6e, 0x465f, 0x6c75, 0x546c, 0x7865, 0x5474, 0x6f6f, 0x746c, 
+0x7069, "\076" 
+    0
 END
 
 
