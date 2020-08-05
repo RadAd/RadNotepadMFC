@@ -26,18 +26,18 @@ static char THIS_FILE[]=__FILE__;
 
 enum class PropType
 {
-    PROP_BOOL,
-    PROP_INT,
-    PROP_UINT,
-    PROP_COLOR,
-    PROP_FONT,
-    PROP_INDEX,
+    BOOL,
+    INT,
+    UINT,
+    COLOR,
+    FONT,
+    INDEX,
 };
 
 struct Property
 {
     Property(bool* b)
-        : nType(PropType::PROP_BOOL)
+        : nType(PropType::BOOL)
         , valBool(b)
         , defInt{}
         , vecValues(nullptr)
@@ -45,7 +45,7 @@ struct Property
     }
 
     Property(INT* i)
-        : nType(PropType::PROP_INT)
+        : nType(PropType::INT)
         , valInt(i)
         , defInt{}
         , vecValues(nullptr)
@@ -53,7 +53,7 @@ struct Property
     }
 
     Property(UINT* i)
-        : nType(PropType::PROP_UINT)
+        : nType(PropType::UINT)
         , valUInt(i)
         , defInt{}
         , vecValues(nullptr)
@@ -62,7 +62,7 @@ struct Property
 
     template <class E>
     Property(E* i, const E* j, const int* values)
-        : nType(PropType::PROP_INDEX)
+        : nType(PropType::INDEX)
         , valInt(reinterpret_cast<INT*>(i))
         , defInt { reinterpret_cast<const INT*>(j) }
         , vecValues(values)
@@ -70,7 +70,7 @@ struct Property
     }
 
     Property(COLORREF* c, const std::initializer_list<const COLORREF*>& def)
-        : nType(PropType::PROP_COLOR)
+        : nType(PropType::COLOR)
         , valColor(c)
         , defColor {}
         , vecValues(nullptr)
@@ -80,7 +80,7 @@ struct Property
     }
 
     Property(LOGFONT* f, const std::initializer_list<const LOGFONT*>& def)
-        : nType(PropType::PROP_FONT)
+        : nType(PropType::FONT)
         , valFont(f)
         , defFont {}
         , vecValues(nullptr)
@@ -389,22 +389,22 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
 {
     switch (prop->nType)
     {
-    case PropType::PROP_BOOL:
+    case PropType::BOOL:
         ASSERT(pProp->GetValue().vt == VT_BOOL);
         *prop->valBool = pProp->GetValue().boolVal != VARIANT_FALSE;;
         break;
 
-    case PropType::PROP_INT:
+    case PropType::INT:
         ASSERT(pProp->GetValue().vt == VT_INT || pProp->GetValue().vt == VT_I4);
         *prop->valInt = pProp->GetValue().intVal;
         break;
 
-    case PropType::PROP_UINT:
+    case PropType::UINT:
         ASSERT(pProp->GetValue().vt == VT_INT);
         *prop->valUInt = pProp->GetValue().intVal;
         break;
 
-    case PropType::PROP_INDEX:
+    case PropType::INDEX:
         {
             int i = GetOptionIndex(pProp);
             if (prop->vecValues != nullptr)
@@ -413,7 +413,7 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         }
         break;
 
-    case PropType::PROP_COLOR:
+    case PropType::COLOR:
         {
             CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
             COLORREF c = p->GetColor();
@@ -421,7 +421,7 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         }
         break;
 
-    case PropType::PROP_FONT:
+    case PropType::FONT:
         {
             CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
             PLOGFONT f = p->GetLogFont();
@@ -894,16 +894,16 @@ static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
     {
         switch (prop->nType)
         {
-        case PropType::PROP_BOOL:
+        case PropType::BOOL:
             break;
 
-        case PropType::PROP_INT:
+        case PropType::INT:
             break;
 
-        case PropType::PROP_INDEX:
+        case PropType::INDEX:
             break;
 
-        case PropType::PROP_COLOR:
+        case PropType::COLOR:
             for (const COLORREF* defColor : prop->defColor)
             {
                 if (defColor == propdef->valColor)
@@ -916,7 +916,7 @@ static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
             }
             break;
 
-        case PropType::PROP_FONT:
+        case PropType::FONT:
             for (const LOGFONT* defFont : prop->defFont)
             {
                 if (defFont == propdef->valFont)

@@ -33,6 +33,11 @@ static void PathMakeAbsolute(CString& strFileName)
 
 static BOOL CALLBACK FindRadNotepadProc(_In_ HWND hWnd, _In_ LPARAM lParam)
 {
+    INT nCloaked = 0;
+    DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &nCloaked, sizeof(INT));
+    if (nCloaked)
+        return TRUE;
+
     TCHAR Class[1024];
     DWORD_PTR lRet = 0;
     ::GetClassName(hWnd, Class, ARRAYSIZE(Class));
