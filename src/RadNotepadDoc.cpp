@@ -18,7 +18,7 @@
 #define new DEBUG_NEW
 #endif
 
-static const Encoding g_EncodingList[] = { BOM_ANSI, BOM_UTF16_LE, BOM_UTF16_BE, BOM_UTF8 };
+static const Encoding g_EncodingList[] = { Encoding::BOM_ANSI, Encoding::BOM_UTF16_LE, Encoding::BOM_UTF16_BE, Encoding::BOM_UTF8 };
 
 static BYTE g_BomBytes[][4] = {
     { 0 },  // BOM_ANSI
@@ -35,7 +35,7 @@ static void byteswap16(unsigned short* data, size_t count)
 
 static UINT GetBomLength(Encoding eEncoding)
 {
-    PBYTE pBomData = g_BomBytes[eEncoding];
+    PBYTE pBomData = g_BomBytes[to_underlying(eEncoding)];
     int i = 0;
     for (i = 0; pBomData[i] != 0; ++i)
         ;
@@ -55,10 +55,10 @@ static Encoding CheckBom(PBYTE pData)
 {
     for (Encoding eEncoding : g_EncodingList)
     {
-        if (g_BomBytes[eEncoding][0] != 0 && IsBom(pData, g_BomBytes[eEncoding]))
+        if (g_BomBytes[to_underlying(eEncoding)][0] != 0 && IsBom(pData, g_BomBytes[to_underlying(eEncoding)]))
             return eEncoding;
     }
-    return BOM_ANSI;
+    return Encoding::BOM_ANSI;
 }
 
 static int GetLineEndingMode(CScintillaCtrl& rCtrl, int nLine, int def)
@@ -92,6 +92,10 @@ END_MESSAGE_MAP()
 // CRadNotepadDoc construction/destruction
 
 CRadNotepadDoc::CRadNotepadDoc()
+    : m_eEncoding(Encoding::BOM_ANSI)
+    , m_nLineEndingMode(SC_EOL_CRLF)
+    , m_ftWrite {}
+
 {
 }
 
@@ -177,16 +181,16 @@ static void AddText(CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesRead, Encodi
     {
         switch (eEncoding)
         {
-        case BOM_ANSI:
-        case BOM_UTF8:
+        case Encoding::BOM_ANSI:
+        case Encoding::BOM_UTF8:
             rCtrl.AddText(nBytesRead / sizeof(char), reinterpret_cast<char*>(Buffer));
             ASSERT(nBytesRead % sizeof(char) == 0);
             break;
 
-        case BOM_UTF16_BE:
+        case Encoding::BOM_UTF16_BE:
             byteswap16(reinterpret_cast<unsigned short*>(Buffer), nBytesRead / sizeof(unsigned short));
             // fallthrough
-        case BOM_UTF16_LE:
+        case Encoding::BOM_UTF16_LE:
             rCtrl.AddText(nBytesRead / sizeof(wchar_t), reinterpret_cast<wchar_t*>(Buffer));
             ASSERT(nBytesRead % sizeof(wchar_t) == 0);
             break;
@@ -202,7 +206,7 @@ static void WriteBom(CFile* pFile, Encoding eEncoding)
 {
     UINT nLen = GetBomLength(eEncoding);
     if (nLen > 0)
-        pFile->Write(g_BomBytes[eEncoding], GetBomLength(eEncoding));
+        pFile->Write(g_BomBytes[to_underlying(eEncoding)], GetBomLength(eEncoding));
 }
 
 static void WriteText(CFile* pFile, const char* Buffer, int nBytes, Encoding eEncoding)
@@ -211,16 +215,16 @@ static void WriteText(CFile* pFile, const char* Buffer, int nBytes, Encoding eEn
     {
         switch (eEncoding)
         {
-        case BOM_ANSI:
-        case BOM_UTF8:
+        case Encoding::BOM_ANSI:
+        case Encoding::BOM_UTF8:
             pFile->Write(Buffer, nBytes);
             break;
 
-        case BOM_UTF16_BE:
-        case BOM_UTF16_LE:
+        case Encoding::BOM_UTF16_BE:
+        case Encoding::BOM_UTF16_LE:
             {
                 CStringW s = CScintillaCtrl::UTF82W(Buffer, nBytes);
-                if (eEncoding == BOM_UTF16_BE)
+                if (eEncoding == Encoding::BOM_UTF16_BE)
                 {
                     int nLen = s.GetLength();
                     byteswap16(reinterpret_cast<unsigned short*>(s.GetBuffer()), nLen);

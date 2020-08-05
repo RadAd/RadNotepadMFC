@@ -24,7 +24,7 @@ static char THIS_FILE[]=__FILE__;
 #define ID_OBJECT_COMBO 100
 #define DEF_LENGTH 3
 
-enum PropType
+enum class PropType
 {
     PROP_BOOL,
     PROP_INT,
@@ -37,26 +37,32 @@ enum PropType
 struct Property
 {
     Property(bool* b)
-        : nType(PROP_BOOL)
+        : nType(PropType::PROP_BOOL)
         , valBool(b)
+        , defInt{}
+        , vecValues(nullptr)
     {
     }
 
     Property(INT* i)
-        : nType(PROP_INT)
+        : nType(PropType::PROP_INT)
         , valInt(i)
+        , defInt{}
+        , vecValues(nullptr)
     {
     }
 
     Property(UINT* i)
-        : nType(PROP_UINT)
+        : nType(PropType::PROP_UINT)
         , valUInt(i)
+        , defInt{}
+        , vecValues(nullptr)
     {
     }
 
     template <class E>
     Property(E* i, const E* j, const int* values)
-        : nType(PROP_INDEX)
+        : nType(PropType::PROP_INDEX)
         , valInt(reinterpret_cast<INT*>(i))
         , defInt { reinterpret_cast<const INT*>(j) }
         , vecValues(values)
@@ -64,18 +70,20 @@ struct Property
     }
 
     Property(COLORREF* c, const std::initializer_list<const COLORREF*>& def)
-        : nType(PROP_COLOR)
+        : nType(PropType::PROP_COLOR)
         , valColor(c)
         , defColor {}
+        , vecValues(nullptr)
     {
         ASSERT(def.size() <= DEF_LENGTH);
         std::copy(def.begin(), def.end(), defColor);
     }
 
     Property(LOGFONT* f, const std::initializer_list<const LOGFONT*>& def)
-        : nType(PROP_FONT)
+        : nType(PropType::PROP_FONT)
         , valFont(f)
         , defFont {}
+        , vecValues(nullptr)
     {
         ASSERT(def.size() <= DEF_LENGTH);
         std::copy(def.begin(), def.end(), defFont);
@@ -145,7 +153,7 @@ CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pF
 template <class E>
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[*pIndex], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, nullptr));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[to_underlying(*pIndex)], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, nullptr));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -381,22 +389,22 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
 {
     switch (prop->nType)
     {
-    case PROP_BOOL:
+    case PropType::PROP_BOOL:
         ASSERT(pProp->GetValue().vt == VT_BOOL);
         *prop->valBool = pProp->GetValue().boolVal != VARIANT_FALSE;;
         break;
 
-    case PROP_INT:
+    case PropType::PROP_INT:
         ASSERT(pProp->GetValue().vt == VT_INT || pProp->GetValue().vt == VT_I4);
         *prop->valInt = pProp->GetValue().intVal;
         break;
 
-    case PROP_UINT:
+    case PropType::PROP_UINT:
         ASSERT(pProp->GetValue().vt == VT_INT);
         *prop->valUInt = pProp->GetValue().intVal;
         break;
 
-    case PROP_INDEX:
+    case PropType::PROP_INDEX:
         {
             int i = GetOptionIndex(pProp);
             if (prop->vecValues != nullptr)
@@ -405,7 +413,7 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         }
         break;
 
-    case PROP_COLOR:
+    case PropType::PROP_COLOR:
         {
             CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
             COLORREF c = p->GetColor();
@@ -413,7 +421,7 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         }
         break;
 
-    case PROP_FONT:
+    case PropType::PROP_FONT:
         {
             CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
             PLOGFONT f = p->GetLogFont();
@@ -886,16 +894,16 @@ static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
     {
         switch (prop->nType)
         {
-        case PROP_BOOL:
+        case PropType::PROP_BOOL:
             break;
 
-        case PROP_INT:
+        case PropType::PROP_INT:
             break;
 
-        case PROP_INDEX:
+        case PropType::PROP_INDEX:
             break;
 
-        case PROP_COLOR:
+        case PropType::PROP_COLOR:
             for (const COLORREF* defColor : prop->defColor)
             {
                 if (defColor == propdef->valColor)
@@ -908,7 +916,7 @@ static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
             }
             break;
 
-        case PROP_FONT:
+        case PropType::PROP_FONT:
             for (const LOGFONT* defFont : prop->defFont)
             {
                 if (defFont == propdef->valFont)
