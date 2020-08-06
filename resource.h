@@ -9,6 +9,7 @@
 #define IDS_TAB_MENU                    103
 #define IDS_SEARCH_NOT_FOUND            104
 #define IDS_TOOLBAR_SEARCH              105
+#define IDS_TOOLBAR_DOCKING             106
 #define IDR_POPUP_EDIT                  119
 #define IDS_TOOLBAR_STANDARD            124
 #define IDS_TOOLBAR_CUSTOMIZE           125
@@ -60,6 +61,7 @@
 #define IDR_POPUP_TAB                   321
 #define IDB_USER_IMAGES                 322
 #define IDR_SEARCH                      326
+#define IDR_DOCKING                     327
 #define IDC_LINE                        1000
 #define IDC_LIST1                       1000
 #define ID_VERSION                      1001

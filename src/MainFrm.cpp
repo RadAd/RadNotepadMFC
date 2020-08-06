@@ -137,8 +137,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     SetWindowSubclass(m_hWndMDIClient, MDIClientHookWndProc, 0, (DWORD_PTR) this);
 
-    BOOL bNameValid;
-
     CMDITabInfo mdiTabParams;
     mdiTabParams.m_style = CMFCTabCtrl::STYLE_3D_ONENOTE; // other styles available...
     mdiTabParams.m_bActiveTabCloseButton = TRUE;      // set to FALSE to place close button at right of tab area
@@ -160,51 +158,43 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     // prevent the menu bar from taking the focus on activation
     CMFCPopupMenu::SetForceMenuFocus(FALSE);
 
-    if (!m_wndToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC) ||
-        !m_wndToolBar.LoadToolBar(IDR_MAINFRAME))
-    {
-        TRACE0("Failed to create toolbar\n");
-        return -1;      // fail to create
-    }
-
-    CString strToolBarName;
-    bNameValid = strToolBarName.LoadString(IDS_TOOLBAR_STANDARD);
-    ASSERT(bNameValid);
-    m_wndToolBar.SetWindowText(strToolBarName);
-
-    CString strCustomize;
-    bNameValid = strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE);
-    ASSERT(bNameValid);
-    m_wndToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
-
     CMFCToolBarComboBoxButton::SetFlatMode(FALSE);
 
-    if (!m_searchToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC, CRect(1, 1, 1, 1), IDR_SEARCH) ||
-        !m_searchToolBar.LoadToolBar(IDR_SEARCH))
+    EnableDocking(CBRS_ALIGN_ANY);
+    m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
+    DockPane(&m_wndMenuBar);
+
+    CString strCustomize;
+    VERIFY(strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE));
+
+    const std::tuple<UINT, UINT> tbs[] = { 
+        { IDR_MAINFRAME, IDS_TOOLBAR_STANDARD },
+        { IDR_SEARCH, IDS_TOOLBAR_SEARCH },
+        { IDR_DOCKING, IDS_TOOLBAR_DOCKING },
+    };
+    static_assert(ARRAYSIZE(m_wndToolBar) == ARRAYSIZE(tbs), "Tololbar sizes must match");
+    for (int i = 0; i < ARRAYSIZE(tbs); ++i)
     {
-        TRACE0("Failed to create toolbar\n");
-        return -1;      // fail to create
+        CMFCToolBar& tb = m_wndToolBar[i];
+        const UINT nID = std::get<0>(tbs[i]);
+        if (!tb.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC, CRect(1, 1, 1, 1), nID) ||
+            !tb.LoadToolBar(nID))
+        {
+            TRACE0("Failed to create toolbar\n");
+            return -1;      // fail to create
+        }
+
+        ASSERT(static_cast<UINT>(tb.GetDlgCtrlID()) == nID);
+
+        CString strToolBarName;
+        VERIFY(strToolBarName.LoadString(std::get<1>(tbs[i])));
+        tb.SetWindowText(strToolBarName);
+
+        tb.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
+
+        tb.EnableDocking(CBRS_ALIGN_ANY);
+        DockPane(&tb);
     }
-
-    //CString strToolBarName;
-    bNameValid = strToolBarName.LoadString(IDS_TOOLBAR_SEARCH);
-    ASSERT(bNameValid);
-    m_searchToolBar.SetWindowText(strToolBarName);
-
-    if (!m_dockToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC, CRect(1, 1, 1, 1), IDR_DOCKING) ||
-        !m_dockToolBar.LoadToolBar(IDR_DOCKING))
-    {
-        TRACE0("Failed to create toolbar\n");
-        return -1;      // fail to create
-    }
-
-    //UINT dockButtons[] = { ID_VIEW_FILEVIEW, ID_VIEW_PROPERTIESWND, ID_VIEW_OUTPUTWND };
-    //m_dockToolBar.SetButtons(dockButtons, ARRAYSIZE(dockButtons));
-
-    //CString strToolBarName;
-    bNameValid = strToolBarName.LoadString(IDS_TOOLBAR_DOCKING);
-    ASSERT(bNameValid);
-    m_dockToolBar.SetWindowText(strToolBarName);
 
     // Allow user-defined toolbars operations:
     InitUserToolbars(NULL, uiFirstUserToolBarId, uiLastUserToolBarId);
@@ -215,16 +205,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;      // fail to create
     }
     m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
-
-    m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
-    m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-    m_searchToolBar.EnableDocking(CBRS_ALIGN_ANY);
-    m_dockToolBar.EnableDocking(CBRS_ALIGN_ANY);
-    EnableDocking(CBRS_ALIGN_ANY);
-    DockPane(&m_wndMenuBar);
-    DockPane(&m_wndToolBar);
-    DockPane(&m_searchToolBar);
-    DockPane(&m_dockToolBar);
 
     // enable Visual Studio 2005 style docking window behavior
     CDockingManager::SetDockingMode(DT_SMART);
@@ -293,7 +273,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
                     ::CloseHandle(hFile);
                 }
             }
-            m_UserImages.SetImageSize(m_wndToolBar.GetImageSize());
+            m_UserImages.SetImageSize(m_wndToolBar[0].GetImageSize());
             if (PathFileExists(szPath) && m_UserImages.Load(szPath))
             {
                 CMFCToolBar::SetUserImages(&m_UserImages);
@@ -312,13 +292,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 CMFCToolBarComboBoxButton* CMainFrame::GetHistoryButton() const
 {
-    int i = m_searchToolBar.CommandToIndex(ID_SEARCH_TEXT);
-    return i >= 0 ? dynamic_cast<CMFCToolBarComboBoxButton*>(m_searchToolBar.GetButton(i)) : nullptr;
+    const CMFCToolBar*       searchToolBar(GetToolbar(IDR_SEARCH));
+    int i = searchToolBar->CommandToIndex(ID_SEARCH_TEXT);
+    return i >= 0 ? dynamic_cast<CMFCToolBarComboBoxButton*>(searchToolBar->GetButton(i)) : nullptr;
 }
 
 void CMainFrame::SaveSearch(LPCTSTR lpszSectionName)
 {
-    m_searchToolBar.SaveState(lpszSectionName);
+    CMFCToolBar* searchToolBar(GetToolbar(IDR_SEARCH));
+    searchToolBar->SaveState(lpszSectionName);
 }
 
 INT_PTR CMainFrame::DoWindowsDialog()
@@ -575,10 +557,12 @@ afx_msg LRESULT CMainFrame::OnAfxWmResetToolbar(WPARAM wParam, LPARAM /*lParam*/
 {
     if (wParam == IDR_SEARCH)
     {
+        CMFCToolBar* searchToolBar(GetToolbar(IDR_SEARCH));
+
         CToolBarHistoryButton searchText(ID_SEARCH_TEXT, -1, CBS_DROPDOWN | CBS_AUTOHSCROLL, 200);
         searchText.EnableWindow();
         searchText.SetDropDownHeight(125);
-        m_searchToolBar.ReplaceButton(searchText.m_nID, searchText);
+        searchToolBar->ReplaceButton(searchText.m_nID, searchText);
     }
     return 0;
 }

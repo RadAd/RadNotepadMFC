@@ -48,18 +48,31 @@ public:
 protected:
     BOOL CreateDockingWindows();
     void SetDockingWindowIcons();
+    const CMFCToolBar* GetToolbar(UINT nID) const
+    {
+        auto it = std::find_if(std::begin(m_wndToolBar), std::end(m_wndToolBar), [nID](const CMFCToolBar& tb)
+            {
+                return static_cast<UINT>(tb.GetDlgCtrlID()) == nID;
+            });
+        return it != std::end(m_wndToolBar) ? &*it : nullptr;
+    }
+    CMFCToolBar* GetToolbar(UINT nID)
+    {
+        auto it = std::find_if(std::begin(m_wndToolBar), std::end(m_wndToolBar), [nID](const CMFCToolBar& tb)
+            {
+                return static_cast<UINT>(tb.GetDlgCtrlID()) == nID;
+            });
+        return it != std::end(m_wndToolBar) ? &*it : nullptr;
+    }
 
 protected:
     int m_PrevNext;
     std::vector<CWnd*> m_MDIStack;
     CMFCMenuBar       m_wndMenuBar;
-    CMFCToolBar       m_wndToolBar;
-    CMFCToolBar       m_searchToolBar;
-    CMFCToolBar       m_dockToolBar;
+    CMFCToolBar       m_wndToolBar[3];
     CMFCStatusBar     m_wndStatusBar;
     CMFCToolBarImages m_UserImages;
     CFileView         m_wndFileView;
-    //CClassView        m_wndClassView;
     COutputWnd        m_wndOutput;
     CPropertiesWnd    m_wndProperties;
 
