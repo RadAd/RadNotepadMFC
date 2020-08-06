@@ -10,6 +10,8 @@
 #define IDS_SEARCH_NOT_FOUND            104
 #define IDS_TOOLBAR_SEARCH              105
 #define IDS_TOOLBAR_DOCKING             106
+#define IDS_TOOLBAR_BOOKMARK            107
+#define IDS_TOOLBAR_VIEW                108
 #define IDR_POPUP_EDIT                  119
 #define IDS_TOOLBAR_STANDARD            124
 #define IDS_TOOLBAR_CUSTOMIZE           125
@@ -62,6 +64,8 @@
 #define IDB_USER_IMAGES                 322
 #define IDR_SEARCH                      326
 #define IDR_DOCKING                     327
+#define IDR_BOOKMARK                    328
+#define IDR_VIEW                        329
 #define IDC_LINE                        1000
 #define IDC_LIST1                       1000
 #define ID_VERSION                      1001
@@ -127,7 +131,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        329
+#define _APS_NEXT_RESOURCE_VALUE        331
 #define _APS_NEXT_COMMAND_VALUE         32897
 #define _APS_NEXT_CONTROL_VALUE         1006
 #define _APS_NEXT_SYMED_VALUE           310
