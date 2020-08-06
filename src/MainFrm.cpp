@@ -160,11 +160,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     VERIFY(strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE));
 
     const std::tuple<UINT, UINT> tbs[] = { 
-        { IDR_MAINFRAME, IDS_TOOLBAR_STANDARD },
-        { IDR_SEARCH, IDS_TOOLBAR_SEARCH },
         { IDR_DOCKING, IDS_TOOLBAR_DOCKING },
+        { IDR_VIEW, IDS_TOOLBAR_VIEW },
+        { IDR_BOOKMARK, IDS_TOOLBAR_BOOKMARK },
+        { IDR_SEARCH, IDS_TOOLBAR_SEARCH },
+        { IDR_MAINFRAME, IDS_TOOLBAR_STANDARD },
     };
     static_assert(ARRAYSIZE(m_wndToolBar) == ARRAYSIZE(tbs), "Tololbar sizes must match");
+    CMFCToolBar* pLastToolbar = nullptr;
     for (int i = 0; i < ARRAYSIZE(tbs); ++i)
     {
         CMFCToolBar& tb = m_wndToolBar[i];
@@ -185,7 +188,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         tb.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
 
         tb.EnableDocking(CBRS_ALIGN_ANY);
-        DockPane(&tb);
+        if (pLastToolbar != nullptr)
+            DockPaneLeftOf(&tb, pLastToolbar);
+        else
+            DockPane(&tb);
+
+        pLastToolbar = &tb;
     }
 
     // Allow user-defined toolbars operations:
@@ -221,16 +229,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         TRACE0("Failed to create docking windows\n");
         return -1;
     }
-
-    m_wndFileView.EnableDocking(CBRS_ALIGN_ANY);
-    //m_wndClassView.EnableDocking(CBRS_ALIGN_ANY);
-    DockPane(&m_wndFileView);
-    //CDockablePane* pTabbedBar = NULL;
-    //m_wndClassView.AttachToTabWnd(&m_wndFileView, DM_SHOW, TRUE, &pTabbedBar);
-    m_wndOutput.EnableDocking(CBRS_ALIGN_ANY);
-    DockPane(&m_wndOutput);
-    m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
-    DockPane(&m_wndProperties);
 
     // set the visual manager used to draw all user interface elements
     CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
@@ -338,6 +336,9 @@ BOOL CMainFrame::CreateDockingWindows()
 
         HICON hIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(nIcon), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
         pane.SetIcon(hIcon, FALSE);
+
+        pane.EnableDocking(CBRS_ALIGN_ANY);
+        DockPane(&pane);
     }
 
     UpdateMDITabbedBarsIcons();

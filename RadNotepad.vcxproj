@@ -287,6 +287,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bitmap1.bmp" />
+    <Image Include="res\bookmark.bmp" />
     <Image Include="res\classview_hc.bmp" />
     <Image Include="res\class_view_hc.ico" />
     <Image Include="res\docking.bmp" />
@@ -304,6 +305,7 @@
     <Image Include="res\sort_hc.bmp" />
     <Image Include="res\Toolbar256.bmp" />
     <Image Include="res\UserImages.bmp" />
+    <Image Include="res\view.bmp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\RadNotepad.rc2" />

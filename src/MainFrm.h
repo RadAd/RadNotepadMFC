@@ -68,7 +68,7 @@ protected:
     int m_PrevNext;
     std::vector<CWnd*> m_MDIStack;
     CMFCMenuBar       m_wndMenuBar;
-    CMFCToolBar       m_wndToolBar[3];
+    CMFCToolBar       m_wndToolBar[5];
     CMFCStatusBar     m_wndStatusBar;
     CMFCToolBarImages m_UserImages;
     CFileView         m_wndFileView;
