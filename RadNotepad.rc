@@ -68,6 +68,8 @@ IDB_USER_IMAGES         BITMAP                  "res\\UserImages.bmp"
 
 IDR_SEARCH              BITMAP                  "res\\search.bmp"
 
+IDR_DOCKING             BITMAP                  "res\\docking.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -148,6 +150,13 @@ BEGIN
     BUTTON      ID_SEARCH_TEXT
     BUTTON      ID_SEARCH_PREV
     BUTTON      ID_SEARCH_NEXT
+END
+
+IDR_DOCKING TOOLBAR 16, 16
+BEGIN
+    BUTTON      ID_VIEW_FILEVIEW
+    BUTTON      ID_VIEW_PROPERTIESWND
+    BUTTON      ID_VIEW_OUTPUTWND
 END
 
 
@@ -569,6 +578,7 @@ BEGIN
     IDS_TAB_MENU            "Tab"
     IDS_SEARCH_NOT_FOUND    "Not Found"
     IDS_TOOLBAR_SEARCH      "Search"
+    IDS_TOOLBAR_DOCKING     "Docking"
 END
 
 STRINGTABLE
@@ -586,6 +596,7 @@ BEGIN
     IDR_MAINFRAME           "RadNotepad"
     IDR_RadNotepadTYPE      "\n\nRadNotepad\n\n\nRadNotepad.Document\nRadNotepad.Document"
     ID_WINDOW_MANAGER       "&Windows..."
+    ID_VIEW_FILEVIEW        "Toggle file window"
     ID_PROPERTIES           "Show file properties\nProperties"
 END
 
@@ -701,18 +712,14 @@ END
 
 STRINGTABLE
 BEGIN
-    AFX_IDS_PREVIEW_CLOSE   "Search"
-END
-
-STRINGTABLE
-BEGIN
     IDS_TOOLBAR_STANDARD    "Standard"
     IDS_TOOLBAR_CUSTOMIZE   "Customize..."
 END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_OUTPUTWND       "Hide the output window"
+    ID_VIEW_OUTPUTWND       "Toggle output window"
+    ID_VIEW_PROPERTIESWND   "Toggle properties window"
     ID_SORTPROPERTIES       "Sort properties\nSort"
     ID_PROPERTIES_RESET     "Reset to defaults\nReset"
     ID_EXPAND_ALL           "Expand All\nExpand"

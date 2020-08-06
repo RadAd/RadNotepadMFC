@@ -225,7 +225,11 @@ BOOL CRadNotepadApp::InitInstance()
 	// of your final executable, you should remove from the following
 	// the specific initialization routines you do not need
 	// Change the registry key under which our settings are stored
-	SetRegistryKey(_T("RadSoft"));
+#ifdef _DEBUG
+	SetRegistryKey(_T("RadSoftDebug"));
+#else
+    SetRegistryKey(_T("RadSoft"));
+#endif
 	LoadStdProfileSettings(m_Settings.nMaxMRU);  // Load standard INI file options (including MRU)
 
 	InitContextMenuManager();

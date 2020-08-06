@@ -191,6 +191,21 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     ASSERT(bNameValid);
     m_searchToolBar.SetWindowText(strToolBarName);
 
+    if (!m_dockToolBar.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC, CRect(1, 1, 1, 1), IDR_DOCKING) ||
+        !m_dockToolBar.LoadToolBar(IDR_DOCKING))
+    {
+        TRACE0("Failed to create toolbar\n");
+        return -1;      // fail to create
+    }
+
+    //UINT dockButtons[] = { ID_VIEW_FILEVIEW, ID_VIEW_PROPERTIESWND, ID_VIEW_OUTPUTWND };
+    //m_dockToolBar.SetButtons(dockButtons, ARRAYSIZE(dockButtons));
+
+    //CString strToolBarName;
+    bNameValid = strToolBarName.LoadString(IDS_TOOLBAR_DOCKING);
+    ASSERT(bNameValid);
+    m_dockToolBar.SetWindowText(strToolBarName);
+
     // Allow user-defined toolbars operations:
     InitUserToolbars(NULL, uiFirstUserToolBarId, uiLastUserToolBarId);
 
@@ -204,10 +219,12 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
     m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
     m_searchToolBar.EnableDocking(CBRS_ALIGN_ANY);
+    m_dockToolBar.EnableDocking(CBRS_ALIGN_ANY);
     EnableDocking(CBRS_ALIGN_ANY);
     DockPane(&m_wndMenuBar);
     DockPane(&m_wndToolBar);
     DockPane(&m_searchToolBar);
+    DockPane(&m_dockToolBar);
 
     // enable Visual Studio 2005 style docking window behavior
     CDockingManager::SetDockingMode(DT_SMART);
@@ -234,7 +251,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_wndProperties.EnableDocking(CBRS_ALIGN_ANY);
     DockPane(&m_wndProperties);
 
-
     // set the visual manager used to draw all user interface elements
     CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
@@ -243,28 +259,6 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     // Enable toolbar and docking window menu replacement
     EnablePaneMenu(TRUE, ID_VIEW_CUSTOMIZE, strCustomize, ID_VIEW_TOOLBAR, FALSE, TRUE);
-
-    {   // Add panel icons to toolbar images
-        CMFCToolBarImages* pImages = CMFCToolBar::GetImages();
-        CObList lstBars;
-        GetDockingManager()->GetPaneList(lstBars, TRUE, RUNTIME_CLASS(CDockablePane), TRUE);
-        for (POSITION pos = lstBars.GetHeadPosition(); pos != NULL;)
-        {
-            CDockablePane* pPane = DYNAMIC_DOWNCAST(CDockablePane, lstBars.GetNext(pos));
-            if (pPane != NULL)
-            {
-                if (GetCmdMgr()->GetCmdImage(pPane->GetDlgCtrlID(), FALSE) < 0)
-                {
-                    HICON hIcon = pPane->GetPaneIcon(FALSE);
-                    int i = pImages->AddIcon(hIcon);
-                    if (i == -1)
-                        i = AddIcon(pImages, hIcon);
-                    // TODO This is faliing (i == -1) on some computers
-                    GetCmdMgr()->SetCmdImage(pPane->GetDlgCtrlID(), i, FALSE);
-                }
-            }
-        }
-    }
 
     // enable quick (Alt+drag) toolbar customization
     CMFCToolBar::EnableQuickCustomization();

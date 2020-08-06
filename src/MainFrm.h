@@ -55,6 +55,7 @@ protected:
     CMFCMenuBar       m_wndMenuBar;
     CMFCToolBar       m_wndToolBar;
     CMFCToolBar       m_searchToolBar;
+    CMFCToolBar       m_dockToolBar;
     CMFCStatusBar     m_wndStatusBar;
     CMFCToolBarImages m_UserImages;
     CFileView         m_wndFileView;
