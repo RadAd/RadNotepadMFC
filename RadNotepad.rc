@@ -753,9 +753,13 @@ BEGIN
     ID_FILE_REVERT          "Revert the active document to the current saved state\nRevert"
     ID_FILE_CLOSEALL        "Close all documents\nClose All"
     ID_FILE_SAVEALL         "Save all documents\nSave All"
-    ID_VIEW_WHITESPACE      "Toggle display of white space"
-    ID_VIEW_ENDOFLINE       "Toggle display of end of line"
-    ID_VIEW_WORDWRAP        "Toggle wrapping of long lines"
+    ID_VIEW_WHITESPACE      "Toggle display of white space\nWhite Space"
+    ID_VIEW_ENDOFLINE       "Toggle display of end of line\nEnd of Line"
+    ID_VIEW_WORDWRAP        "Toggle wrapping of long lines\nWord Wrap"
+    ID_EDIT_TOGGLEBOOKMARK  "Toggle bookmark on current line\nToggle Bookmark"
+    ID_EDIT_PREVIOUSBOOKMARK 
+                            "Move to previous bookmark in file\nPrev Bookmark"
+    ID_EDIT_NEXTBOOKMARK    "Move to next bookmark in file\nNext Bookmark"
 END
 
 STRINGTABLE
