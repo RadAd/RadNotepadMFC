@@ -47,7 +47,6 @@ public:
 
 protected:
     BOOL CreateDockingWindows();
-    void SetDockingWindowIcons();
     const CMFCToolBar* GetToolbar(UINT nID) const
     {
         auto it = std::find_if(std::begin(m_wndToolBar), std::end(m_wndToolBar), [nID](const CMFCToolBar& tb)

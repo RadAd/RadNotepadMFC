@@ -14,6 +14,7 @@
 #define new DEBUG_NEW
 #endif
 
+#if 0
 // Copied from CMFCToolBarImages::AddIcon because it is failing if pImages->IsScaled()
 static int AddIcon(CMFCToolBarImages* pImages, HICON hIcon)
 {
@@ -41,6 +42,7 @@ static int AddIcon(CMFCToolBarImages* pImages, HICON hIcon)
 
     return pImages->AddImage(bmpMem);
 }
+#endif
 
 UINT NEAR WM_RADNOTEPAD = RegisterWindowMessage(_T("RADNOTEPAD"));
 
@@ -107,16 +109,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CMainFrame::OnUpdateViewMargin)
     ON_WM_SETCURSOR()
 END_MESSAGE_MAP()
-
-static UINT indicators[] =
-{
-    ID_SEPARATOR,           // status line indicator
-    ID_INDICATOR_LINE,
-    ID_INDICATOR_OVR,
-    ID_INDICATOR_CAPS,
-    ID_INDICATOR_NUM,
-    ID_INDICATOR_SCRL,
-};
 
 // CMainFrame construction/destruction
 
@@ -204,7 +196,16 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         TRACE0("Failed to create status bar\n");
         return -1;      // fail to create
     }
-    m_wndStatusBar.SetIndicators(indicators, sizeof(indicators)/sizeof(UINT));
+    const UINT indicators[] =
+    {
+        ID_SEPARATOR,           // status line indicator
+        ID_INDICATOR_LINE,
+        ID_INDICATOR_OVR,
+        ID_INDICATOR_CAPS,
+        ID_INDICATOR_NUM,
+        ID_INDICATOR_SCRL,
+    };
+    m_wndStatusBar.SetIndicators(indicators, ARRAYSIZE(indicators));
 
     // enable Visual Studio 2005 style docking window behavior
     CDockingManager::SetDockingMode(DT_SMART);
@@ -312,71 +313,35 @@ INT_PTR CMainFrame::DoWindowsDialog()
 
 BOOL CMainFrame::CreateDockingWindows()
 {
-    BOOL bNameValid;
-
-#if 0
-    // Create class view
-    CString strClassView;
-    bNameValid = strClassView.LoadString(IDS_CLASS_VIEW);
-    ASSERT(bNameValid);
-    if (!m_wndClassView.Create(strClassView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_CLASSVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT | CBRS_FLOAT_MULTI))
+    const std::tuple<CDockablePane&, UINT, UINT, CRect, UINT, UINT> views[] = {
+        { m_wndFileView, ID_VIEW_FILEVIEW, IDS_FILE_VIEW, CRect(0, 0, 200, 200), CBRS_LEFT, IDI_FILE_VIEW},
+        { m_wndOutput, ID_VIEW_OUTPUTWND, IDS_OUTPUT_WND, CRect(0, 0, 100, 100), CBRS_BOTTOM, IDI_OUTPUT_WND },
+        { m_wndProperties, ID_VIEW_PROPERTIESWND, IDS_PROPERTIES_WND, CRect(0, 0, 200, 200), CBRS_RIGHT,IDI_PROPERTIES_WND },
+        // { m_wndClassView, ID_VIEW_CLASSVIEW, IDS_CLASS_VIEW, CRect(0, 0, 200, 200), CBRS_LEFT, IDI_CLASS_VIEW },
+    };
+    for (auto i : views)
     {
-        TRACE0("Failed to create Class View window\n");
-        return FALSE; // failed to create
+        CDockablePane& pane = std::get<0>(i);
+        const UINT nId = std::get<1>(i);
+        const UINT nTitle = std::get<2>(i);
+        const CRect& r = std::get<3>(i);
+        const UINT nFlags = std::get<4>(i);
+        const UINT nIcon = std::get<5>(i);
+
+        CString strTitle;
+        VERIFY(strTitle.LoadString(nTitle));
+        if (!pane.Create(strTitle, this, r, TRUE, nId, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | nFlags | CBRS_FLOAT_MULTI))
+        {
+            TRACE0("Failed to create pane window\n");
+            return FALSE; // failed to create
+        }
+
+        HICON hIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(nIcon), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
+        pane.SetIcon(hIcon, FALSE);
     }
-#endif
-
-    // Create file view
-    CString strFileView;
-    bNameValid = strFileView.LoadString(IDS_FILE_VIEW);
-    ASSERT(bNameValid);
-    if (!m_wndFileView.Create(strFileView, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_FILEVIEW, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_LEFT| CBRS_FLOAT_MULTI))
-    {
-        TRACE0("Failed to create File View window\n");
-        return FALSE; // failed to create
-    }
-
-    // Create output window
-    CString strOutputWnd;
-    bNameValid = strOutputWnd.LoadString(IDS_OUTPUT_WND);
-    ASSERT(bNameValid);
-    if (!m_wndOutput.Create(strOutputWnd, this, CRect(0, 0, 100, 100), TRUE, ID_VIEW_OUTPUTWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_BOTTOM | CBRS_FLOAT_MULTI))
-    {
-        TRACE0("Failed to create Output window\n");
-        return FALSE; // failed to create
-    }
-
-    // Create properties window
-    CString strPropertiesWnd;
-    bNameValid = strPropertiesWnd.LoadString(IDS_PROPERTIES_WND);
-    ASSERT(bNameValid);
-    if (!m_wndProperties.Create(strPropertiesWnd, this, CRect(0, 0, 200, 200), TRUE, ID_VIEW_PROPERTIESWND, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBRS_RIGHT | CBRS_FLOAT_MULTI))
-    {
-        TRACE0("Failed to create Properties window\n");
-        return FALSE; // failed to create
-    }
-
-    SetDockingWindowIcons();
-    return TRUE;
-}
-
-void CMainFrame::SetDockingWindowIcons()
-{
-    HICON hFileViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(IDI_FILE_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-    m_wndFileView.SetIcon(hFileViewIcon, FALSE);
-
-#if 0
-    HICON hClassViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(IDI_CLASS_VIEW), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-    m_wndClassView.SetIcon(hClassViewIcon, FALSE);
-#endif
-
-    HICON hOutputBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(IDI_OUTPUT_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-    m_wndOutput.SetIcon(hOutputBarIcon, FALSE);
-
-    HICON hPropertiesBarIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(IDI_PROPERTIES_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-    m_wndProperties.SetIcon(hPropertiesBarIcon, FALSE);
 
     UpdateMDITabbedBarsIcons();
+    return TRUE;
 }
 
 // CMainFrame diagnostics
