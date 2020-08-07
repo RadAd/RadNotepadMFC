@@ -29,10 +29,10 @@
   </style-classes>
   <language name="cpp" ovtabs="false" usetabs="false">
     <use-styles>
-      <style fore="268bd2" key="11" />
-      <style fore="2aa198" key="8" />
-      <style fore="859900" key="16" />
-      <style fore="dc322f" key="17" />
+      <!--<style fore="268bd2" key="11" />  --><!--class="identifier"-->
+      <style fore="2aa198" key="8" />   <!--name="UUID"-->
+      <!--<style fore="859900" key="16" />  --><!--class="keyword2"-->
+      <!--<style fore="dc322f" key="17" />  --><!--class="commentdoc"-->
     </use-styles>
   </language>
   <language name="php">
