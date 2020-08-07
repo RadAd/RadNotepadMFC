@@ -276,6 +276,7 @@ BEGIN
     END
     POPUP "&Tools"
     BEGIN
+        MENUITEM "Customize...",                ID_VIEW_CUSTOMIZE
         MENUITEM "<placeholder>",               ID_TOOLS, GRAYED
     END
     POPUP "&Window"
