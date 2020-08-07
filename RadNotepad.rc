@@ -593,6 +593,8 @@ BEGIN
     IDS_TOOLBAR_DOCKING     "Docking"
     IDS_TOOLBAR_BOOKMARK    "Bookrmark"
     IDS_TOOLBAR_VIEW        "View"
+    IDS_SCHEME_NONE         "None"
+    ID_INDICATOR_LINE_ENDING "Ending"
 END
 
 STRINGTABLE
@@ -746,6 +748,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_EDIT_MENU           "Edit"
+    ID_INDICATOR_SCHEME     "Scheme"
 END
 
 STRINGTABLE

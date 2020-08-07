@@ -12,6 +12,8 @@
 #define IDS_TOOLBAR_DOCKING             106
 #define IDS_TOOLBAR_BOOKMARK            107
 #define IDS_TOOLBAR_VIEW                108
+#define IDS_SCHEME_NONE                 109
+#define ID_INDICATOR_LINE_ENDING        110
 #define IDR_POPUP_EDIT                  119
 #define IDS_TOOLBAR_STANDARD            124
 #define IDS_TOOLBAR_CUSTOMIZE           125
@@ -56,6 +58,7 @@
 #define IDR_PROPERTIES                  183
 #define IDS_EDIT_MENU                   306
 #define IDD_GOTOLINE                    310
+#define ID_INDICATOR_SCHEME             310
 #define IDR_SCHEME_MASTER               312
 #define IDR_EXTMAP                      314
 #define IDD_SAVE_MODIFIED               317
@@ -123,7 +126,6 @@
 #define ID_SEARCH_PREV                  32878
 #define ID_SEARCH_NEXT                  32879
 #define ID_SEARCH_INCREMENTAL           32884
-#define ID_BUTTON32896                  32896
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -134,6 +136,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        331
 #define _APS_NEXT_COMMAND_VALUE         32897
 #define _APS_NEXT_CONTROL_VALUE         1006
-#define _APS_NEXT_SYMED_VALUE           310
+#define _APS_NEXT_SYMED_VALUE           311
 #endif
 #endif

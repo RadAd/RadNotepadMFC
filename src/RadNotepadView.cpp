@@ -60,6 +60,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_WM_CONTEXTMENU()
     ON_WM_RBUTTONUP()
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CRadNotepadView::OnUpdateLine)
+    ON_UPDATE_COMMAND_UI(ID_INDICATOR_SCHEME, &CRadNotepadView::OnUpdateSchemeIndicator)
+    ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE_ENDING, &CRadNotepadView::OnUpdateLineEndingIndicator)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CRadNotepadView::OnUpdateInsert)
     ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CRadNotepadView::OnFilePrintPreview)
     ON_COMMAND_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CRadNotepadView::OnViewMargin)
@@ -235,10 +237,33 @@ void CRadNotepadView::OnUpdateLine(CCmdUI* pCmdUI)
     pCmdUI->Enable();
 }
 
+void CRadNotepadView::OnUpdateSchemeIndicator(CCmdUI* pCmdUI)
+{
+    if (m_pLanguage != nullptr)
+        pCmdUI->SetText(m_pLanguage->title);
+    else
+    {
+        CString strText;
+        VERIFY(strText.LoadString(IDS_SCHEME_NONE));
+        pCmdUI->SetText(strText);
+    }
+}
+
+void CRadNotepadView::OnUpdateLineEndingIndicator(CCmdUI* pCmdUI)
+{
+    CScintillaCtrl& rCtrl = GetCtrl();
+    LPCTSTR eol[] = {
+        _T("CRLF"), // SC_EOL_CRLF
+        _T("CR"), // SC_EOL_CR
+        _T("LF"), // SC_EOL_LF
+    };
+    pCmdUI->SetText(eol[rCtrl.GetEOLMode()]);
+}
+
 void CRadNotepadView::OnUpdateInsert(CCmdUI* pCmdUI)
 {
     CString sText;
-    sText.LoadString(ID_INDICATOR_OVR);
+    VERIFY(sText.LoadString(ID_INDICATOR_OVR));
     pCmdUI->SetText(sText);
     pCmdUI->Enable(GetCtrl().GetOvertype());
 }

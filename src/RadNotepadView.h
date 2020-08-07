@@ -53,6 +53,9 @@ protected:
     afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnUpdateLine(CCmdUI* pCmdUI);
+    afx_msg void OnUpdateSchemeIndicator(CCmdUI* pCmdUI);
+    afx_msg void OnUpdateLineEndingIndicator(CCmdUI* pCmdUI);
+    afx_msg void OnUpdate(CCmdUI* pCmdUI);
     afx_msg void OnUpdateInsert(CCmdUI* pCmdUI);
     afx_msg void OnViewMargin(UINT nID);
     afx_msg void OnUpdateViewMargin(CCmdUI *pCmdUI);

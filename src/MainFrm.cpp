@@ -100,6 +100,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_COMMAND_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnViewPane)
     ON_COMMAND_RANGE(ID_VIEW_OUTPUTWND, ID_VIEW_PROPERTIESWND, &CMainFrame::OnViewPane)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CMainFrame::OnUpdateClear)
+    ON_UPDATE_COMMAND_UI(ID_INDICATOR_SCHEME, &CMainFrame::OnUpdateClear)
+    ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE_ENDING, &CMainFrame::OnUpdateClear)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CMainFrame::OnUpdateClear)
     ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
     ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, &CMainFrame::OnAfxWmOnGetTabTooltip)
@@ -208,12 +210,15 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     {
         ID_SEPARATOR,           // status line indicator
         ID_INDICATOR_LINE,
+        ID_INDICATOR_SCHEME,
+        ID_INDICATOR_LINE_ENDING,
         ID_INDICATOR_OVR,
         ID_INDICATOR_CAPS,
         ID_INDICATOR_NUM,
         ID_INDICATOR_SCRL,
     };
     m_wndStatusBar.SetIndicators(indicators, ARRAYSIZE(indicators));
+    m_wndStatusBar.SetPaneWidth(2, 100);
 
     // enable Visual Studio 2005 style docking window behavior
     CDockingManager::SetDockingMode(DT_SMART);
@@ -254,22 +259,28 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
             {
                 HMODULE hInstance = NULL;
                 HRSRC hResInfo = ::FindResource(hInstance, MAKEINTRESOURCE(IDB_USER_IMAGES), RT_BITMAP);
-                HGLOBAL hRes = ::LoadResource(hInstance, hResInfo);
-                LPVOID memRes = ::LockResource(hRes);
-                DWORD sizeRes = ::SizeofResource(hInstance, hResInfo);
-
-                BITMAPFILEHEADER bfh = {};
-                bfh.bfType = 0x4D42; // BM
-                bfh.bfSize = sizeof(bfh) + sizeRes;
-                bfh.bfOffBits = sizeof(bfh) + sizeof(BITMAPINFOHEADER);
-
-                HANDLE hFile = ::CreateFile(szPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-                if (hFile != INVALID_HANDLE_VALUE)
+                if (hResInfo != 0)
                 {
-                    DWORD dwWritten = 0;
-                    ::WriteFile(hFile, &bfh, sizeof(bfh), &dwWritten, NULL);
-                    ::WriteFile(hFile, memRes, sizeRes, &dwWritten, NULL);
-                    ::CloseHandle(hFile);
+                    HGLOBAL hRes = ::LoadResource(hInstance, hResInfo);
+                    if (hRes != 0)
+                    {
+                        LPVOID memRes = ::LockResource(hRes);
+                        DWORD sizeRes = ::SizeofResource(hInstance, hResInfo);
+
+                        BITMAPFILEHEADER bfh = {};
+                        bfh.bfType = 0x4D42; // BM
+                        bfh.bfSize = sizeof(bfh) + sizeRes;
+                        bfh.bfOffBits = sizeof(bfh) + sizeof(BITMAPINFOHEADER);
+
+                        HANDLE hFile = ::CreateFile(szPath, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+                        if (hFile != INVALID_HANDLE_VALUE)
+                        {
+                            DWORD dwWritten = 0;
+                            ::WriteFile(hFile, &bfh, sizeof(bfh), &dwWritten, NULL);
+                            ::WriteFile(hFile, memRes, sizeRes, &dwWritten, NULL);
+                            ::CloseHandle(hFile);
+                        }
+                    }
                 }
             }
             m_UserImages.SetImageSize(m_wndToolBar[0].GetImageSize());
@@ -444,10 +455,8 @@ LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp,LPARAM lp)
     CMFCToolBar* pUserToolbar = (CMFCToolBar*)lres;
     ASSERT_VALID(pUserToolbar);
 
-    BOOL bNameValid;
     CString strCustomize;
-    bNameValid = strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE);
-    ASSERT(bNameValid);
+    VERIFY(strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE));
 
     pUserToolbar->EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
     return lres;
@@ -481,10 +490,8 @@ BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle, CWnd* pParent
         CRadToolBarsCustomizeDialog::CreateDefaultTools();
 
     // enable customization button for all user toolbars
-    BOOL bNameValid;
     CString strCustomize;
-    bNameValid = strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE);
-    ASSERT(bNameValid);
+    VERIFY(strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE));
 
     for (int i = 0; i < iMaxUserToolbars; i ++)
     {
