@@ -4,7 +4,7 @@
 		<keyword-class name="lua">
             and break do else elseif
             end for function goto if in
-            local nil not or repeat
+            local not or repeat
             return then until while
 		</keyword-class>
 		<keyword-class name="luavalues">
@@ -21,7 +21,7 @@
     <property name="fold.preprocessor" value="1" />
 		<use-keywords>
 			<keyword key="0" name="Keywords" class="lua"/>
-			<keyword key="3" name="Values" class="luavalues"/>
+			<keyword key="1" name="Values" class="luavalues"/>
 		</use-keywords>
 		<use-styles>
 			<style name="Default" key="32" />
@@ -38,6 +38,7 @@
 			<style name="Operator" key="10" class="operator" />
 			<style name="Identifier" key="11" class="identifier" />
 			<style name="End of line string" key="12" class="unclosedstring"/>
+			<style name="Values" key="13" class="number"/>
 		</use-styles>
 	</language>
 </Scheme>
