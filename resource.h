@@ -4,7 +4,7 @@
 //
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
-#define ID_INDICATOR_LINE               101
+#define ID_INDICATOR_LINE               110
 #define IDS_FILE_REVERT                 102
 #define IDS_TAB_MENU                    103
 #define IDS_SEARCH_NOT_FOUND            104
@@ -13,7 +13,7 @@
 #define IDS_TOOLBAR_BOOKMARK            107
 #define IDS_TOOLBAR_VIEW                108
 #define IDS_SCHEME_NONE                 109
-#define ID_INDICATOR_LINE_ENDING        110
+#define ID_INDICATOR_LINE_ENDING        112
 #define IDR_POPUP_EDIT                  119
 #define IDS_TOOLBAR_STANDARD            124
 #define IDS_TOOLBAR_CUSTOMIZE           125
@@ -22,8 +22,8 @@
 #define IDR_RadNotepadTYPE              130
 #define ID_WINDOW_MANAGER               131
 #define ID_VIEW_FILEVIEW                133
-#define ID_VIEW_CLASSVIEW               134
-#define ID_PROPERTIES                   135
+#define ID_VIEW_CLASSVIEW               136
+#define ID_PROPERTIES                   137
 #define ID_CLASS_ADD_MEMBER_FUNCTION    139
 #define ID_CLASS_ADD_MEMBER_VARIABLE    140
 #define ID_CLASS_DEFINITION             141
@@ -34,8 +34,8 @@
 #define ID_SORTING_SORTALPHABETIC       146
 #define ID_SORTING_SORTBYTYPE           147
 #define ID_SORTING_SORTBYACCESS         148
-#define ID_VIEW_OUTPUTWND               149
-#define ID_VIEW_PROPERTIESWND           150
+#define ID_VIEW_OUTPUTWND               134
+#define ID_VIEW_PROPERTIESWND           135
 #define ID_SORTPROPERTIES               151
 #define ID_PROPERTIES_RESET             152
 #define ID_EXPAND_ALL                   154
@@ -58,7 +58,7 @@
 #define IDR_PROPERTIES                  183
 #define IDS_EDIT_MENU                   306
 #define IDD_GOTOLINE                    310
-#define ID_INDICATOR_SCHEME             310
+#define ID_INDICATOR_SCHEME             111
 #define IDR_SCHEME_MASTER               312
 #define IDR_EXTMAP                      314
 #define IDD_SAVE_MODIFIED               317
