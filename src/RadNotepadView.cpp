@@ -677,10 +677,11 @@ void CRadNotepadView::OnSchemeNone()
 
 void CRadNotepadView::OnUpdateSchemeNone(CCmdUI *pCmdUI)
 {
-    if (pCmdUI->m_pSubMenu != nullptr)
+    CMenu* pMenu = pCmdUI->m_pSubMenu ? pCmdUI->m_pSubMenu : pCmdUI->m_pMenu;
+    if (pMenu != nullptr)
     {
         for (int i = ID_VIEW_FIRSTSCHEME; i < ID_VIEW_LASTSCHEME; ++i)
-            pCmdUI->m_pSubMenu->DeleteMenu(i, MF_BYCOMMAND);
+            pMenu->DeleteMenu(i, MF_BYCOMMAND);
 
         const std::vector<Language>& vecLanguage = theApp.m_Settings.user.vecLanguage;
 
@@ -710,12 +711,12 @@ void CRadNotepadView::OnUpdateSchemeNone(CCmdUI *pCmdUI)
 
         std::sort(vecSortLanguage.begin(), vecSortLanguage.end());
 
-        int nIndex = pCmdUI->m_pSubMenu->GetMenuItemCount();
+        int nIndex = pMenu->GetMenuItemCount();
         for (const LanguageMenuItem& rLanguage : vecSortLanguage)
-            pCmdUI->m_pSubMenu->InsertMenu(nIndex++, MF_STRING | MF_BYPOSITION, rLanguage.nID, rLanguage.pLanguage->title);
+            pMenu->InsertMenu(nIndex++, MF_STRING | MF_BYPOSITION, rLanguage.nID, rLanguage.pLanguage->title);
 
         pCmdUI->m_bEnableChanged = TRUE;    // all the added items are enabled
-        pCmdUI->m_nIndexMax = pCmdUI->m_pSubMenu->GetMenuItemCount();
+        pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
     }
 
     pCmdUI->SetRadio(m_pLanguage == nullptr);

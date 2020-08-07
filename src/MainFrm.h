@@ -82,6 +82,8 @@ protected:
     afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
     afx_msg void OnWindowManager();
     afx_msg void OnViewCustomize();
+    afx_msg void OnSchemeIndicator();
+    afx_msg void OnLineEndingIndicator();
     afx_msg void OnViewPane(UINT nID);
     afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnUpdateClear(CCmdUI* pCmdUI);

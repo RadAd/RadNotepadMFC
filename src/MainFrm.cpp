@@ -100,7 +100,9 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_COMMAND_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnViewPane)
     ON_COMMAND_RANGE(ID_VIEW_OUTPUTWND, ID_VIEW_PROPERTIESWND, &CMainFrame::OnViewPane)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CMainFrame::OnUpdateClear)
+    ON_COMMAND(ID_INDICATOR_SCHEME, &CMainFrame::OnSchemeIndicator)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_SCHEME, &CMainFrame::OnUpdateClear)
+    ON_COMMAND(ID_INDICATOR_LINE_ENDING, &CMainFrame::OnLineEndingIndicator)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE_ENDING, &CMainFrame::OnUpdateClear)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CMainFrame::OnUpdateClear)
     ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
@@ -218,7 +220,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         ID_INDICATOR_SCRL,
     };
     m_wndStatusBar.SetIndicators(indicators, ARRAYSIZE(indicators));
-    m_wndStatusBar.SetPaneWidth(2, 100);
+    m_wndStatusBar.EnablePaneDoubleClick(TRUE);
+    m_wndStatusBar.SetPaneWidth(m_wndStatusBar.CommandToIndex(ID_INDICATOR_SCHEME), 100);
 
     // enable Visual Studio 2005 style docking window behavior
     CDockingManager::SetDockingMode(DT_SMART);
@@ -442,6 +445,40 @@ void CMainFrame::OnViewCustomize()
 
     pDlgCust->EnableUserDefinedToolbars();
     pDlgCust->Create();
+}
+
+static CMenu* CheckSubMenu(CMenu* pMenu, UINT nPos, LPCTSTR check)
+{
+    CString s;
+    pMenu->GetMenuString(nPos, s, MF_BYPOSITION);
+    ASSERT(s == check);
+    return pMenu->GetSubMenu(nPos);
+}
+
+void CMainFrame::OnSchemeIndicator()
+{
+    CMenu* pMenu = CMenu::FromHandle(GetMenuBar()->GetHMenu());
+    pMenu = CheckSubMenu(pMenu, 2, _T("&View"));
+    pMenu = CheckSubMenu(pMenu, 8, _T("Scheme"));
+
+    CRect r;
+    m_wndStatusBar.GetItemRect(m_wndStatusBar.CommandToIndex(ID_INDICATOR_SCHEME), &r);
+    m_wndStatusBar.ClientToScreen(&r);
+
+    pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_BOTTOMALIGN, r.left, r.top, this);
+}
+
+void CMainFrame::OnLineEndingIndicator()
+{
+    CMenu* pMenu = CMenu::FromHandle(GetMenuBar()->GetHMenu());
+    pMenu = CheckSubMenu(pMenu, 2, _T("&View"));
+    pMenu = CheckSubMenu(pMenu, 5, _T("Line Endings"));
+
+    CRect r;
+    m_wndStatusBar.GetItemRect(m_wndStatusBar.CommandToIndex(ID_INDICATOR_LINE_ENDING), &r);
+    m_wndStatusBar.ClientToScreen(&r);
+
+    pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_BOTTOMALIGN, r.left, r.top, this);
 }
 
 LRESULT CMainFrame::OnToolbarCreateNew(WPARAM wp,LPARAM lp)
