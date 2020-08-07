@@ -98,12 +98,10 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
     ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
     ON_COMMAND_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnViewPane)
-    ON_COMMAND_RANGE(ID_VIEW_OUTPUTWND, ID_VIEW_PROPERTIESWND, &CMainFrame::OnViewPane)
-    ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CMainFrame::OnUpdateClear)
+    ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnUpdateViewPane)
     ON_COMMAND(ID_INDICATOR_SCHEME, &CMainFrame::OnSchemeIndicator)
-    ON_UPDATE_COMMAND_UI(ID_INDICATOR_SCHEME, &CMainFrame::OnUpdateClear)
     ON_COMMAND(ID_INDICATOR_LINE_ENDING, &CMainFrame::OnLineEndingIndicator)
-    ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE_ENDING, &CMainFrame::OnUpdateClear)
+    ON_UPDATE_COMMAND_UI_RANGE(ID_INDICATOR_LINE, ID_INDICATOR_LINE_ENDING, &CMainFrame::OnUpdateClear)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR, &CMainFrame::OnUpdateClear)
     ON_REGISTERED_MESSAGE(AFX_WM_CREATETOOLBAR, &CMainFrame::OnToolbarCreateNew)
     ON_REGISTERED_MESSAGE(AFX_WM_ON_GET_TAB_TOOLTIP, &CMainFrame::OnAfxWmOnGetTabTooltip)
@@ -163,7 +161,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     CString strCustomize;
     VERIFY(strCustomize.LoadString(IDS_TOOLBAR_CUSTOMIZE));
 
-    const std::tuple<UINT, UINT> tbs[] = { 
+    struct {
+        UINT nID;
+        UINT nStr;
+    } tbs[] = { 
         { IDR_DOCKING, IDS_TOOLBAR_DOCKING },
         { IDR_VIEW, IDS_TOOLBAR_VIEW },
         { IDR_BOOKMARK, IDS_TOOLBAR_BOOKMARK },
@@ -175,7 +176,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     for (int i = 0; i < ARRAYSIZE(tbs); ++i)
     {
         CMFCToolBar& tb = m_wndToolBar[i];
-        const UINT nID = std::get<0>(tbs[i]);
+        const UINT nID = tbs[i].nID;
         if (!tb.CreateEx(this, TBSTYLE_FLAT, WS_CHILD | WS_VISIBLE | CBRS_TOP | CBRS_GRIPPER | CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC, CRect(1, 1, 1, 1), nID) ||
             !tb.LoadToolBar(nID))
         {
@@ -186,7 +187,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         ASSERT(static_cast<UINT>(tb.GetDlgCtrlID()) == nID);
 
         CString strToolBarName;
-        VERIFY(strToolBarName.LoadString(std::get<1>(tbs[i])));
+        VERIFY(strToolBarName.LoadString(tbs[i].nStr));
         tb.SetWindowText(strToolBarName);
 
         tb.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, strCustomize);
@@ -325,7 +326,15 @@ INT_PTR CMainFrame::DoWindowsDialog()
 
 BOOL CMainFrame::CreateDockingWindows()
 {
-    const std::tuple<CDockablePane&, UINT, UINT, CRect, UINT, UINT> views[] = {
+    struct
+    {
+        CDockablePane& pane;
+        const UINT nId;
+        const UINT nTitle;
+        const CRect& r;
+        const UINT nFlags;
+        const UINT nIcon;
+    } views[] = {
         { m_wndFileView, ID_VIEW_FILEVIEW, IDS_FILE_VIEW, CRect(0, 0, 200, 200), CBRS_LEFT, IDI_FILE_VIEW},
         { m_wndOutput, ID_VIEW_OUTPUTWND, IDS_OUTPUT_WND, CRect(0, 0, 100, 100), CBRS_BOTTOM, IDI_OUTPUT_WND },
         { m_wndProperties, ID_VIEW_PROPERTIESWND, IDS_PROPERTIES_WND, CRect(0, 0, 200, 200), CBRS_RIGHT,IDI_PROPERTIES_WND },
@@ -333,26 +342,19 @@ BOOL CMainFrame::CreateDockingWindows()
     };
     for (auto i : views)
     {
-        CDockablePane& pane = std::get<0>(i);
-        const UINT nId = std::get<1>(i);
-        const UINT nTitle = std::get<2>(i);
-        const CRect& r = std::get<3>(i);
-        const UINT nFlags = std::get<4>(i);
-        const UINT nIcon = std::get<5>(i);
-
         CString strTitle;
-        VERIFY(strTitle.LoadString(nTitle));
-        if (!pane.Create(strTitle, this, r, TRUE, nId, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | nFlags | CBRS_FLOAT_MULTI))
+        VERIFY(strTitle.LoadString(i.nTitle));
+        if (!i.pane.Create(strTitle, this, i.r, TRUE, i.nId, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | i.nFlags | CBRS_FLOAT_MULTI))
         {
             TRACE0("Failed to create pane window\n");
             return FALSE; // failed to create
         }
 
-        HICON hIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(nIcon), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
-        pane.SetIcon(hIcon, FALSE);
+        HICON hIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(i.nIcon), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
+        i.pane.SetIcon(hIcon, FALSE);
 
-        pane.EnableDocking(CBRS_ALIGN_ANY);
-        DockPane(&pane);
+        i.pane.EnableDocking(CBRS_ALIGN_ANY);
+        DockPane(&i.pane);
     }
 
     UpdateMDITabbedBarsIcons();
@@ -449,6 +451,7 @@ void CMainFrame::OnViewCustomize()
 
 static CMenu* CheckSubMenu(CMenu* pMenu, UINT nPos, LPCTSTR check)
 {
+    UNREFERENCED_PARAMETER(check);
     CString s;
     pMenu->GetMenuString(nPos, s, MF_BYPOSITION);
     ASSERT(s == check);
@@ -509,6 +512,13 @@ void CMainFrame::OnViewPane(UINT nID)
         pBasePane->ShowPane(TRUE, FALSE, TRUE);
         pBasePane->SetFocus();
     }
+}
+
+void CMainFrame::OnUpdateViewPane(CCmdUI* pCmdUI)
+{
+    CBasePane* pPane = GetPane(pCmdUI->m_nID);
+    if (pPane != nullptr)
+        pCmdUI->SetCheck(pPane->IsPaneVisible());
 }
 
 BOOL CMainFrame::LoadFrame(UINT nIDResource, DWORD dwDefaultStyle, CWnd* pParentWnd, CCreateContext* pContext)

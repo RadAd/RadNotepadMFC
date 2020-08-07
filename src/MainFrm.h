@@ -85,6 +85,7 @@ protected:
     afx_msg void OnSchemeIndicator();
     afx_msg void OnLineEndingIndicator();
     afx_msg void OnViewPane(UINT nID);
+    afx_msg void OnUpdateViewPane(CCmdUI* pCmdUI);
     afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg void OnUpdateClear(CCmdUI* pCmdUI);
     afx_msg void OnUpdateDockingWindows(CCmdUI *pCmdUI);
