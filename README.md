@@ -15,3 +15,9 @@ If you want to download the scintilla source:
 ```
 msbuild ScintillaPre.vcxproj /t:Update
 ```
+
+Build
+=======
+```
+MSBuild.bat RadNotepad.vcxproj -p:Configuration=Release -p:Platform=x64
+```
