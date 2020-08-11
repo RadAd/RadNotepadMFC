@@ -19,5 +19,5 @@ msbuild ScintillaPre.vcxproj /t:Update
 Build
 =======
 ```
-MSBuild.bat RadNotepad.vcxproj -p:Configuration=Release -p:Platform=x64
+msbuild RadNotepad.vcxproj -p:Configuration=Release -p:Platform=x64
 ```
