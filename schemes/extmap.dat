@@ -44,6 +44,7 @@
 .idl=cpp
 .inf=properties
 .ini=properties
+.inl=cpp
 .java=java
 .js=javascript
 .lisp=lisp

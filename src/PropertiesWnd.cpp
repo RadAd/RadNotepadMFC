@@ -4,6 +4,7 @@
 #include "PropertiesWnd.h"
 #include "MainFrm.h"
 #include "RadNotepad.h"
+#include "NewExtensionDlg.h"
 
 #include "..\resource.h"
 
@@ -26,16 +27,26 @@ static char THIS_FILE[]=__FILE__;
 
 enum class PropType
 {
+    STRING,
     BOOL,
     INT,
     UINT,
     COLOR,
     FONT,
-    INDEX,
+    INDEX_INT,
+    INDEX_STRING,
 };
 
 struct Property
 {
+    Property(CString* s)
+        : nType(PropType::STRING)
+        , valString(s)
+        , defInt{}
+        , vecValues(nullptr)
+    {
+    }
+
     Property(bool* b)
         : nType(PropType::BOOL)
         , valBool(b)
@@ -62,10 +73,18 @@ struct Property
 
     template <class E>
     Property(E* i, const E* j, const int* values)
-        : nType(PropType::INDEX)
+        : nType(PropType::INDEX_INT)
         , valInt(reinterpret_cast<INT*>(i))
         , defInt { reinterpret_cast<const INT*>(j) }
         , vecValues(values)
+    {
+    }
+
+    Property(CString* i, const LPCTSTR* values)
+        : nType(PropType::INDEX_STRING)
+        , valString(i)
+        , defInt{}
+        , vecStrings(values)
     {
     }
 
@@ -92,6 +111,7 @@ struct Property
     PropType nType;
     union
     {
+        CString* valString;
         bool* valBool;
         INT* valInt;
         UINT* valUInt;
@@ -104,8 +124,17 @@ struct Property
         const COLORREF* defColor[DEF_LENGTH];
         const LOGFONT* defFont[DEF_LENGTH];
     };
-    const int* vecValues;
+    union
+    {
+        const int* vecValues;
+        const LPCTSTR* vecStrings;
+    };
 };
+
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, CString* pStr)
+{
+    return new CMFCPropertyGridProperty(strName, (_variant_t) *pStr, nullptr, (DWORD_PTR) new Property(pStr));
+}
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, bool* pBool)
 {
@@ -155,6 +184,15 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, cons
 {
     CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[to_underlying(*pIndex)], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, nullptr));
     for (LPCTSTR i : items)
+        p->AddOption(i);
+    p->AllowEdit(FALSE);
+    return p;
+}
+
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString& strValueName, CString* pStrValue, const std::vector<LPCTSTR>& names, const std::vector<LPCTSTR>& values)
+{
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) strValueName, nullptr, (DWORD_PTR) new Property(pStrValue, values.data()));
+    for (LPCTSTR i : names)
         p->AddOption(i);
     p->AllowEdit(FALSE);
     return p;
@@ -389,9 +427,14 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
 {
     switch (prop->nType)
     {
+    case PropType::STRING:
+        ASSERT(pProp->GetValue().vt == VT_BSTR);
+        *prop->valString = pProp->GetValue().bstrVal;
+        break;
+
     case PropType::BOOL:
         ASSERT(pProp->GetValue().vt == VT_BOOL);
-        *prop->valBool = pProp->GetValue().boolVal != VARIANT_FALSE;;
+        *prop->valBool = pProp->GetValue().boolVal != VARIANT_FALSE;
         break;
 
     case PropType::INT:
@@ -404,7 +447,7 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
         *prop->valUInt = pProp->GetValue().intVal;
         break;
 
-    case PropType::INDEX:
+    case PropType::INDEX_INT:
         {
             int i = GetOptionIndex(pProp);
             if (prop->vecValues != nullptr)
@@ -412,6 +455,13 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
             *prop->valInt = i;
         }
         break;
+
+    case PropType::INDEX_STRING:
+    {
+        int i = GetOptionIndex(pProp);
+        *prop->valString = prop->vecStrings[i];
+    }
+    break;
 
     case PropType::COLOR:
         {
@@ -467,6 +517,7 @@ CPropertiesWnd::CPropertiesWnd()
 {
 	m_nComboHeight = 0;
     m_pSettings = &theApp.m_Settings;
+    m_pExtGroup = nullptr;
 }
 
 CPropertiesWnd::~CPropertiesWnd()
@@ -482,7 +533,9 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
 	ON_UPDATE_COMMAND_UI(ID_SORTPROPERTIES, OnUpdateSortProperties)
 	ON_COMMAND(ID_PROPERTIES_RESET, OnPropertiesReset)
 	ON_UPDATE_COMMAND_UI(ID_PROPERTIES_RESET, OnUpdatePropertiesReset)
-	ON_WM_SETFOCUS()
+    ON_COMMAND(ID_PROPERTIES_NEW, OnPropertiesNew)
+    ON_UPDATE_COMMAND_UI(ID_PROPERTIES_NEW, OnUpdatePropertiesNew)
+    ON_WM_SETFOCUS()
 	ON_WM_SETTINGCHANGE()
     ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
     ON_WM_DESTROY()
@@ -494,18 +547,29 @@ END_MESSAGE_MAP()
 
 void CPropertiesWnd::InitLanguages()
 {
-    std::vector<Language>& vecLanguage = m_pSettings->user.vecLanguage;
-    std::vector<Language*> vecSortLanguage; // = vecLanguage;
-    for (Language& rLanguage : vecLanguage)
+    const std::vector<Language>& vecLanguage = m_pSettings->user.vecLanguage;
+    std::vector<const Language*> vecSortLanguage; // = vecLanguage;
+    for (const Language& rLanguage : vecLanguage)
         vecSortLanguage.push_back(&rLanguage);
     std::sort(vecSortLanguage.begin(), vecSortLanguage.end(), CompareLanguageTitle);
 
-    for (Language* pLanguage : vecSortLanguage)
+    for (const Language* pLanguage : vecSortLanguage)
     {
         CString name = pLanguage->internal ? _T("Output: ") + pLanguage->title : _T("Language: ") + pLanguage->title;
         int i = m_wndObjectCombo.AddString(name);
         m_wndObjectCombo.SetItemData(i, (DWORD_PTR) pLanguage);
     }
+
+    m_LanguageValues.push_back(_T(""));
+    m_LanguageNames.push_back(_T("None"));
+    for (const Language* pLanguage : vecSortLanguage)
+    {
+        m_LanguageValues.push_back(pLanguage->name);
+        m_LanguageNames.push_back(pLanguage->title);
+    }
+
+    if (m_pExtGroup != nullptr && m_pExtGroup->GetSubItemsCount() == 0)
+        FillExtensions();
 }
 
 void CPropertiesWnd::AdjustLayout()
@@ -608,6 +672,29 @@ void CPropertiesWnd::OnPropertiesReset()
 void CPropertiesWnd::OnUpdatePropertiesReset(CCmdUI* pCmdUI)
 {
     pCmdUI->Enable(m_pSettings->user != m_pSettings->default);
+}
+
+void CPropertiesWnd::OnPropertiesNew()
+{
+    CNewExtensionDlg dlgNewExtension(m_pSettings);
+    if (dlgNewExtension.DoModal() == IDOK)
+    {
+        if (m_pSettings->user.mapExt.find(dlgNewExtension.m_strExtension) != m_pSettings->user.mapExt.end())
+            AfxMessageBox(_T("Extension already exists"), MB_OK | MB_ICONERROR);
+        else
+        {
+            auto it = m_pSettings->user.mapExt.insert(std::map<CString, CString>::value_type(dlgNewExtension.m_strExtension, _T(""))).first;
+            CMFCPropertyGridProperty* pProp = CreateProperty(it->first, &it->second);
+            m_pExtGroup->AddSubItem(pProp);
+            m_wndPropList.SetCurSel(pProp);
+            m_wndPropList.EnsureVisible(pProp, TRUE);
+        }
+    }
+}
+
+void CPropertiesWnd::OnUpdatePropertiesNew(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(m_wndObjectCombo.GetCurSel() == 0);
 }
 
 void CPropertiesWnd::InitPropList()
@@ -715,12 +802,19 @@ void CPropertiesWnd::InitPropList()
     }
     else if (i == 0)    // Application
     {
-        CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
-        pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
-        pGroup->AddSubItem(CreateProperty(_T("Number of Recently Used Files"), &m_pSettings->nMaxMRU, 1, 10));
-        pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, { _T("ANSI"), _T("UTF-16"), _T("UTF-16 BE"), _T("UTF-8") }));
-        pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") }));
-        m_wndPropList.AddProperty(pGroup);
+        {
+            CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
+            pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
+            pGroup->AddSubItem(CreateProperty(_T("Number of Recently Used Files"), &m_pSettings->nMaxMRU, 1, 10));
+            pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, { _T("ANSI"), _T("UTF-16"), _T("UTF-16 BE"), _T("UTF-8") }));
+            pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") }));
+            m_wndPropList.AddProperty(pGroup);
+        }
+        {
+            m_pExtGroup = new CMFCPropertyGridProperty(_T("Extensions"));
+            FillExtensions();
+            m_wndPropList.AddProperty(m_pExtGroup);
+        }
     }
     else if (i == 1)    // Editor
     {
@@ -894,13 +988,19 @@ static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
     {
         switch (prop->nType)
         {
+        case PropType::STRING:
+            break;
+
         case PropType::BOOL:
             break;
 
         case PropType::INT:
             break;
 
-        case PropType::INDEX:
+        case PropType::INDEX_INT:
+            break;
+
+        case PropType::INDEX_STRING:
             break;
 
         case PropType::COLOR:
@@ -975,6 +1075,16 @@ void CPropertiesWnd::SetPropListFont()
 
 	m_wndPropList.SetFont(&m_fntPropList);
 	m_wndObjectCombo.SetFont(&m_fntPropList);
+}
+
+void CPropertiesWnd::FillExtensions()
+{
+    for (auto& ext : m_pSettings->user.mapExt)
+    {
+        const Language* pLanguage = GetLanguage(&m_pSettings->user, ext.second);
+        m_pExtGroup->AddSubItem(CreateProperty(ext.first, pLanguage != nullptr ? pLanguage->title : m_LanguageNames[0], &ext.second, m_LanguageNames, m_LanguageValues));
+    }
+    m_pExtGroup->Expand(FALSE);
 }
 
 static void CleanUp(CMFCPropertyGridProperty* pProp)

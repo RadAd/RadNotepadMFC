@@ -141,6 +141,7 @@ BEGIN
     BUTTON      ID_EXPAND_ALL
     BUTTON      ID_SORTPROPERTIES
     BUTTON      ID_PROPERTIES_RESET
+    BUTTON      ID_PROPERTIES_NEW
 END
 
 IDR_SEARCH TOOLBAR 16, 16
@@ -445,6 +446,17 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,252,155,50,14
 END
 
+IDD_NEW_EXTENSION DIALOGEX 0, 0, 157, 56
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "New Extension"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "&Extension:",IDC_STATIC,7,7,143,11
+    EDITTEXT        IDC_EXTENSION,7,18,143,15,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,45,35,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,100,35,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -514,6 +526,12 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 169
     END
+
+    IDD_NEW_EXTENSION, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        TOPMARGIN, 7
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -541,6 +559,11 @@ BEGIN
     100, 100, 0, 0,
     100, 100, 0, 0,
     100, 100, 0, 0
+END
+
+IDD_NEW_EXTENSION AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 
@@ -586,7 +609,6 @@ END
 STRINGTABLE
 BEGIN
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
-    ID_INDICATOR_LINE       "Line: %ld, Col: %ld, Char: %ld, Sel: %ld"
     IDS_FILE_REVERT         "File has changed. Revert?"
     IDS_TAB_MENU            "Tab"
     IDS_SEARCH_NOT_FOUND    "Not Found"
@@ -595,7 +617,15 @@ BEGIN
     IDS_TOOLBAR_BOOKMARK    "Bookrmark"
     IDS_TOOLBAR_VIEW        "View"
     IDS_SCHEME_NONE         "None"
+    ID_INDICATOR_LINE       "Line: %ld, Col: %ld, Char: %ld, Sel: %ld"
+    ID_INDICATOR_SCHEME     "Scheme"
+END
+
+STRINGTABLE
+BEGIN
     ID_INDICATOR_LINE_ENDING "Ending"
+    IDS_TOOLBAR_STANDARD    "Standard"
+    IDS_TOOLBAR_CUSTOMIZE   "Customize..."
 END
 
 STRINGTABLE
@@ -614,6 +644,8 @@ BEGIN
     IDR_RadNotepadTYPE      "\n\nRadNotepad\n\n\nRadNotepad.Document\nRadNotepad.Document"
     ID_WINDOW_MANAGER       "&Windows..."
     ID_VIEW_FILEVIEW        "Toggle file window\nFile Window"
+    ID_VIEW_OUTPUTWND       "Toggle output window\nOutput Window"
+    ID_VIEW_PROPERTIESWND   "Toggle properties window\nProperties Window"
     ID_PROPERTIES           "Show file properties\nProperties"
 END
 
@@ -729,14 +761,6 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_TOOLBAR_STANDARD    "Standard"
-    IDS_TOOLBAR_CUSTOMIZE   "Customize..."
-END
-
-STRINGTABLE
-BEGIN
-    ID_VIEW_OUTPUTWND       "Toggle output window\nOutput Window"
-    ID_VIEW_PROPERTIESWND   "Toggle properties window\nProperties Window"
     ID_SORTPROPERTIES       "Sort properties\nSort"
     ID_PROPERTIES_RESET     "Reset to defaults\nReset"
     ID_EXPAND_ALL           "Expand All\nExpand"
@@ -749,7 +773,6 @@ END
 STRINGTABLE
 BEGIN
     IDS_EDIT_MENU           "Edit"
-    ID_INDICATOR_SCHEME     "Scheme"
 END
 
 STRINGTABLE
@@ -785,6 +808,11 @@ END
 STRINGTABLE
 BEGIN
     ID_VIEW_RETURN          "Return to the main window"
+END
+
+STRINGTABLE
+BEGIN
+    ID_PROPERTIES_NEW       "Add a new property\nNew"
 END
 
 #endif    // English (United States) resources

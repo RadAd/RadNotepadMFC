@@ -236,6 +236,7 @@
     <ClInclude Include="src\ClassView.h" />
     <ClInclude Include="src\FileView.h" />
     <ClInclude Include="src\GoToLineDlg.h" />
+    <ClInclude Include="src\NewExtensionDlg.h" />
     <ClInclude Include="src\PaneToolBar.h" />
     <ClInclude Include="src\RadDocManager.h" />
     <ClInclude Include="src\RadNotepad.h" />
@@ -265,6 +266,7 @@
     <ClCompile Include="src\ClassView.cpp" />
     <ClCompile Include="src\FileView.cpp" />
     <ClCompile Include="src\GoToLineDlg.cpp" />
+    <ClCompile Include="src\NewExtensionDlg.cpp" />
     <ClCompile Include="src\PaneToolBar.cpp" />
     <ClCompile Include="src\RadDocManager.cpp" />
     <ClCompile Include="src\RadNotepad.cpp" />

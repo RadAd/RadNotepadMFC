@@ -28,6 +28,9 @@ protected:
 	CComboBox m_wndObjectCombo;
     CPaneToolBar m_wndToolBar;
     CMFCPropertyGridCtrl m_wndPropList;
+	std::vector<LPCTSTR> m_LanguageValues;
+	std::vector<LPCTSTR> m_LanguageNames;
+	CMFCPropertyGridProperty* m_pExtGroup;
 
 // Implementation
 public:
@@ -42,6 +45,8 @@ protected:
 	afx_msg void OnUpdateSortProperties(CCmdUI* pCmdUI);
 	afx_msg void OnPropertiesReset();
 	afx_msg void OnUpdatePropertiesReset(CCmdUI* pCmdUI);
+	afx_msg void OnPropertiesNew();
+	afx_msg void OnUpdatePropertiesNew(CCmdUI* pCmdUI);
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg LRESULT OnPropertyChanged(WPARAM wParam, LPARAM lParam);
@@ -51,6 +56,7 @@ protected:
 
 	void InitPropList();
 	void SetPropListFont();
+	void FillExtensions();
 
 	int m_nComboHeight;
 public:

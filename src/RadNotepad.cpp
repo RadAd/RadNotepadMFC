@@ -313,6 +313,11 @@ void CRadNotepadApp::NotifySettingsChanged()
 
 BOOL CRadNotepadApp::SaveState(LPCTSTR lpszSectionName, CFrameImpl* pFrameImpl)
 {
+    if (!m_bSaveState && m_SaveSettings)
+    {
+        m_bSaveState = AfxMessageBox(L"Properties have changed. Do you wish to save?.", MB_YESNO | MB_ICONWARNING) == IDYES;
+    }
+
     if (!m_bSaveState)
     {
         CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, m_pMainWnd);

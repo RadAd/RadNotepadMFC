@@ -703,6 +703,49 @@ void ProcessMarkers(MSXML2::IXMLDOMNodePtr pXMLNode, std::vector<Marker>& vecMar
     }
 }
 
+void ProcessExtensions(MSXML2::IXMLDOMNodePtr pXMLNode, std::map<CString, CString>& mapExt)
+{
+    MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
+    long length = pXMLChildren->Getlength();
+    for (int i = 0; i < length; ++i)
+    {
+        MSXML2::IXMLDOMNodePtr pXMLChildNode(pXMLChildren->Getitem(i));
+        MSXML2::DOMNodeType type = pXMLChildNode->GetnodeType();
+
+        if (type == NODE_ELEMENT)
+        {
+            _bstr_t bstrName = pXMLChildNode->GetbaseName();
+
+            if (bstrName == L"ext")
+            {
+                _bstr_t key = GetAttribute(pXMLChildNode, _T("key"));
+                _bstr_t language = GetAttribute(pXMLChildNode, _T("language"));
+
+                if (isnull(key))
+                {
+                    CString msg;
+                    msg.Format(_T("Missing key"));
+                    AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+                }
+                else if (isnull(language))
+                {
+                    mapExt[(LPCTSTR) key] = _T("");
+                }
+                else
+                {
+                    mapExt[(LPCTSTR) key] = (LPCTSTR) language;
+                }
+            }
+            else
+            {
+                CString msg;
+                msg.Format(_T("Unknown element: %s"), (LPCTSTR) bstrName);
+                AfxMessageBox(msg, MB_ICONERROR | MB_OK);
+            }
+        }
+    }
+}
+
 void ProcessKeywordClassesInclude(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, KeywordClass* pKeywordClass)
 {
     MSXML2::IXMLDOMNodeListPtr pXMLChildren(pXMLNode->GetchildNodes());
@@ -1100,6 +1143,10 @@ void ProcessScheme(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme, std::vector<L
             {
                 ProcessMarkers(pXMLChildNode, pTheme->vecMarker);
             }
+            else if (bstrName == L"extensions")
+            {
+                ProcessExtensions(pXMLChildNode, pTheme->mapExt);
+            }
             else if (bstrName == L"base-language")
             {
                 _bstr_t name = GetAttribute(pXMLChildNode, _T("name"));
@@ -1195,6 +1242,7 @@ void LoadSchemeDirectory(LPCTSTR strDirectory, Theme* pTheme, std::vector<Langua
         FILE* f = nullptr;
         if (_wfopen_s(&f, full, L"r") == 0)
         {
+            AFXASSUME(f != nullptr);
             while (fgetws(line, ARRAYSIZE(line), f))
             {
                 const TCHAR* equals = wcschr(line, _T('='));
@@ -1644,7 +1692,31 @@ void SaveTheme(LPTSTR pFilename, const Theme* pTheme, const Theme* pDefaultTheme
             if (IsEmpty(pMarkers, NODE_ELEMENT))
                 pRootNode->removeChild(pMarkers);
         }
-        // ignore mapExt, mapExtFilter
+        {
+            MSXML2::IXMLDOMElementPtr pExtensions = pDoc->createElement(L"extensions");
+            pRootNode->insertBefore(pExtensions, vtnull);
+            //SaveTheme(pDoc, pExtensions, pTheme->mapExt, pDefaultTheme->mapExt);
+
+            for (const auto& ext : pTheme->mapExt)
+            {
+                auto it = pDefaultTheme->mapExt.find(ext.first);
+
+                if ((it == pDefaultTheme->mapExt.end() && !ext.second.IsEmpty())
+                    || (it != pDefaultTheme->mapExt.end() && ext.second != it->second))
+                {
+                    MSXML2::IXMLDOMElementPtr pExt = pDoc->createElement(L"ext");
+                    pExtensions->insertBefore(pExt, vtnull);
+
+                    pExt->setAttribute(_T("key"), ext.first.GetString());
+                    if (!ext.second.IsEmpty())
+                        pExt->setAttribute(_T("language"), ext.second.GetString());
+                }
+            }
+
+            if (IsEmpty(pExtensions, NODE_ELEMENT))
+                pRootNode->removeChild(pExtensions);
+        }
+        // ignore mapExtFilter
         for (const Language& l : pTheme->vecLanguage)
         {
             const Language* ol = Get(pDefaultTheme->vecLanguage, l.name);

@@ -4,7 +4,6 @@
 //
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
-#define ID_INDICATOR_LINE               110
 #define IDS_FILE_REVERT                 102
 #define IDS_TAB_MENU                    103
 #define IDS_SEARCH_NOT_FOUND            104
@@ -13,6 +12,8 @@
 #define IDS_TOOLBAR_BOOKMARK            107
 #define IDS_TOOLBAR_VIEW                108
 #define IDS_SCHEME_NONE                 109
+#define ID_INDICATOR_LINE               110
+#define ID_INDICATOR_SCHEME             111
 #define ID_INDICATOR_LINE_ENDING        112
 #define IDR_POPUP_EDIT                  119
 #define IDS_TOOLBAR_STANDARD            124
@@ -22,6 +23,8 @@
 #define IDR_RadNotepadTYPE              130
 #define ID_WINDOW_MANAGER               131
 #define ID_VIEW_FILEVIEW                133
+#define ID_VIEW_OUTPUTWND               134
+#define ID_VIEW_PROPERTIESWND           135
 #define ID_VIEW_CLASSVIEW               136
 #define ID_PROPERTIES                   137
 #define ID_CLASS_ADD_MEMBER_FUNCTION    139
@@ -34,8 +37,6 @@
 #define ID_SORTING_SORTALPHABETIC       146
 #define ID_SORTING_SORTBYTYPE           147
 #define ID_SORTING_SORTBYACCESS         148
-#define ID_VIEW_OUTPUTWND               134
-#define ID_VIEW_PROPERTIESWND           135
 #define ID_SORTPROPERTIES               151
 #define ID_PROPERTIES_RESET             152
 #define ID_EXPAND_ALL                   154
@@ -58,10 +59,10 @@
 #define IDR_PROPERTIES                  183
 #define IDS_EDIT_MENU                   306
 #define IDD_GOTOLINE                    310
-#define ID_INDICATOR_SCHEME             111
 #define IDR_SCHEME_MASTER               312
 #define IDR_EXTMAP                      314
 #define IDD_SAVE_MODIFIED               317
+#define IDD_NEW_EXTENSION               318
 #define IDR_OUTPUT                      320
 #define IDR_POPUP_TAB                   321
 #define IDB_USER_IMAGES                 322
@@ -77,6 +78,7 @@
 #define ID_COPYRIGHT_SCINTILLA          1004
 #define IDC_MFCLINK1                    1005
 #define IDC_MFCLINK2                    1006
+#define IDC_EXTENSION                   1006
 #define ID_FILE_REVERT                  32784
 #define ID_FILE_CLOSEALL                32788
 #define ID_FILE_SAVEALL                 32789
@@ -126,6 +128,7 @@
 #define ID_SEARCH_PREV                  32878
 #define ID_SEARCH_NEXT                  32879
 #define ID_SEARCH_INCREMENTAL           32884
+#define ID_PROPERTIES_NEW               32897
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -134,8 +137,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        331
-#define _APS_NEXT_COMMAND_VALUE         32897
-#define _APS_NEXT_CONTROL_VALUE         1006
+#define _APS_NEXT_COMMAND_VALUE         32898
+#define _APS_NEXT_CONTROL_VALUE         1007
 #define _APS_NEXT_SYMED_VALUE           311
 #endif
 #endif

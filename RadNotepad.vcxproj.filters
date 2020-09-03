@@ -106,6 +106,9 @@
     <ClInclude Include="src\ToolBarHistoryButton.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\NewExtensionDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ChildFrm.cpp">
@@ -178,6 +181,9 @@
       <Filter>ScintillaWrapper</Filter>
     </ClCompile>
     <ClCompile Include="src\ToolBarHistoryButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NewExtensionDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
