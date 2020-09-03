@@ -16,6 +16,15 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+template <typename E>
+constexpr typename std::underlying_type<E>::type const * to_underlying_ptr(const E* e) noexcept {
+    return reinterpret_cast<typename std::underlying_type<E>::type const *>(e);
+}
+
+constexpr const int* to_underlying_ptr(const int* e) noexcept {
+    return e;
+}
+
 // TODO
 // A CMFCPropertyGridColorProperty which knows common color names
 // Selecting and pasting into edit color (and maybe others) appends text instead
@@ -42,48 +51,48 @@ struct Property
     Property(CString* s)
         : nType(PropType::STRING)
         , valString(s)
-        , defInt{}
-        , vecValues(nullptr)
+        , defVoid{}
+        , vecVoid(nullptr)
     {
     }
 
     Property(bool* b)
         : nType(PropType::BOOL)
         , valBool(b)
-        , defInt{}
-        , vecValues(nullptr)
+        , defVoid{}
+        , vecVoid(nullptr)
     {
     }
 
     Property(INT* i)
         : nType(PropType::INT)
         , valInt(i)
-        , defInt{}
-        , vecValues(nullptr)
+        , defVoid{}
+        , vecVoid(nullptr)
     {
     }
 
     Property(UINT* i)
         : nType(PropType::UINT)
         , valUInt(i)
-        , defInt{}
-        , vecValues(nullptr)
+        , defVoid{}
+        , vecVoid(nullptr)
     {
     }
 
     template <class E>
-    Property(E* i, const E* j, const int* values)
+    Property(E* i, const E* values)
         : nType(PropType::INDEX_INT)
         , valInt(reinterpret_cast<INT*>(i))
-        , defInt { reinterpret_cast<const INT*>(j) }
-        , vecValues(values)
+        , defVoid{}
+        , vecInts(to_underlying_ptr(values))
     {
     }
 
     Property(CString* i, const LPCTSTR* values)
         : nType(PropType::INDEX_STRING)
         , valString(i)
-        , defInt{}
+        , defVoid{}
         , vecStrings(values)
     {
     }
@@ -92,7 +101,7 @@ struct Property
         : nType(PropType::COLOR)
         , valColor(c)
         , defColor {}
-        , vecValues(nullptr)
+        , vecVoid(nullptr)
     {
         ASSERT(def.size() <= DEF_LENGTH);
         std::copy(def.begin(), def.end(), defColor);
@@ -102,7 +111,7 @@ struct Property
         : nType(PropType::FONT)
         , valFont(f)
         , defFont {}
-        , vecValues(nullptr)
+        , vecVoid(nullptr)
     {
         ASSERT(def.size() <= DEF_LENGTH);
         std::copy(def.begin(), def.end(), defFont);
@@ -120,13 +129,14 @@ struct Property
     };
     union
     {
-        const INT* defInt[DEF_LENGTH];
+        const void* defVoid[DEF_LENGTH];
         const COLORREF* defColor[DEF_LENGTH];
         const LOGFONT* defFont[DEF_LENGTH];
     };
     union
     {
-        const int* vecValues;
+        const void* vecVoid;
+        const int* vecInts;
         const LPCTSTR* vecStrings;
     };
 };
@@ -182,7 +192,7 @@ CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pF
 template <class E>
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[to_underlying(*pIndex)], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, nullptr));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[to_underlying(*pIndex)], nullptr, (DWORD_PTR) new Property(pIndex, static_cast<const E*>(nullptr)));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -198,20 +208,31 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString& 
     return p;
 }
 
-static inline int GetIndex(int find, const int* values, int size)
+template<typename E, std::size_t Size>
+static inline int GetIndex(E find, const E(&values)[Size])
 {
-    for (int i = 0; i < size; ++i)
+    for (int i = 0; i < Size; ++i)
         if (values[i] == find)
             return i;
     ASSERT(FALSE);
     return -1;
 }
 
+template<typename E>
+static inline int GetIndex(E find, const std::initializer_list<E>& values)
+{
+    for (int i = 0; i < values.size(); ++i)
+        if (values.begin()[i] == find)
+            return i;
+    ASSERT(FALSE);
+    return -1;
+}
+
 template <class E>
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items, const std::initializer_list<int>& values)
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items, const std::initializer_list<E>& values)
 {
     ASSERT(items.size() == values.size());
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[GetIndex(*pIndex, values.begin(), (int) values.size())], nullptr, (DWORD_PTR) new Property(pIndex, (E*) nullptr, values.begin()));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[GetIndex(*pIndex, values)], nullptr, (DWORD_PTR) new Property(pIndex, values.begin()));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -224,8 +245,8 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     if (pBase != nullptr)
     {
         LPCTSTR items[] = { _T("Default"), _T("True"), _T("False") };
-        static const int values[] = { to_underlying(Bool3::B3_UNDEFINED), to_underlying(Bool3::B3_TRUE), to_underlying(Bool3::B3_FALSE) };
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(to_underlying(*pValue), values, ARRAYSIZE(values))], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
+        static const Bool3 values[] = { Bool3::B3_UNDEFINED, Bool3::B3_TRUE, Bool3::B3_FALSE };
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values)], nullptr, (DWORD_PTR) new Property(pValue, values));
         for (LPCTSTR item : items)
             p->AddOption(item);
         p->AllowEdit(FALSE);
@@ -233,8 +254,8 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     else
     {
         LPCTSTR items[] = { _T("True"), _T("False") };
-        static const int values[] = { to_underlying(Bool3::B3_TRUE), to_underlying(Bool3::B3_FALSE) };
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(to_underlying(*pValue), values, ARRAYSIZE(values))], nullptr, (DWORD_PTR) new Property(pValue, pBase, values));
+        static const Bool3 values[] = { Bool3::B3_TRUE, Bool3::B3_FALSE };
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values)], nullptr, (DWORD_PTR) new Property(pValue, values));
         for (LPCTSTR item : items)
             p->AddOption(item);
         p->AllowEdit(FALSE);
@@ -450,8 +471,8 @@ void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
     case PropType::INDEX_INT:
         {
             int i = GetOptionIndex(pProp);
-            if (prop->vecValues != nullptr)
-                i = prop->vecValues[i];
+            if (prop->vecInts != nullptr)
+                i = prop->vecInts[i];
             *prop->valInt = i;
         }
         break;
