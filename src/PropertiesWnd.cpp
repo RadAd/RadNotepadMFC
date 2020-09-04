@@ -60,12 +60,61 @@ public:
     virtual void Refresh(CMFCPropertyGridProperty* pPropChild, PropertyBase* propdef) const = 0;
 };
 
+template <class E>
+class SimpleProperty : public PropertyBase
+{
+public:
+    SimpleProperty(E* value)
+        : m_value(value)
+    {
+        ASSERT(value != nullptr);
+    }
+
+    void SetProperty(CMFCPropertyGridProperty* pProp) override
+    {
+        SetProperty(*m_value, pProp);
+    }
+
+    bool IsDefault(const PropertyBase* /*propdefbase*/) const override
+    {
+        return false;
+    }
+
+    void Refresh(CMFCPropertyGridProperty* /*pPropChild*/, PropertyBase* /*propdefbase*/) const
+    {
+        ASSERT(false);
+    }
+
+private:
+    static void SetProperty(CString& value, CMFCPropertyGridProperty* pProp)
+    {
+        ASSERT(pProp->GetValue().vt == VT_BSTR);
+        value = pProp->GetValue().bstrVal;
+    }
+
+    static void SetProperty(bool& value, CMFCPropertyGridProperty* pProp)
+    {
+        ASSERT(pProp->GetValue().vt == VT_BOOL);
+        value = pProp->GetValue().boolVal != VARIANT_FALSE;
+    }
+
+    static void SetProperty(INT& value, CMFCPropertyGridProperty* pProp)
+    {
+        ASSERT(pProp->GetValue().vt == VT_INT || pProp->GetValue().vt == VT_I4);
+        value = pProp->GetValue().intVal;
+    }
+
+    static void SetProperty(UINT& value, CMFCPropertyGridProperty* pProp)
+    {
+        ASSERT(pProp->GetValue().vt == VT_UINT);
+        value = pProp->GetValue().uintVal;
+    }
+
+    E* m_value;
+};
+
 enum class PropType
 {
-    STRING,
-    BOOL,
-    INT,
-    UINT,
     COLOR,
     FONT,
     INDEX_INT,
@@ -74,38 +123,6 @@ enum class PropType
 
 struct Property : public PropertyBase
 {
-    Property(CString* s)
-        : nType(PropType::STRING)
-        , valString(s)
-        , m_defVoid{}
-        , vecVoid(nullptr)
-    {
-    }
-
-    Property(bool* b)
-        : nType(PropType::BOOL)
-        , valBool(b)
-        , m_defVoid{}
-        , vecVoid(nullptr)
-    {
-    }
-
-    Property(INT* i)
-        : nType(PropType::INT)
-        , valInt(i)
-        , m_defVoid{}
-        , vecVoid(nullptr)
-    {
-    }
-
-    Property(UINT* i)
-        : nType(PropType::UINT)
-        , valUInt(i)
-        , m_defVoid{}
-        , vecVoid(nullptr)
-    {
-    }
-
     template <class E>
     Property(E* i, const E* values)
         : nType(PropType::INDEX_INT)
@@ -147,26 +164,6 @@ struct Property : public PropertyBase
     {
         switch (nType)
         {
-        case PropType::STRING:
-            ASSERT(pProp->GetValue().vt == VT_BSTR);
-            *valString = pProp->GetValue().bstrVal;
-            break;
-
-        case PropType::BOOL:
-            ASSERT(pProp->GetValue().vt == VT_BOOL);
-            *valBool = pProp->GetValue().boolVal != VARIANT_FALSE;
-            break;
-
-        case PropType::INT:
-            ASSERT(pProp->GetValue().vt == VT_INT || pProp->GetValue().vt == VT_I4);
-            *valInt = pProp->GetValue().intVal;
-            break;
-
-        case PropType::UINT:
-            ASSERT(pProp->GetValue().vt == VT_UINT);
-            *valUInt = pProp->GetValue().intVal;
-            break;
-
         case PropType::INDEX_INT:
         {
             int i = GetOptionIndex(pProp);
@@ -239,10 +236,6 @@ struct Property : public PropertyBase
 
         switch (nType)
         {
-        case PropType::STRING:
-        case PropType::BOOL:
-        case PropType::INT:
-        case PropType::UINT:
         case PropType::INDEX_INT:
         case PropType::INDEX_STRING:
             return false;
@@ -274,7 +267,7 @@ struct Property : public PropertyBase
         if (nType == PropType::COLOR)
         {
             const Property* propdef = dynamic_cast<const Property*>(propdefbase);
-            ASSERT(propdef != nullptr);
+            AFXASSUME(propdef != nullptr);
             CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pPropChild);
             p->EnableAutomaticButton(_T("Default"), *propdef->valColor);
         }
@@ -285,9 +278,7 @@ struct Property : public PropertyBase
     union
     {
         CString* valString;
-        bool* valBool;
         INT* valInt;
-        UINT* valUInt;
         COLORREF* valColor;
         LOGFONT* valFont;
     };
@@ -307,24 +298,24 @@ struct Property : public PropertyBase
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, CString* pStr)
 {
-    return new CMFCPropertyGridProperty(strName, (_variant_t) *pStr, nullptr, (DWORD_PTR) new Property(pStr));
+    return new CMFCPropertyGridProperty(strName, (_variant_t) *pStr, nullptr, (DWORD_PTR) new SimpleProperty<CString>(pStr));
 }
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, bool* pBool)
 {
-    return new CMFCPropertyGridProperty(strName, (_variant_t) *pBool, nullptr, (DWORD_PTR) new Property(pBool));
+    return new CMFCPropertyGridProperty(strName, (_variant_t) *pBool, nullptr, (DWORD_PTR) new SimpleProperty<bool>(pBool));
 }
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, INT* pInt, INT nMin, INT nMax)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *pInt, nullptr, (DWORD_PTR) new Property(pInt));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *pInt, nullptr, (DWORD_PTR) new SimpleProperty<INT>(pInt));
     p->EnableSpinControl(TRUE, nMin, nMax);
     return p;
 }
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, UINT* pInt, UINT nMin, UINT nMax)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *pInt, nullptr, (DWORD_PTR) new Property(pInt));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *pInt, nullptr, (DWORD_PTR) new SimpleProperty<UINT>(pInt));
     p->EnableSpinControl(TRUE, nMin, nMax);
     return p;
 }
