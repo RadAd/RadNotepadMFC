@@ -113,33 +113,71 @@ private:
     E* m_value;
 };
 
+template <class E, class F = E>
+class IndexedProperty : public PropertyBase
+{
+public:
+    IndexedProperty(E* value, const F* values)
+        : m_value(value), m_values(values)
+    {
+        ASSERT(value != nullptr);
+        //ASSERT(values != nullptr);
+    }
+
+    void SetProperty(CMFCPropertyGridProperty* pProp) override
+    {
+        int i = GetOptionIndex(pProp);
+        SetProperty<std::is_enum<E>::value>(*m_value, i, m_values);
+    }
+
+    bool IsDefault(const PropertyBase* /*propdefbase*/) const override
+    {
+        return false;
+    }
+
+    void Refresh(CMFCPropertyGridProperty* /*pPropChild*/, PropertyBase* /*propdefbase*/) const
+    {
+        ASSERT(false);
+    }
+
+private:
+    template <bool IsEnum, class E, class F>
+    static void SetProperty(E& value, int i, const F* values)
+    {
+        AFXASSUME(values != nullptr);
+        value = values[i];
+    }
+
+    template <>
+    static void SetProperty<true>(E& value, int i, const F* values)
+    {
+        if (values == nullptr)
+            value = static_cast<E>(i);
+        else
+            value = values[i];
+    }
+
+    template <>
+    static void SetProperty<false>(int& value, int i, const int* values)
+    {
+        if (values == nullptr)
+            value = i;
+        else
+            value = values[i];
+    }
+
+    E* m_value;
+    const F* m_values;
+};
+
 enum class PropType
 {
     COLOR,
     FONT,
-    INDEX_INT,
-    INDEX_STRING,
 };
 
 struct Property : public PropertyBase
 {
-    template <class E>
-    Property(E* i, const E* values)
-        : nType(PropType::INDEX_INT)
-        , valInt(reinterpret_cast<INT*>(i))
-        , m_defVoid{}
-        , vecInts(to_underlying_ptr(values))
-    {
-    }
-
-    Property(CString* i, const LPCTSTR* values)
-        : nType(PropType::INDEX_STRING)
-        , valString(i)
-        , m_defVoid{}
-        , vecStrings(values)
-    {
-    }
-
     Property(COLORREF* c, const std::initializer_list<const COLORREF*>& def)
         : nType(PropType::COLOR)
         , valColor(c)
@@ -164,22 +202,6 @@ struct Property : public PropertyBase
     {
         switch (nType)
         {
-        case PropType::INDEX_INT:
-        {
-            int i = GetOptionIndex(pProp);
-            if (vecInts != nullptr)
-                i = vecInts[i];
-            *valInt = i;
-        }
-        break;
-
-        case PropType::INDEX_STRING:
-        {
-            int i = GetOptionIndex(pProp);
-            *valString = vecStrings[i];
-        }
-        break;
-
         case PropType::COLOR:
         {
             CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
@@ -236,10 +258,6 @@ struct Property : public PropertyBase
 
         switch (nType)
         {
-        case PropType::INDEX_INT:
-        case PropType::INDEX_STRING:
-            return false;
-
         case PropType::COLOR:
             for (const COLORREF* defColor : m_defColor)
             {
@@ -347,7 +365,7 @@ CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pF
 template <class E>
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[to_underlying(*pIndex)], nullptr, (DWORD_PTR) new Property(pIndex, static_cast<const E*>(nullptr)));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[to_underlying(*pIndex)], nullptr, (DWORD_PTR) new IndexedProperty<E>(pIndex, static_cast<const E*>(nullptr)));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -356,7 +374,7 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, cons
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString& strValueName, CString* pStrValue, const std::vector<LPCTSTR>& names, const std::vector<LPCTSTR>& values)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) strValueName, nullptr, (DWORD_PTR) new Property(pStrValue, values.data()));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) strValueName, nullptr, (DWORD_PTR) new IndexedProperty<CString, LPCTSTR>(pStrValue, values.data()));
     for (LPCTSTR i : names)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -387,7 +405,7 @@ template <class E>
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items, const std::initializer_list<E>& values)
 {
     ASSERT(items.size() == values.size());
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[GetIndex(*pIndex, values)], nullptr, (DWORD_PTR) new Property(pIndex, values.begin()));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[GetIndex(*pIndex, values)], nullptr, (DWORD_PTR) new IndexedProperty<E>(pIndex, values.begin()));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -401,7 +419,7 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     {
         LPCTSTR items[] = { _T("Default"), _T("True"), _T("False") };
         static const Bool3 values[] = { Bool3::B3_UNDEFINED, Bool3::B3_TRUE, Bool3::B3_FALSE };
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values)], nullptr, (DWORD_PTR) new Property(pValue, values));
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values)], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
         for (LPCTSTR item : items)
             p->AddOption(item);
         p->AllowEdit(FALSE);
@@ -410,7 +428,7 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     {
         LPCTSTR items[] = { _T("True"), _T("False") };
         static const Bool3 values[] = { Bool3::B3_TRUE, Bool3::B3_FALSE };
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values)], nullptr, (DWORD_PTR) new Property(pValue, values));
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values)], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
         for (LPCTSTR item : items)
             p->AddOption(item);
         p->AllowEdit(FALSE);
