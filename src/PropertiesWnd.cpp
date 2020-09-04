@@ -57,7 +57,7 @@ public:
 
     virtual void SetProperty(CMFCPropertyGridProperty* pProp) = 0;
     virtual bool IsDefault(const PropertyBase* propdef) const = 0;
-    virtual void Refresh(CMFCPropertyGridProperty* pPropChild, PropertyBase* propdef) const = 0;
+    virtual void Refresh(CMFCPropertyGridProperty* pPropChild, const PropertyBase* propdef) const = 0;
 };
 
 template <class E>
@@ -80,9 +80,15 @@ public:
         return false;
     }
 
-    void Refresh(CMFCPropertyGridProperty* /*pPropChild*/, PropertyBase* /*propdefbase*/) const
+    void Refresh(CMFCPropertyGridProperty* /*pPropChild*/, const PropertyBase* /*propdefbase*/) const
     {
         ASSERT(false);
+    }
+
+protected:
+    E* GetValue() const
+    {
+        return m_value;
     }
 
 private:
@@ -110,6 +116,24 @@ private:
         value = pProp->GetValue().uintVal;
     }
 
+    static void SetProperty(COLORREF& value, CMFCPropertyGridProperty* pProp)
+    {
+        ASSERT(static_cast<CMFCPropertyGridColorProperty*>(pProp) != nullptr);
+        CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
+        AFXASSUME(pProp != nullptr);
+        COLORREF c = p->GetColor();
+        value = c;
+    }
+
+    static void SetProperty(LOGFONT& value, CMFCPropertyGridProperty* pProp)
+    {
+        ASSERT(static_cast<CMFCPropertyGridFontProperty*>(pProp) != nullptr);
+        CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
+        AFXASSUME(pProp != nullptr);
+        PLOGFONT f = p->GetLogFont();
+        value = *f;
+    }
+
     E* m_value;
 };
 
@@ -135,7 +159,7 @@ public:
         return false;
     }
 
-    void Refresh(CMFCPropertyGridProperty* /*pPropChild*/, PropertyBase* /*propdefbase*/) const
+    void Refresh(CMFCPropertyGridProperty* /*pPropChild*/, const PropertyBase* /*propdefbase*/) const
     {
         ASSERT(false);
     }
@@ -170,49 +194,77 @@ private:
     const F* m_values;
 };
 
-enum class PropType
+template <class E> 
+class SimplePropertyWithDefaults : public SimpleProperty<E>
 {
-    COLOR,
-    FONT,
-};
-
-struct Property : public PropertyBase
-{
-    Property(COLORREF* c, const std::initializer_list<const COLORREF*>& def)
-        : nType(PropType::COLOR)
-        , valColor(c)
-        , m_defColor {}
+public:
+    SimplePropertyWithDefaults(E* c, const std::initializer_list<const E*>& def)
+        : SimpleProperty(c)
+        , m_defaults{}
     {
         ASSERT(def.size() <= DEF_LENGTH);
-        std::copy(def.begin(), def.end(), m_defColor);
-    }
-
-    Property(LOGFONT* f, const std::initializer_list<const LOGFONT*>& def)
-        : nType(PropType::FONT)
-        , valFont(f)
-        , m_defFont {}
-    {
-        ASSERT(def.size() <= DEF_LENGTH);
-        std::copy(def.begin(), def.end(), m_defFont);
+        std::copy(def.begin(), def.end(), m_defaults);
     }
 
     void SetProperty(CMFCPropertyGridProperty* pProp) override
     {
-        switch (nType)
-        {
-        case PropType::COLOR:
-        {
-            CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
-            COLORREF c = p->GetColor();
-            *valColor = c;
-        }
-        break;
+        FixProperty(pProp, m_defaults);
+        SimpleProperty<E>::SetProperty(pProp);
+    }
 
-        case PropType::FONT:
+    bool IsDefault(const PropertyBase* propdefbase) const override
+    {
+        const SimplePropertyWithDefaults* propdef = dynamic_cast<const SimplePropertyWithDefaults*>(propdefbase);
+
+        if (propdef == nullptr)
+            return false;
+
+        for (const E* def : m_defaults)
         {
-            CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
-            PLOGFONT f = p->GetLogFont();
-            for (const LOGFONT* defFont : m_defFont)
+            if (def == propdef->GetValue())
+                return true;
+        }
+        return false;
+    }
+
+    void Refresh(CMFCPropertyGridProperty* pPropChild, const PropertyBase* propdefbase) const override
+    {
+        const SimplePropertyWithDefaults<E>* propdef = dynamic_cast<const SimplePropertyWithDefaults<E>*>(propdefbase);
+        AFXASSUME(propdef != nullptr);
+        DoRefresh(pPropChild, *propdef->GetValue());
+        pPropChild->Redraw();
+    }
+
+private:
+    static void DoRefresh(CMFCPropertyGridProperty* pPropChild, COLORREF value)
+    {
+        ASSERT(static_cast<CMFCPropertyGridColorProperty*>(pPropChild) != nullptr);
+        CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pPropChild);
+        AFXASSUME(p != nullptr);
+        p->EnableAutomaticButton(_T("Default"), value);
+    }
+
+    static void DoRefresh(CMFCPropertyGridProperty* /*pPropChild*/, const LOGFONT& /*value*/)
+    {
+    }
+
+    template<size_t Size>
+    static void FixProperty(CMFCPropertyGridProperty* /*pProp*/, const COLORREF*(&/*defaults*/)[Size])
+    {
+    }
+
+    template<size_t Size>
+    static void FixProperty(CMFCPropertyGridProperty* pProp, const LOGFONT*(&defaults)[Size])
+    {
+        ASSERT(static_cast<CMFCPropertyGridFontProperty*>(pProp) != nullptr);
+        CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
+        AFXASSUME(p != nullptr);
+        PLOGFONT f = p->GetLogFont();
+
+        if (f->lfFaceName[0] == _T('\0'))
+            wcscpy_s(f->lfFaceName, _T("Default"));
+        else
+            for (const LOGFONT* defFont : defaults)
             {
                 if (defFont != nullptr && wcscmp(defFont->lfFaceName, f->lfFaceName) == 0)
                 {
@@ -220,87 +272,26 @@ struct Property : public PropertyBase
                     break;
                 }
             }
-            for (const LOGFONT* defFont : m_defFont)
-            {
-                if (defFont != nullptr && defFont->lfHeight == f->lfHeight)
-                {
-                    f->lfHeight = 0;
-                    break;
-                }
-            }
-            for (const LOGFONT* defFont : m_defFont)
-            {
-                if (defFont != nullptr && defFont->lfWeight == f->lfWeight)
-                {
-                    f->lfWeight = 0;
-                    break;
-                }
-            }
-            // TODO What to do with italic and underline
-            *valFont = *f;
-        }
-        break;
-
-        default:
-            ASSERT(FALSE);
-            break;
-        }
-    }
-
-    bool IsDefault(const PropertyBase* propdefbase) const override
-    {
-        const Property* propdef = dynamic_cast<const Property*>(propdefbase);
-
-        if (propdef == nullptr || nType != propdef->nType)
-            return false;
-
-        switch (nType)
+        for (const LOGFONT* defFont : defaults)
         {
-        case PropType::COLOR:
-            for (const COLORREF* defColor : m_defColor)
+            if (defFont != nullptr && defFont->lfHeight == f->lfHeight)
             {
-                if (defColor == propdef->valColor)
-                    return true;
+                f->lfHeight = 0;
+                break;
             }
-            return false;
-
-        case PropType::FONT:
-            for (const LOGFONT* defFont : m_defFont)
-            {
-                if (defFont == propdef->valFont)
-                    return true;
-            }
-            return false;
-
-        default:
-            ASSERT(FALSE);
-            return false;
         }
-    }
-
-    void Refresh(CMFCPropertyGridProperty* pPropChild, PropertyBase* propdefbase) const override
-    {
-        if (nType == PropType::COLOR)
+        for (const LOGFONT* defFont : defaults)
         {
-            const Property* propdef = dynamic_cast<const Property*>(propdefbase);
-            AFXASSUME(propdef != nullptr);
-            CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pPropChild);
-            p->EnableAutomaticButton(_T("Default"), *propdef->valColor);
+            if (defFont != nullptr && defFont->lfWeight == f->lfWeight)
+            {
+                f->lfWeight = 0;
+                break;
+            }
         }
-        pPropChild->Redraw();
+        // TODO What to do with italic and underline
     }
 
-    PropType nType;
-    union
-    {
-        COLORREF* valColor;
-        LOGFONT* valFont;
-    };
-    union
-    {
-        const COLORREF* m_defColor[DEF_LENGTH];
-        const LOGFONT* m_defFont[DEF_LENGTH];
-    };
+    const E* m_defaults[DEF_LENGTH];
 };
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, CString* pStr)
@@ -329,7 +320,7 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, UINT* pInt, UIN
 
 CMFCPropertyGridColorProperty* CreateProperty(const CString& strName, COLORREF* pColor, const std::initializer_list<const COLORREF*>& def)
 {
-    CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) new Property(pColor, def));
+    CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) new SimplePropertyWithDefaults<COLORREF>(pColor, def));
     for (const COLORREF* pDefaultColor : def)
     {
         if (pDefaultColor != nullptr && *pDefaultColor != COLOR_NONE)
@@ -344,7 +335,7 @@ CMFCPropertyGridColorProperty* CreateProperty(const CString& strName, COLORREF* 
 
 CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pFont, const std::initializer_list<const LOGFONT*>& def)
 {
-    CMFCPropertyGridFontProperty* p = new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) new Property(pFont, def));
+    CMFCPropertyGridFontProperty* p = new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) new SimplePropertyWithDefaults<LOGFONT>(pFont, def));
     PLOGFONT f = p->GetLogFont();
     if (f->lfFaceName[0] == _T('\0'))
         wcscpy_s(f->lfFaceName, _T("Default"));
@@ -423,6 +414,15 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
         p->AllowEdit(FALSE);
     }
     return p;
+}
+
+static void CleanUp(CMFCPropertyGridProperty* pProp)
+{
+    for (int i = 0; i < pProp->GetSubItemsCount(); ++i)
+        CleanUp(pProp->GetSubItem(i));
+    PropertyBase* prop = (PropertyBase*) pProp->GetData();
+    if (prop != nullptr)
+        delete prop;
 }
 
 class CMFCThemeProperty : public CMFCPropertyGridProperty
@@ -746,6 +746,8 @@ void CPropertiesWnd::OnUpdateSortProperties(CCmdUI* pCmdUI)
 void CPropertiesWnd::OnPropertiesReset()
 {
     m_pSettings->user = m_pSettings->default;
+    for (int i = 0; i < m_wndPropList.GetPropertyCount(); ++i)
+        CleanUp(m_wndPropList.GetProperty(i));
     m_wndPropList.RemoveAll();
     InitPropList();
 }
@@ -1060,12 +1062,12 @@ void CPropertiesWnd::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 	SetPropListFont();
 }
 
-static void Refresh(CMFCPropertyGridProperty* pPropChild, PropertyBase* propdef)
+static void Refresh(CMFCPropertyGridProperty* pPropChild, const PropertyBase* propdef)
 {
     for (int i = 0; i < pPropChild->GetSubItemsCount(); ++i)
         Refresh(pPropChild->GetSubItem(i), propdef);
 
-    PropertyBase* pPropProp = (PropertyBase*) pPropChild->GetData();
+    const PropertyBase* pPropProp = (const PropertyBase*) pPropChild->GetData();
     if (pPropProp != nullptr && pPropProp->IsDefault(propdef))
         pPropProp->Refresh(pPropChild, propdef);
 }
@@ -1087,6 +1089,8 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM /*wParam*/, LPARAM lParam)
 
 void CPropertiesWnd::OnComboSelChange()
 {
+    for (int i = 0; i < m_wndPropList.GetPropertyCount(); ++i)
+        CleanUp(m_wndPropList.GetProperty(i));
     m_wndPropList.RemoveAll();
     InitPropList();
 }
@@ -1121,15 +1125,6 @@ void CPropertiesWnd::FillExtensions()
         m_pExtGroup->AddSubItem(CreateProperty(ext.first, pLanguage != nullptr ? pLanguage->title : m_LanguageNames[0], &ext.second, m_LanguageNames, m_LanguageValues));
     }
     m_pExtGroup->Expand(FALSE);
-}
-
-static void CleanUp(CMFCPropertyGridProperty* pProp)
-{
-    for (int i = 0; i < pProp->GetSubItemsCount(); ++i)
-        CleanUp(pProp->GetSubItem(i));
-    PropertyBase* prop = (PropertyBase*) pProp->GetData();
-    if (prop != nullptr)
-        delete prop;
 }
 
 void CPropertiesWnd::OnDestroy()
