@@ -182,7 +182,6 @@ struct Property : public PropertyBase
         : nType(PropType::COLOR)
         , valColor(c)
         , m_defColor {}
-        , vecVoid(nullptr)
     {
         ASSERT(def.size() <= DEF_LENGTH);
         std::copy(def.begin(), def.end(), m_defColor);
@@ -192,7 +191,6 @@ struct Property : public PropertyBase
         : nType(PropType::FONT)
         , valFont(f)
         , m_defFont {}
-        , vecVoid(nullptr)
     {
         ASSERT(def.size() <= DEF_LENGTH);
         std::copy(def.begin(), def.end(), m_defFont);
@@ -295,22 +293,13 @@ struct Property : public PropertyBase
     PropType nType;
     union
     {
-        CString* valString;
-        INT* valInt;
         COLORREF* valColor;
         LOGFONT* valFont;
     };
     union
     {
-        const void* m_defVoid[DEF_LENGTH];
         const COLORREF* m_defColor[DEF_LENGTH];
         const LOGFONT* m_defFont[DEF_LENGTH];
-    };
-    union
-    {
-        const void* vecVoid;
-        const int* vecInts;
-        const LPCTSTR* vecStrings;
     };
 };
 
