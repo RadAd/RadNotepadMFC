@@ -126,7 +126,7 @@ COutputList* COutputWnd::Get(LPCTSTR pOutput, BOOL bCreate)
         CRect rectDummy;
         rectDummy.SetRectEmpty();
         const DWORD dwStyle = LBS_NOINTEGRALHEIGHT | WS_CHILD | WS_VISIBLE | WS_HSCROLL | WS_VSCROLL;
-        pOutputList = new COutputList();
+        pOutputList = new COutputList(); // TODO Needs to be deleted
         if (!pOutputList->Create(dwStyle, rectDummy, &m_wndTabs, 0))
         {
             TRACE0("Failed to create output windows\n");
