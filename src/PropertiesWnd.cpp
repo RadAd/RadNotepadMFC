@@ -16,29 +16,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-template <typename E>
-constexpr typename std::underlying_type<E>::type const * to_underlying_ptr(const E* e) noexcept {
-    return reinterpret_cast<typename std::underlying_type<E>::type const *>(e);
-}
-
-constexpr const int* to_underlying_ptr(const int* e) noexcept {
-    return e;
-}
-
-static inline int GetOptionIndex(CMFCPropertyGridProperty* pProp)
-{
-    const COleVariant& v = pProp->GetValue();
-    if (v.vt == VT_BSTR)
-    {
-        for (int i = 0; i < pProp->GetOptionCount(); ++i)
-        {
-            if (wcscmp(pProp->GetOption(i), v.bstrVal) == 0)
-                return i;
-        }
-    }
-    return -1;
-}
-
 // TODO
 // A CMFCPropertyGridColorProperty which knows common color names
 // Selecting and pasting into edit color (and maybe others) appends text instead
@@ -165,6 +142,20 @@ public:
     }
 
 private:
+    static inline int GetOptionIndex(CMFCPropertyGridProperty* pProp)
+    {
+        const COleVariant& v = pProp->GetValue();
+        if (v.vt == VT_BSTR)
+        {
+            for (int i = 0; i < pProp->GetOptionCount(); ++i)
+            {
+                if (wcscmp(pProp->GetOption(i), v.bstrVal) == 0)
+                    return i;
+            }
+        }
+        return -1;
+    }
+
     template <bool IsEnum, class E, class F>
     static void SetProperty(E& value, int i, const F* values)
     {
@@ -236,6 +227,11 @@ public:
     }
 
 private:
+    template<class F>
+    static void DoRefresh(CMFCPropertyGridProperty* /*pPropChild*/, const F& /*value*/)
+    {
+    }
+
     static void DoRefresh(CMFCPropertyGridProperty* pPropChild, COLORREF value)
     {
         ASSERT(static_cast<CMFCPropertyGridColorProperty*>(pPropChild) != nullptr);
@@ -244,12 +240,8 @@ private:
         p->EnableAutomaticButton(_T("Default"), value);
     }
 
-    static void DoRefresh(CMFCPropertyGridProperty* /*pPropChild*/, const LOGFONT& /*value*/)
-    {
-    }
-
-    template<size_t Size>
-    static void FixProperty(CMFCPropertyGridProperty* /*pProp*/, const COLORREF*(&/*defaults*/)[Size])
+    template<size_t Size, class F>
+    static void FixProperty(CMFCPropertyGridProperty* /*pProp*/, const F*(&/*defaults*/)[Size])
     {
     }
 
@@ -361,31 +353,11 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString& 
     return p;
 }
 
-template<typename E, std::size_t Size>
-static inline int GetIndex(E find, const E(&values)[Size])
-{
-    for (int i = 0; i < Size; ++i)
-        if (values[i] == find)
-            return i;
-    ASSERT(FALSE);
-    return -1;
-}
-
-template<typename E>
-static inline int GetIndex(E find, const std::initializer_list<E>& values)
-{
-    for (int i = 0; i < values.size(); ++i)
-        if (values.begin()[i] == find)
-            return i;
-    ASSERT(FALSE);
-    return -1;
-}
-
 template <class E>
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items, const std::initializer_list<E>& values)
 {
     ASSERT(items.size() == values.size());
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[GetIndex(*pIndex, values)], nullptr, (DWORD_PTR) new IndexedProperty<E>(pIndex, values.begin()));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *std::find(std::begin(values), std::end(values), *pIndex), nullptr, (DWORD_PTR) new IndexedProperty<E>(pIndex, values.begin()));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -398,8 +370,10 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     if (pBase != nullptr)
     {
         LPCTSTR items[] = { _T("Default"), _T("True"), _T("False") };
-        static const Bool3 values[] = { Bool3::B3_UNDEFINED, Bool3::B3_TRUE, Bool3::B3_FALSE };
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values)], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
+        const Bool3 values[] = { Bool3::B3_UNDEFINED, Bool3::B3_TRUE, Bool3::B3_FALSE };
+        auto it = std::find(std::begin(values), std::end(values), *pValue);
+        ASSERT(it != std::end(values));
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[std::distance(it, std::begin(values))], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
         for (LPCTSTR item : items)
             p->AddOption(item);
         p->AllowEdit(FALSE);
@@ -407,8 +381,10 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     else
     {
         LPCTSTR items[] = { _T("True"), _T("False") };
-        static const Bool3 values[] = { Bool3::B3_TRUE, Bool3::B3_FALSE };
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[GetIndex(*pValue, values)], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
+        const Bool3 values[] = { Bool3::B3_TRUE, Bool3::B3_FALSE };
+        auto it = std::find(std::begin(values), std::end(values), *pValue);
+        ASSERT(it != std::end(values));
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[std::distance(it, std::begin(values))], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
         for (LPCTSTR item : items)
             p->AddOption(item);
         p->AllowEdit(FALSE);
