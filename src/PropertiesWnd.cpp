@@ -48,6 +48,18 @@ static inline int GetOptionIndex(CMFCPropertyGridProperty* pProp)
 #define ID_OBJECT_COMBO 100
 #define DEF_LENGTH 3
 
+class PropertyBase
+{
+public:
+    virtual ~PropertyBase()
+    {
+    }
+
+    virtual void SetProperty(CMFCPropertyGridProperty* pProp) = 0;
+    virtual bool IsDefault(const PropertyBase* propdef) const = 0;
+    virtual void Refresh(CMFCPropertyGridProperty* pPropChild, PropertyBase* propdef) const = 0;
+};
+
 enum class PropType
 {
     STRING,
@@ -60,7 +72,7 @@ enum class PropType
     INDEX_STRING,
 };
 
-struct Property
+struct Property : public PropertyBase
 {
     Property(CString* s)
         : nType(PropType::STRING)
@@ -131,7 +143,7 @@ struct Property
         std::copy(def.begin(), def.end(), m_defFont);
     }
 
-    void SetProperty(CMFCPropertyGridProperty* pProp)
+    void SetProperty(CMFCPropertyGridProperty* pProp) override
     {
         switch (nType)
         {
@@ -218,9 +230,11 @@ struct Property
         }
     }
 
-    bool IsDefault(const Property* propdef) const
+    bool IsDefault(const PropertyBase* propdefbase) const override
     {
-        if (nType != propdef->nType)
+        const Property* propdef = dynamic_cast<const Property*>(propdefbase);
+
+        if (propdef == nullptr || nType != propdef->nType)
             return false;
 
         switch (nType)
@@ -255,10 +269,12 @@ struct Property
         }
     }
 
-    void Refresh(CMFCPropertyGridProperty* pPropChild, Property* propdef) const
+    void Refresh(CMFCPropertyGridProperty* pPropChild, PropertyBase* propdefbase) const override
     {
         if (nType == PropType::COLOR)
         {
+            const Property* propdef = dynamic_cast<const Property*>(propdefbase);
+            ASSERT(propdef != nullptr);
             CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pPropChild);
             p->EnableAutomaticButton(_T("Default"), *propdef->valColor);
         }
@@ -1046,12 +1062,12 @@ void CPropertiesWnd::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 	SetPropListFont();
 }
 
-static void Refresh(CMFCPropertyGridProperty* pPropChild, Property* propdef)
+static void Refresh(CMFCPropertyGridProperty* pPropChild, PropertyBase* propdef)
 {
     for (int i = 0; i < pPropChild->GetSubItemsCount(); ++i)
         Refresh(pPropChild->GetSubItem(i), propdef);
 
-    Property* pPropProp = (Property*) pPropChild->GetData();
+    PropertyBase* pPropProp = (PropertyBase*) pPropChild->GetData();
     if (pPropProp != nullptr && pPropProp->IsDefault(propdef))
         pPropProp->Refresh(pPropChild, propdef);
 }
@@ -1059,7 +1075,7 @@ static void Refresh(CMFCPropertyGridProperty* pPropChild, Property* propdef)
 LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM /*wParam*/, LPARAM lParam)
 {
     CMFCPropertyGridProperty* pProp = reinterpret_cast<CMFCPropertyGridProperty*>(lParam);
-    Property* prop = (Property*) pProp->GetData();
+    PropertyBase* prop = (PropertyBase*) pProp->GetData();
     if (prop != nullptr)
         prop->SetProperty(pProp);
 
@@ -1113,7 +1129,7 @@ static void CleanUp(CMFCPropertyGridProperty* pProp)
 {
     for (int i = 0; i < pProp->GetSubItemsCount(); ++i)
         CleanUp(pProp->GetSubItem(i));
-    Property* prop = (Property*) pProp->GetData();
+    PropertyBase* prop = (PropertyBase*) pProp->GetData();
     if (prop != nullptr)
         delete prop;
 }
