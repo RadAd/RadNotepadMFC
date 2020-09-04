@@ -25,6 +25,20 @@ constexpr const int* to_underlying_ptr(const int* e) noexcept {
     return e;
 }
 
+static inline int GetOptionIndex(CMFCPropertyGridProperty* pProp)
+{
+    const COleVariant& v = pProp->GetValue();
+    if (v.vt == VT_BSTR)
+    {
+        for (int i = 0; i < pProp->GetOptionCount(); ++i)
+        {
+            if (wcscmp(pProp->GetOption(i), v.bstrVal) == 0)
+                return i;
+        }
+    }
+    return -1;
+}
+
 // TODO
 // A CMFCPropertyGridColorProperty which knows common color names
 // Selecting and pasting into edit color (and maybe others) appends text instead
@@ -51,7 +65,7 @@ struct Property
     Property(CString* s)
         : nType(PropType::STRING)
         , valString(s)
-        , defVoid{}
+        , m_defVoid{}
         , vecVoid(nullptr)
     {
     }
@@ -59,7 +73,7 @@ struct Property
     Property(bool* b)
         : nType(PropType::BOOL)
         , valBool(b)
-        , defVoid{}
+        , m_defVoid{}
         , vecVoid(nullptr)
     {
     }
@@ -67,7 +81,7 @@ struct Property
     Property(INT* i)
         : nType(PropType::INT)
         , valInt(i)
-        , defVoid{}
+        , m_defVoid{}
         , vecVoid(nullptr)
     {
     }
@@ -75,7 +89,7 @@ struct Property
     Property(UINT* i)
         : nType(PropType::UINT)
         , valUInt(i)
-        , defVoid{}
+        , m_defVoid{}
         , vecVoid(nullptr)
     {
     }
@@ -84,7 +98,7 @@ struct Property
     Property(E* i, const E* values)
         : nType(PropType::INDEX_INT)
         , valInt(reinterpret_cast<INT*>(i))
-        , defVoid{}
+        , m_defVoid{}
         , vecInts(to_underlying_ptr(values))
     {
     }
@@ -92,7 +106,7 @@ struct Property
     Property(CString* i, const LPCTSTR* values)
         : nType(PropType::INDEX_STRING)
         , valString(i)
-        , defVoid{}
+        , m_defVoid{}
         , vecStrings(values)
     {
     }
@@ -100,21 +114,155 @@ struct Property
     Property(COLORREF* c, const std::initializer_list<const COLORREF*>& def)
         : nType(PropType::COLOR)
         , valColor(c)
-        , defColor {}
+        , m_defColor {}
         , vecVoid(nullptr)
     {
         ASSERT(def.size() <= DEF_LENGTH);
-        std::copy(def.begin(), def.end(), defColor);
+        std::copy(def.begin(), def.end(), m_defColor);
     }
 
     Property(LOGFONT* f, const std::initializer_list<const LOGFONT*>& def)
         : nType(PropType::FONT)
         , valFont(f)
-        , defFont {}
+        , m_defFont {}
         , vecVoid(nullptr)
     {
         ASSERT(def.size() <= DEF_LENGTH);
-        std::copy(def.begin(), def.end(), defFont);
+        std::copy(def.begin(), def.end(), m_defFont);
+    }
+
+    void SetProperty(CMFCPropertyGridProperty* pProp)
+    {
+        switch (nType)
+        {
+        case PropType::STRING:
+            ASSERT(pProp->GetValue().vt == VT_BSTR);
+            *valString = pProp->GetValue().bstrVal;
+            break;
+
+        case PropType::BOOL:
+            ASSERT(pProp->GetValue().vt == VT_BOOL);
+            *valBool = pProp->GetValue().boolVal != VARIANT_FALSE;
+            break;
+
+        case PropType::INT:
+            ASSERT(pProp->GetValue().vt == VT_INT || pProp->GetValue().vt == VT_I4);
+            *valInt = pProp->GetValue().intVal;
+            break;
+
+        case PropType::UINT:
+            ASSERT(pProp->GetValue().vt == VT_UINT);
+            *valUInt = pProp->GetValue().intVal;
+            break;
+
+        case PropType::INDEX_INT:
+        {
+            int i = GetOptionIndex(pProp);
+            if (vecInts != nullptr)
+                i = vecInts[i];
+            *valInt = i;
+        }
+        break;
+
+        case PropType::INDEX_STRING:
+        {
+            int i = GetOptionIndex(pProp);
+            *valString = vecStrings[i];
+        }
+        break;
+
+        case PropType::COLOR:
+        {
+            CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
+            COLORREF c = p->GetColor();
+            *valColor = c;
+        }
+        break;
+
+        case PropType::FONT:
+        {
+            CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
+            PLOGFONT f = p->GetLogFont();
+            for (const LOGFONT* defFont : m_defFont)
+            {
+                if (defFont != nullptr && wcscmp(defFont->lfFaceName, f->lfFaceName) == 0)
+                {
+                    wcscpy_s(f->lfFaceName, _T("Default"));
+                    break;
+                }
+            }
+            for (const LOGFONT* defFont : m_defFont)
+            {
+                if (defFont != nullptr && defFont->lfHeight == f->lfHeight)
+                {
+                    f->lfHeight = 0;
+                    break;
+                }
+            }
+            for (const LOGFONT* defFont : m_defFont)
+            {
+                if (defFont != nullptr && defFont->lfWeight == f->lfWeight)
+                {
+                    f->lfWeight = 0;
+                    break;
+                }
+            }
+            // TODO What to do with italic and underline
+            *valFont = *f;
+        }
+        break;
+
+        default:
+            ASSERT(FALSE);
+            break;
+        }
+    }
+
+    bool IsDefault(const Property* propdef) const
+    {
+        if (nType != propdef->nType)
+            return false;
+
+        switch (nType)
+        {
+        case PropType::STRING:
+        case PropType::BOOL:
+        case PropType::INT:
+        case PropType::UINT:
+        case PropType::INDEX_INT:
+        case PropType::INDEX_STRING:
+            return false;
+
+        case PropType::COLOR:
+            for (const COLORREF* defColor : m_defColor)
+            {
+                if (defColor == propdef->valColor)
+                    return true;
+            }
+            return false;
+
+        case PropType::FONT:
+            for (const LOGFONT* defFont : m_defFont)
+            {
+                if (defFont == propdef->valFont)
+                    return true;
+            }
+            return false;
+
+        default:
+            ASSERT(FALSE);
+            return false;
+        }
+    }
+
+    void Refresh(CMFCPropertyGridProperty* pPropChild, Property* propdef) const
+    {
+        if (nType == PropType::COLOR)
+        {
+            CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pPropChild);
+            p->EnableAutomaticButton(_T("Default"), *propdef->valColor);
+        }
+        pPropChild->Redraw();
     }
 
     PropType nType;
@@ -129,9 +277,9 @@ struct Property
     };
     union
     {
-        const void* defVoid[DEF_LENGTH];
-        const COLORREF* defColor[DEF_LENGTH];
-        const LOGFONT* defFont[DEF_LENGTH];
+        const void* m_defVoid[DEF_LENGTH];
+        const COLORREF* m_defColor[DEF_LENGTH];
+        const LOGFONT* m_defFont[DEF_LENGTH];
     };
     union
     {
@@ -261,21 +409,6 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
         p->AllowEdit(FALSE);
     }
     return p;
-}
-
-
-int GetOptionIndex(CMFCPropertyGridProperty* pProp)
-{
-    const COleVariant& v = pProp->GetValue();
-    if (v.vt == VT_BSTR)
-    {
-        for (int i = 0; i < pProp->GetOptionCount(); ++i)
-        {
-            if (wcscmp(pProp->GetOption(i), v.bstrVal) == 0)
-                return i;
-        }
-    }
-    return -1;
 }
 
 class CMFCThemeProperty : public CMFCPropertyGridProperty
@@ -442,93 +575,6 @@ private:
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString* strClassName, ThemeItem* pTheme, const ThemeItem* pDefaultTheme1, const ThemeItem* pDefaultTheme2, const ThemeItem* pDefaultTheme3)
 {
     return new CMFCThemeProperty(strName, strClassName, pTheme, pDefaultTheme1, pDefaultTheme2, pDefaultTheme3);
-}
-
-void SetProperty(CMFCPropertyGridProperty* pProp, Property* prop)
-{
-    switch (prop->nType)
-    {
-    case PropType::STRING:
-        ASSERT(pProp->GetValue().vt == VT_BSTR);
-        *prop->valString = pProp->GetValue().bstrVal;
-        break;
-
-    case PropType::BOOL:
-        ASSERT(pProp->GetValue().vt == VT_BOOL);
-        *prop->valBool = pProp->GetValue().boolVal != VARIANT_FALSE;
-        break;
-
-    case PropType::INT:
-        ASSERT(pProp->GetValue().vt == VT_INT || pProp->GetValue().vt == VT_I4);
-        *prop->valInt = pProp->GetValue().intVal;
-        break;
-
-    case PropType::UINT:
-        ASSERT(pProp->GetValue().vt == VT_INT);
-        *prop->valUInt = pProp->GetValue().intVal;
-        break;
-
-    case PropType::INDEX_INT:
-        {
-            int i = GetOptionIndex(pProp);
-            if (prop->vecInts != nullptr)
-                i = prop->vecInts[i];
-            *prop->valInt = i;
-        }
-        break;
-
-    case PropType::INDEX_STRING:
-    {
-        int i = GetOptionIndex(pProp);
-        *prop->valString = prop->vecStrings[i];
-    }
-    break;
-
-    case PropType::COLOR:
-        {
-            CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
-            COLORREF c = p->GetColor();
-            *prop->valColor = c;
-        }
-        break;
-
-    case PropType::FONT:
-        {
-            CMFCPropertyGridFontProperty* p = static_cast<CMFCPropertyGridFontProperty*>(pProp);
-            PLOGFONT f = p->GetLogFont();
-            for (const LOGFONT* defFont : prop->defFont)
-            {
-                if (defFont != nullptr && wcscmp(defFont->lfFaceName, f->lfFaceName) == 0)
-                {
-                    wcscpy_s(f->lfFaceName, _T("Default"));
-                    break;
-                }
-            }
-            for (const LOGFONT* defFont : prop->defFont)
-            {
-                if (defFont != nullptr && defFont->lfHeight == f->lfHeight)
-                {
-                    f->lfHeight = 0;
-                    break;
-                }
-            }
-            for (const LOGFONT* defFont : prop->defFont)
-            {
-                if (defFont != nullptr && defFont->lfWeight == f->lfWeight)
-                {
-                    f->lfWeight = 0;
-                    break;
-                }
-            }
-            // TODO What to do with italic and underline
-            *prop->valFont = *f;
-        }
-        break;
-
-    default:
-        ASSERT(FALSE);
-        break;
-    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1000,59 +1046,14 @@ void CPropertiesWnd::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 	SetPropListFont();
 }
 
-static void Refresh(CMFCPropertyGridProperty* pProp, Property* propdef)
+static void Refresh(CMFCPropertyGridProperty* pPropChild, Property* propdef)
 {
-    for (int i = 0; i < pProp->GetSubItemsCount(); ++i)
-        Refresh(pProp->GetSubItem(i), propdef);
-    Property* prop = (Property*) pProp->GetData();
-    if (prop != nullptr && propdef != nullptr && prop->nType == propdef->nType)
-    {
-        switch (prop->nType)
-        {
-        case PropType::STRING:
-            break;
+    for (int i = 0; i < pPropChild->GetSubItemsCount(); ++i)
+        Refresh(pPropChild->GetSubItem(i), propdef);
 
-        case PropType::BOOL:
-            break;
-
-        case PropType::INT:
-            break;
-
-        case PropType::INDEX_INT:
-            break;
-
-        case PropType::INDEX_STRING:
-            break;
-
-        case PropType::COLOR:
-            for (const COLORREF* defColor : prop->defColor)
-            {
-                if (defColor == propdef->valColor)
-                {
-                    CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
-                    p->EnableAutomaticButton(_T("Default"), *defColor);
-                    pProp->Redraw();
-                    break;
-                }
-            }
-            break;
-
-        case PropType::FONT:
-            for (const LOGFONT* defFont : prop->defFont)
-            {
-                if (defFont == propdef->valFont)
-                {
-                    pProp->Redraw();
-                    break;
-                }
-            }
-            break;
-
-        default:
-            ASSERT(FALSE);
-            break;
-        }
-    }
+    Property* pPropProp = (Property*) pPropChild->GetData();
+    if (pPropProp != nullptr && pPropProp->IsDefault(propdef))
+        pPropProp->Refresh(pPropChild, propdef);
 }
 
 LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM /*wParam*/, LPARAM lParam)
@@ -1060,7 +1061,7 @@ LRESULT CPropertiesWnd::OnPropertyChanged(WPARAM /*wParam*/, LPARAM lParam)
     CMFCPropertyGridProperty* pProp = reinterpret_cast<CMFCPropertyGridProperty*>(lParam);
     Property* prop = (Property*) pProp->GetData();
     if (prop != nullptr)
-        ::SetProperty(pProp, prop);
+        prop->SetProperty(pProp);
 
     for (int i = 0; i < m_wndPropList.GetPropertyCount(); ++i)
         Refresh(m_wndPropList.GetProperty(i), prop);
