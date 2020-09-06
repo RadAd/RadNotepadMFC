@@ -24,7 +24,81 @@ static char THIS_FILE[]=__FILE__;
 // Add something to theme item to say which properties are used
 
 #define ID_OBJECT_COMBO 100
-#define DEF_LENGTH 3
+
+template <class T>
+class span
+{
+public:
+    static span null()
+    {
+        return span();
+    }
+
+    span(const T* begin, const T* end)
+        : m_begin(begin)
+        , m_end(end)
+    {
+        ASSERT(begin != nullptr);
+        ASSERT(end >= begin);
+    }
+
+    span(const std::initializer_list<T>& items)
+        : span(items.begin(), items.end())
+    {
+    }
+
+    template<size_t Size>
+    span(const T(&items)[Size])
+        : span(std::begin(items), std::end(items))
+    {
+    }
+
+    span(const std::vector<T>& items)
+        : span(items.data(), items.data() + items.size())
+    {
+    }
+
+    const T* begin() const { return m_begin; }
+    const T* end() const { return m_end; }
+
+    size_t size() const
+    {
+        return m_end - m_begin;
+    }
+
+    bool empty() const
+    {
+        return m_begin == m_end;
+    }
+
+    const T& operator[](size_t i) const
+    {
+        ASSERT(i < size());
+        return m_begin[i];
+    }
+
+    span sub(size_t begin) const
+    {
+        ASSERT(begin < size());
+        return span(m_begin + begin, m_end);
+    }
+
+private:
+    span()
+        : m_begin(nullptr)
+        , m_end(nullptr)
+    {
+    }
+
+    const T* m_begin;
+    const T* m_end;
+};
+
+template<class T, size_t Size>
+span<T> to_span(const T(&v)[Size])
+{
+    return span<T>(v);
+}
 
 class PropertyBase
 {
@@ -37,6 +111,15 @@ public:
     virtual bool IsDefault(const PropertyBase* propdef) const = 0;
     virtual void Refresh(CMFCPropertyGridProperty* pPropChild, const PropertyBase* propdef) const = 0;
 };
+
+static const LPCTSTR g_stylesnames[] = { _T("Default"), _T("Invisible"), _T("Line"), _T("Block") };
+static const int g_stylesvalues[] = { -1, CARETSTYLE_INVISIBLE, CARETSTYLE_LINE, CARETSTYLE_BLOCK };
+static const LPCTSTR g_indentguidesnames[] = { _T("Default"), _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") };
+static const int g_indentguidesvalues[] = { -1, SC_IV_NONE, SC_IV_REAL, SC_IV_LOOKFORWARD, SC_IV_LOOKBOTH };
+static const LPCTSTR g_encodingnames[] = { _T("ANSI"), _T("UTF-16"), _T("UTF-16 BE"), _T("UTF-8") };
+static const LPCTSTR g_lineendingnames[] = { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") };
+static const LPCTSTR g_bool3names[] = { _T("Default"), _T("True"), _T("False") };
+static const Bool3 g_bool3values[] = { Bool3::B3_UNDEFINED, Bool3::B3_TRUE, Bool3::B3_FALSE };
 
 template <class E>
 class SimpleProperty : public PropertyBase
@@ -119,7 +202,7 @@ template <class E, class F = E>
 class IndexedProperty : public PropertyBase
 {
 public:
-    IndexedProperty(E* value, const F* values)
+    IndexedProperty(E* value, span<F> values)
         : m_value(value), m_values(values)
     {
         ASSERT(value != nullptr);
@@ -158,32 +241,32 @@ private:
     }
 
     template <bool IsEnum, class E, class F>
-    static void SetProperty(E& value, int i, const F* values)
+    static void SetProperty(E& value, int i, span<F> values)
     {
-        AFXASSUME(values != nullptr);
+        AFXASSUME(!values.empty());
         value = values[i];
     }
 
     template <>
-    static void SetProperty<true>(E& value, int i, const F* values)
+    static void SetProperty<true>(E& value, int i, span<F> values)
     {
-        if (values == nullptr)
+        if (values.begin() == nullptr)
             value = static_cast<E>(i);
         else
             value = values[i];
     }
 
     template <>
-    static void SetProperty<false>(int& value, int i, const int* values)
+    static void SetProperty<false>(int& value, int i, span<int> values)
     {
-        if (values == nullptr)
+        if (values.empty())
             value = i;
         else
             value = values[i];
     }
 
     E* m_value;
-    const F* m_values;
+    span<F> m_values;
 };
 
 template <class E> 
@@ -195,6 +278,11 @@ public:
         , m_defaults(std::move(def))
     {
         ASSERT(std::find(m_defaults.begin(), m_defaults.end(), nullptr) == m_defaults.end());
+    }
+
+    void Init(CMFCPropertyGridProperty* pPropChild)
+    {
+        Init(pPropChild, m_defaults);
     }
 
     void SetProperty(CMFCPropertyGridProperty* pProp) override
@@ -218,25 +306,41 @@ public:
         return false;
     }
 
-    void Refresh(CMFCPropertyGridProperty* pPropChild, const PropertyBase* propdefbase) const override
+    void Refresh(CMFCPropertyGridProperty* pProp, const PropertyBase* propdefbase) const override
     {
         const SimplePropertyWithDefaults* propdef = dynamic_cast<const SimplePropertyWithDefaults*>(propdefbase);
         AFXASSUME(propdef != nullptr);
-        DoRefresh(pPropChild, *propdef->GetValue());
-        pPropChild->Redraw();
+        DoRefresh(pProp, *propdef->GetValue());
+        pProp->Redraw();
     }
 
 private:
-    static void DoRefresh(CMFCPropertyGridProperty* pPropChild, COLORREF value)
+    static void Init(CMFCPropertyGridProperty* pProp, const std::vector<const COLORREF*>& defaults)
     {
-        ASSERT(static_cast<CMFCPropertyGridColorProperty*>(pPropChild) != nullptr);
-        CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pPropChild);
+        auto it = std::find_if(defaults.begin(), defaults.end(), [](const COLORREF* pColor) { return *pColor != COLOR_NONE; });
+        if (it != defaults.end())
+            DoRefresh(pProp, **it);
+        ASSERT(static_cast<CMFCPropertyGridColorProperty*>(pProp) != nullptr);
+        CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
+        AFXASSUME(p != nullptr);
+        p->EnableOtherButton(_T("More Colors..."));
+    }
+
+    static void DoRefresh(CMFCPropertyGridProperty* pProp, COLORREF value)
+    {
+        ASSERT(static_cast<CMFCPropertyGridColorProperty*>(pProp) != nullptr);
+        CMFCPropertyGridColorProperty* p = static_cast<CMFCPropertyGridColorProperty*>(pProp);
         AFXASSUME(p != nullptr);
         p->EnableAutomaticButton(_T("Default"), value);
     }
 
     static void FixProperty(CMFCPropertyGridProperty* /*pProp*/, const std::vector<const COLORREF*>& /*defaults*/)
     {
+    }
+
+    static void Init(CMFCPropertyGridProperty* pProp, const std::vector<const LOGFONT*>& defaults)
+    {
+        FixProperty(pProp, defaults);
     }
 
     static void DoRefresh(CMFCPropertyGridProperty* /*pPropChild*/, const LOGFONT& /*value*/)
@@ -253,29 +357,20 @@ private:
         if (f->lfFaceName[0] == _T('\0'))
             wcscpy_s(f->lfFaceName, _T("Default"));
         else
-            for (const LOGFONT* defFont : defaults)
-            {
-                if (defFont != nullptr && wcscmp(defFont->lfFaceName, f->lfFaceName) == 0)
-                {
-                    wcscpy_s(f->lfFaceName, _T("Default"));
-                    break;
-                }
-            }
-        for (const LOGFONT* defFont : defaults)
         {
-            if (defFont != nullptr && defFont->lfHeight == f->lfHeight)
-            {
-                f->lfHeight = 0;
-                break;
-            }
+            auto it = std::find_if(defaults.begin(), defaults.end(), [f](const LOGFONT* pFont) { return wcscmp(pFont->lfFaceName, f->lfFaceName) == 0; });
+            if (it != defaults.end())
+                wcscpy_s(f->lfFaceName, _T("Default"));
         }
-        for (const LOGFONT* defFont : defaults)
         {
-            if (defFont != nullptr && defFont->lfWeight == f->lfWeight)
-            {
+            auto it = std::find_if(defaults.begin(), defaults.end(), [f](const LOGFONT* pFont) { return pFont->lfHeight == f->lfHeight; });
+            if (it != defaults.end())
+                f->lfHeight = 0;
+        }
+        {
+            auto it = std::find_if(defaults.begin(), defaults.end(), [f](const LOGFONT* pFont) { return pFont->lfWeight == f->lfWeight; });
+            if (it != defaults.end())
                 f->lfWeight = 0;
-                break;
-            }
         }
         // TODO What to do with italic and underline
     }
@@ -283,19 +378,10 @@ private:
     std::vector<const E*> m_defaults;
 };
 
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, CString* pStr)
+template<class E>
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pValue)
 {
-    return new CMFCPropertyGridProperty(strName, (_variant_t) *pStr, nullptr, (DWORD_PTR) new SimpleProperty<CString>(pStr));
-}
-
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, bool* pBool)
-{
-    return new CMFCPropertyGridProperty(strName, (_variant_t) *pBool, nullptr, (DWORD_PTR) new SimpleProperty<bool>(pBool));
-}
-
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, COLORREF* pColor)
-{
-    return new CMFCPropertyGridProperty(strName, (_variant_t) *pColor, nullptr, (DWORD_PTR) new SimpleProperty<COLORREF>(pColor));
+    return new CMFCPropertyGridProperty(strName, (_variant_t) *pValue, nullptr, (DWORD_PTR) new SimpleProperty<E>(pValue));
 }
 
 CMFCPropertyGridProperty* CreateProperty(const CString& strName, INT* pInt, INT nMin, INT nMax)
@@ -314,43 +400,33 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, UINT* pInt, UIN
 
 CMFCPropertyGridColorProperty* CreateProperty(const CString& strName, COLORREF* pColor, std::vector<const COLORREF*> def)
 {
-    CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) new SimplePropertyWithDefaults<COLORREF>(pColor, def));
-    // TODO Put this in SimplePropertyWithDefaults init function ( then I can use a std::move(def) above )
-    for (const COLORREF* pDefaultColor : def)
-    {
-        if (pDefaultColor != nullptr && *pDefaultColor != COLOR_NONE)
-        {
-            p->EnableAutomaticButton(_T("Default"), *pDefaultColor);
-            break;
-        }
-    }
-    p->EnableOtherButton(_T("More Colors..."));
+    SimplePropertyWithDefaults<COLORREF>* pProp = new SimplePropertyWithDefaults<COLORREF>(pColor, std::move(def));
+    CMFCPropertyGridColorProperty* p = new CMFCPropertyGridColorProperty(strName, *pColor, nullptr, nullptr, (DWORD_PTR) pProp);
+    pProp->Init(p);
     return p;
 }
 
 CMFCPropertyGridFontProperty* CreateProperty(const CString& strName, LOGFONT* pFont, std::vector<const LOGFONT*> def)
 {
-    CMFCPropertyGridFontProperty* p = new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) new SimplePropertyWithDefaults<LOGFONT>(pFont, std::move(def)));
-    // TODO Put this in SimplePropertyWithDefaults init function
-    PLOGFONT f = p->GetLogFont();
-    if (f->lfFaceName[0] == _T('\0'))
-        wcscpy_s(f->lfFaceName, _T("Default"));
+    SimplePropertyWithDefaults<LOGFONT>* pProp = new SimplePropertyWithDefaults<LOGFONT>(pFont, std::move(def));
+    CMFCPropertyGridFontProperty* p = new CMFCPropertyGridFontProperty(strName, *pFont, CF_EFFECTS | CF_SCREENFONTS, nullptr, (DWORD_PTR) pProp);
+    pProp->Init(p);
     return p;
 }
 
 template <class E>
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items)
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, span<LPCTSTR> items)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items.begin()[to_underlying(*pIndex)], nullptr, (DWORD_PTR) new IndexedProperty<E>(pIndex, static_cast<const E*>(nullptr)));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) items[to_underlying(*pIndex)], nullptr, (DWORD_PTR) new IndexedProperty<E>(pIndex, span<E>::null()));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
     return p;
 }
 
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString& strValueName, CString* pStrValue, const std::vector<LPCTSTR>& names, const std::vector<LPCTSTR>& values)
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString& strValueName, CString* pStrValue, span<LPCTSTR> names, span<LPCTSTR> values)
 {
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) strValueName, nullptr, (DWORD_PTR) new IndexedProperty<CString, LPCTSTR>(pStrValue, values.data()));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) strValueName, nullptr, (DWORD_PTR) new IndexedProperty<CString, LPCTSTR>(pStrValue, values));
     for (LPCTSTR i : names)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -358,10 +434,10 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString& 
 }
 
 template <class E>
-CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, const std::initializer_list<LPCTSTR>& items, const std::initializer_list<E>& values)
+CMFCPropertyGridProperty* CreateProperty(const CString& strName, E* pIndex, span<LPCTSTR> items, span<E> values)
 {
     ASSERT(items.size() == values.size());
-    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *std::find(std::begin(values), std::end(values), *pIndex), nullptr, (DWORD_PTR) new IndexedProperty<E>(pIndex, values.begin()));
+    CMFCPropertyGridProperty* p = new CMFCPropertyGridProperty(strName, (_variant_t) *std::find(std::begin(values), std::end(values), *pIndex), nullptr, (DWORD_PTR) new IndexedProperty<E>(pIndex, values));
     for (LPCTSTR i : items)
         p->AddOption(i);
     p->AllowEdit(FALSE);
@@ -373,23 +449,21 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, Bool3* pValue, 
     CMFCPropertyGridProperty* p = nullptr;
     if (pBase != nullptr)
     {
-        LPCTSTR items[] = { _T("Default"), _T("True"), _T("False") };
-        const Bool3 values[] = { Bool3::B3_UNDEFINED, Bool3::B3_TRUE, Bool3::B3_FALSE };
-        auto it = std::find(std::begin(values), std::end(values), *pValue);
-        ASSERT(it != std::end(values));
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[std::distance(std::begin(values), it)], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
-        for (LPCTSTR item : items)
+        auto it = std::find(std::begin(g_bool3values), std::end(g_bool3values), *pValue);
+        ASSERT(it != std::end(g_bool3values));
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) g_bool3names[std::distance(std::begin(g_bool3values), it)], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, g_bool3values));
+        for (LPCTSTR item : g_bool3names)
             p->AddOption(item);
         p->AllowEdit(FALSE);
     }
     else
     {
-        LPCTSTR items[] = { _T("True"), _T("False") };
-        const Bool3 values[] = { Bool3::B3_TRUE, Bool3::B3_FALSE };
+        span<LPCTSTR> names = span<LPCTSTR>(g_bool3names).sub(1);
+        span<Bool3> values = span<Bool3>(g_bool3values).sub(1);
         auto it = std::find(std::begin(values), std::end(values), *pValue);
         ASSERT(it != std::end(values));
-        p = new CMFCPropertyGridProperty(strName, (_variant_t) items[std::distance(std::begin(values), it)], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
-        for (LPCTSTR item : items)
+        p = new CMFCPropertyGridProperty(strName, (_variant_t) names[std::distance(std::begin(values), it)], nullptr, (DWORD_PTR) new IndexedProperty<Bool3>(pValue, values));
+        for (LPCTSTR item : names)
             p->AddOption(item);
         p->AllowEdit(FALSE);
     }
@@ -456,39 +530,25 @@ public:
             pOldFont = pDC->SelectObject(&m_pWndList->GetBoldFont());
         }
 #else
+        // TODO Verify this is still needed
         LOGFONT f = *m_pFont->GetLogFont();
         if (f.lfFaceName[0] == _T('\0') || wcscmp(f.lfFaceName, _T("Default")) == 0)
         {
-            for (const ThemeItem* pDefaultTheme : m_pDefaultTheme)
-            {
-                if (pDefaultTheme != nullptr && (pDefaultTheme->font.lfFaceName[0] != _T('\0') || wcscmp(pDefaultTheme->font.lfFaceName, _T("Default")) != 0))
-                {
-                    wcscpy_s(f.lfFaceName, pDefaultTheme->font.lfFaceName);
-                    break;
-                }
-            }
+            auto it = std::find_if(m_pDefaultTheme.begin(), m_pDefaultTheme.end(), [](const ThemeItem* pTheme) { return pTheme->font.lfFaceName[0] != _T('\0') || wcscmp(pTheme->font.lfFaceName, _T("Default")) != 0; });
+            if (it != m_pDefaultTheme.end())
+                wcscpy_s(f.lfFaceName, (*it)->font.lfFaceName);
         }
         if (f.lfHeight == 0)
         {
-            for (const ThemeItem* pDefaultTheme : m_pDefaultTheme)
-            {
-                if (pDefaultTheme != nullptr && pDefaultTheme->font.lfHeight != 0)
-                {
-                    f.lfHeight = pDefaultTheme->font.lfHeight;
-                    break;
-                }
-            }
+            auto it = std::find_if(m_pDefaultTheme.begin(), m_pDefaultTheme.end(), [](const ThemeItem* pTheme) { return pTheme->font.lfHeight != 0; });
+            if (it != m_pDefaultTheme.end())
+                f.lfHeight = (*it)->font.lfHeight;
         }
         if (f.lfWeight == 0)
         {
-            for (const ThemeItem* pDefaultTheme : m_pDefaultTheme)
-            {
-                if (pDefaultTheme != nullptr && pDefaultTheme->font.lfWeight != 0)
-                {
-                    f.lfWeight = pDefaultTheme->font.lfWeight;
-                    break;
-                }
-            }
+            auto it = std::find_if(m_pDefaultTheme.begin(), m_pDefaultTheme.end(), [](const ThemeItem* pTheme) { return pTheme->font.lfWeight != 0; });
+            if (it != m_pDefaultTheme.end())
+                f.lfWeight = (*it)->font.lfWeight;
         }
         // TODO What to do with italic and underline
         CFont font;
@@ -792,13 +852,13 @@ void CPropertiesWnd::InitPropList()
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
                 pGroup->AllowEdit(FALSE);
                 pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pLanguage->editor.cCaretFG, { &pTheme->editor.cCaretFG, &m_pSettings->user.tDefault.fore }));
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &pLanguage->editor.nCaretStyle, { _T("Default"), _T("Invisible"), _T("Line"), _T("Block") }, { -1, CARETSTYLE_INVISIBLE, CARETSTYLE_LINE, CARETSTYLE_BLOCK }));
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &pLanguage->editor.nCaretStyle, g_stylesnames, to_span(g_stylesvalues)));
                 pGroup->AddSubItem(CreateProperty(_T("Width"), &pLanguage->editor.nCaretWidth, 0, 4));
                 pParent->AddSubItem(pGroup);
             }
             if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pLanguage->editor.bUseTabs, &pTheme->editor.bUseTabs));
             pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &pLanguage->editor.nTabWidth, 0, 100));
-            if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pLanguage->editor.nIndentGuideType, { _T("Default"), _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }, { -1, SC_IV_NONE, SC_IV_REAL, SC_IV_LOOKFORWARD, SC_IV_LOOKBOTH }));
+            if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pLanguage->editor.nIndentGuideType, g_indentguidesnames, to_span(g_indentguidesvalues)));
             if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pLanguage->editor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces));
             if (!pLanguage->internal) pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pLanguage->editor.bAutoIndent, &pTheme->editor.bAutoIndent));
             pGroup->AddSubItem(CreateProperty(_T("Show Whitespace"), &pLanguage->editor.bShowWhitespace, &pTheme->editor.bShowWhitespace));
@@ -878,8 +938,8 @@ void CPropertiesWnd::InitPropList()
             CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("General"));
             pGroup->AddSubItem(CreateProperty(_T("Empty File on Startup"), &m_pSettings->bEmptyFileOnStartup));
             pGroup->AddSubItem(CreateProperty(_T("Number of Recently Used Files"), &m_pSettings->nMaxMRU, 1, 10));
-            pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, { _T("ANSI"), _T("UTF-16"), _T("UTF-16 BE"), _T("UTF-8") }));
-            pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, { _T("Windows (CRLF)"), _T("Unix (LF)"), _T("Macintosh (CR)") }));
+            pGroup->AddSubItem(CreateProperty(_T("Default Encoding"), &m_pSettings->DefaultEncoding, g_encodingnames));
+            pGroup->AddSubItem(CreateProperty(_T("Default Line Ending"), &m_pSettings->DefaultLineEnding, g_lineendingnames));
             m_wndPropList.AddProperty(pGroup);
         }
         {
@@ -899,13 +959,13 @@ void CPropertiesWnd::InitPropList()
                 CMFCPropertyGridProperty* pGroup = new CMFCPropertyGridProperty(_T("Caret"), 0, TRUE);
                 pGroup->AllowEdit(FALSE);
                 pGroup->AddSubItem(CreateProperty(_T("Foreground"), &pTheme->editor.cCaretFG, { &m_pSettings->user.tDefault.fore }));
-                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nCaretStyle, { _T("Invisible"), _T("Line"), _T("Block") }));
+                pGroup->AddSubItem(CreateProperty(_T("Style"), &pTheme->editor.nCaretStyle, to_span(g_stylesnames).sub(1)));
                 pGroup->AddSubItem(CreateProperty(_T("Width"), &pTheme->editor.nCaretWidth, 1, 4));
                 pParent->AddSubItem(pGroup);
             }
             pGroup->AddSubItem(CreateProperty(_T("Use Tabs"), &pTheme->editor.bUseTabs, nullptr));
             pGroup->AddSubItem(CreateProperty(_T("Tab Width"), &pTheme->editor.nTabWidth, 1, 100));
-            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pTheme->editor.nIndentGuideType, { _T("None"), _T("Real"), _T("Look Forward"), _T("Look Both") }));
+            pGroup->AddSubItem(CreateProperty(_T("Indent Guides"), &pTheme->editor.nIndentGuideType, to_span(g_indentguidesnames).sub(1)));
             pGroup->AddSubItem(CreateProperty(_T("Highlight Matching Braces"), &pTheme->editor.bHighlightMatchingBraces, nullptr));
             pGroup->AddSubItem(CreateProperty(_T("Auto-Indent"), &pTheme->editor.bAutoIndent, nullptr));
             pGroup->AddSubItem(CreateProperty(_T("Show Whitespace"), &pTheme->editor.bShowWhitespace, nullptr));
@@ -962,81 +1022,6 @@ void CPropertiesWnd::InitPropList()
             m_wndPropList.AddProperty(pGroup);
         }
     }
-
-#if 0
-    CMFCPropertyGridProperty* pGroup1 = new CMFCPropertyGridProperty(_T("Appearance"));
-
-	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("3D Look"), (_variant_t) false, _T("Specifies the window's font will be non-bold and controls will have a 3D border")));
-
-	CMFCPropertyGridProperty* pProp = new CMFCPropertyGridProperty(_T("Border"), _T("Dialog Frame"), _T("One of: None, Thin, Resizable, or Dialog Frame"));
-	pProp->AddOption(_T("None"));
-	pProp->AddOption(_T("Thin"));
-	pProp->AddOption(_T("Resizable"));
-	pProp->AddOption(_T("Dialog Frame"));
-	pProp->AllowEdit(FALSE);
-
-	pGroup1->AddSubItem(pProp);
-	pGroup1->AddSubItem(new CMFCPropertyGridProperty(_T("Caption"), (_variant_t) _T("About"), _T("Specifies the text that will be displayed in the window's title bar")));
-
-	m_wndPropList.AddProperty(pGroup1);
-
-	CMFCPropertyGridProperty* pSize = new CMFCPropertyGridProperty(_T("Window Size"), 0, TRUE);
-
-	pProp = new CMFCPropertyGridProperty(_T("Height"), (_variant_t) 250l, _T("Specifies the window's height"));
-	pProp->EnableSpinControl(TRUE, 50, 300);
-	pSize->AddSubItem(pProp);
-
-	pProp = new CMFCPropertyGridProperty( _T("Width"), (_variant_t) 150l, _T("Specifies the window's width"));
-	pProp->EnableSpinControl(TRUE, 50, 200);
-	pSize->AddSubItem(pProp);
-
-	m_wndPropList.AddProperty(pSize);
-
-	CMFCPropertyGridProperty* pGroup2 = new CMFCPropertyGridProperty(_T("Font"));
-
-	LOGFONT lf;
-	CFont* font = CFont::FromHandle((HFONT) GetStockObject(DEFAULT_GUI_FONT));
-	font->GetLogFont(&lf);
-
-	_tcscpy_s(lf.lfFaceName, _T("Arial"));
-
-	pGroup2->AddSubItem(new CMFCPropertyGridFontProperty(_T("Font"), lf, CF_EFFECTS | CF_SCREENFONTS, _T("Specifies the default font for the window")));
-	pGroup2->AddSubItem(new CMFCPropertyGridProperty(_T("Use System Font"), (_variant_t) true, _T("Specifies that the window uses MS Shell Dlg font")));
-
-	m_wndPropList.AddProperty(pGroup2);
-
-	CMFCPropertyGridProperty* pGroup3 = new CMFCPropertyGridProperty(_T("Misc"));
-	pProp = new CMFCPropertyGridProperty(_T("(Name)"), _T("Application"));
-	pProp->Enable(FALSE);
-	pGroup3->AddSubItem(pProp);
-
-	CMFCPropertyGridColorProperty* pColorProp = new CMFCPropertyGridColorProperty(_T("Window Color"), RGB(210, 192, 254), NULL, _T("Specifies the default window color"));
-	pColorProp->EnableOtherButton(_T("Other..."));
-	pColorProp->EnableAutomaticButton(_T("Default"), ::GetSysColor(COLOR_3DFACE));
-	pGroup3->AddSubItem(pColorProp);
-
-	static const TCHAR szFilter[] = _T("Icon Files(*.ico)|*.ico|All Files(*.*)|*.*||");
-	pGroup3->AddSubItem(new CMFCPropertyGridFileProperty(_T("Icon"), TRUE, _T(""), _T("ico"), 0, szFilter, _T("Specifies the window icon")));
-
-	pGroup3->AddSubItem(new CMFCPropertyGridFileProperty(_T("Folder"), _T("c:\\")));
-
-	m_wndPropList.AddProperty(pGroup3);
-
-	CMFCPropertyGridProperty* pGroup4 = new CMFCPropertyGridProperty(_T("Hierarchy"));
-
-	CMFCPropertyGridProperty* pGroup41 = new CMFCPropertyGridProperty(_T("First sub-level"));
-	pGroup4->AddSubItem(pGroup41);
-
-	CMFCPropertyGridProperty* pGroup411 = new CMFCPropertyGridProperty(_T("Second sub-level"));
-	pGroup41->AddSubItem(pGroup411);
-
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 1"), (_variant_t) _T("Value 1"), _T("This is a description")));
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 2"), (_variant_t) _T("Value 2"), _T("This is a description")));
-	pGroup411->AddSubItem(new CMFCPropertyGridProperty(_T("Item 3"), (_variant_t) _T("Value 3"), _T("This is a description")));
-
-	pGroup4->Expand(FALSE);
-	m_wndPropList.AddProperty(pGroup4);
-#endif
 }
 
 void CPropertiesWnd::OnSetFocus(CWnd* pOldWnd)
