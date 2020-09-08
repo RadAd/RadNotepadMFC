@@ -15,12 +15,15 @@
 #include "RadDocManager.h"
 #include "RadUserTool.h"
 
+#include <afxinet.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
 static void PathMakeAbsolute(CString& strFileName)
 {
+    // TODO Should I use AfxFullPath?
     if (!PathIsRoot(strFileName))
     {
         TCHAR strCurrentDirectory[MAX_PATH];
@@ -98,6 +101,17 @@ CRadNotepadApp::CRadNotepadApp()
 
 CRadNotepadApp theApp;
 
+BOOL CRadNotepadApp::IsInternetUrl(LPCTSTR lpszFileName)
+{
+    DWORD dwServiceType;
+    CString strServer;
+    CString strObject;
+    INTERNET_PORT nPort;
+    AfxParseURL(lpszFileName, dwServiceType, strServer, strObject, nPort);
+
+    return dwServiceType != AFX_INET_SERVICE_UNK && dwServiceType != AFX_INET_SERVICE_FILE;
+}
+
 class CRadCommandLineInfo : public CCommandLineInfo
 {
 public:
@@ -167,7 +181,8 @@ BOOL CRadNotepadApp::InitInstance()
             CCommandLineInfo cmdInfo;
             ParseCommandLine(cmdInfo);
 #endif
-            PathMakeAbsolute(cmdInfo.m_strFileName);
+            if (!IsInternetUrl(cmdInfo.m_strFileName))
+                PathMakeAbsolute(cmdInfo.m_strFileName);
 
             HGLOBAL hMem = GlobalAlloc(GHND | GMEM_SHARE, sizeof(DROPFILES) + (cmdInfo.m_strFileName.GetLength() + 2) * sizeof(TCHAR));
             DROPFILES* pDropFiles = (DROPFILES*) GlobalLock(hMem);
@@ -358,14 +373,13 @@ CDocument* CRadNotepadApp::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU
     CRadNotepadDoc* ret = nullptr;
 
     const wchar_t* p = _tcsrchr(lpszFileName, _T(':'));
-    if (p != nullptr && (p - lpszFileName) > 1)
+    int line = p != nullptr ? _tstoi(p + 1) - 1 : -1;
+    if (line > 0)
     {
         size_t len = (p - lpszFileName);
         TCHAR szFileName[MAX_PATH];
         _tcsncpy_s(szFileName, lpszFileName, len);
         szFileName[len] = _T('\0');
-
-        int line = _tstoi(p + 1) - 1;
 
         ret = DYNAMIC_DOWNCAST(CRadNotepadDoc, CWinAppEx::OpenDocumentFile(szFileName, bAddToMRU));
 

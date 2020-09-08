@@ -19,6 +19,8 @@ class CRadNotepadApp : public CWinAppEx
 public:
 	CRadNotepadApp();
 
+    static BOOL IsInternetUrl(LPCTSTR lpszFileName);
+
 // Overrides
 public:
 	virtual BOOL InitInstance() override;

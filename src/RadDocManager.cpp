@@ -126,7 +126,7 @@ BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
         nFilterCount /= 2;
     }
 
-    CFileDialog dlgFile(bOpenFileDialog, strDefaultExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_CREATEPROMPT, strFilter);
+    CFileDialog dlgFile(bOpenFileDialog, strDefaultExt, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT /* | OFN_CREATEPROMPT*/, strFilter);
 
     CString title;
     ENSURE(title.LoadString(nIDSTitle));
@@ -150,6 +150,108 @@ BOOL CRadDocManager::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
     INT_PTR nResult = dlgFile.DoModal();
     fileName.ReleaseBuffer();
     return nResult == IDOK;
+}
+
+CDocument* CRadDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU)
+{
+    if (lpszFileName == NULL)
+    {
+        AfxThrowInvalidArgException();
+    }
+
+    if (!CRadNotepadApp::IsInternetUrl(lpszFileName))
+        return CDocManager::OpenDocumentFile(lpszFileName, bAddToMRU);
+    else
+    {
+        // find the highest confidence
+        POSITION pos = m_templateList.GetHeadPosition();
+        CDocTemplate::Confidence bestMatch = CDocTemplate::noAttempt;
+        CDocTemplate* pBestTemplate = NULL;
+        CDocument* pOpenDocument = NULL;
+
+        TCHAR szPath[_MAX_PATH];
+        ASSERT(AtlStrLen(lpszFileName) < _countof(szPath));
+#if 0   // This is why we can't just call CDocManager::OpenDocumentFile
+        TCHAR szTemp[_MAX_PATH];
+        if (lpszFileName[0] == '\"')
+            ++lpszFileName;
+        Checked::tcsncpy_s(szTemp, _countof(szTemp), lpszFileName, _TRUNCATE);
+        LPTSTR lpszLast = _tcsrchr(szTemp, '\"');
+        if (lpszLast != NULL)
+            *lpszLast = 0;
+
+        if (AfxFullPath(szPath, szTemp) == FALSE)
+        {
+            ASSERT(FALSE);
+            return NULL; // We won't open the file. MFC requires paths with
+                         // length < _MAX_PATH
+        }
+
+        TCHAR szLinkName[_MAX_PATH];
+        if (AfxResolveShortcut(AfxGetMainWnd(), szPath, szLinkName, _MAX_PATH))
+            Checked::tcscpy_s(szPath, _countof(szPath), szLinkName);
+#else
+        Checked::tcscpy_s(szPath, _countof(szPath), lpszFileName);
+#endif
+
+        while (pos != NULL)
+        {
+            CDocTemplate* pTemplate = (CDocTemplate*) m_templateList.GetNext(pos);
+            ASSERT_KINDOF(CDocTemplate, pTemplate);
+
+            CDocTemplate::Confidence match;
+            ASSERT(pOpenDocument == NULL);
+            match = pTemplate->MatchDocType(szPath, pOpenDocument);
+            if (match > bestMatch)
+            {
+                bestMatch = match;
+                pBestTemplate = pTemplate;
+            }
+            if (match == CDocTemplate::yesAlreadyOpen)
+                break;      // stop here
+        }
+
+        if (pOpenDocument != NULL)
+        {
+            POSITION posOpenDoc = pOpenDocument->GetFirstViewPosition();
+            if (posOpenDoc != NULL)
+            {
+                CView* pView = pOpenDocument->GetNextView(posOpenDoc); // get first one
+                ASSERT_VALID(pView);
+                CFrameWnd* pFrame = pView->GetParentFrame();
+
+                if (pFrame == NULL)
+                    TRACE(traceAppMsg, 0, "Error: Can not find a frame for document to activate.\n");
+                else
+                {
+                    pFrame->ActivateFrame();
+
+                    if (pFrame->GetParent() != NULL)
+                    {
+                        CFrameWnd* pAppFrame;
+                        if (pFrame != (pAppFrame = (CFrameWnd*) AfxGetApp()->m_pMainWnd))
+                        {
+                            ASSERT_KINDOF(CFrameWnd, pAppFrame);
+                            pAppFrame->ActivateFrame();
+                        }
+                    }
+                }
+            }
+            else
+                TRACE(traceAppMsg, 0, "Error: Can not find a view for document to activate.\n");
+
+            return pOpenDocument;
+        }
+
+        if (pBestTemplate == NULL)
+        {
+            AfxMessageBox(AFX_IDP_FAILED_TO_OPEN_DOC);
+            return NULL;
+        }
+
+        bAddToMRU = FALSE; // TODO Remove this if I fix m_pRecentFileList to not call AfxFullPath
+        return pBestTemplate->OpenDocumentFile(szPath, bAddToMRU, TRUE);
+    }
 }
 
 BOOL CRadDocManager::SaveAllModified()

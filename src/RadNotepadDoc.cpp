@@ -13,10 +13,42 @@
 #include "RadWaitCursor.h"
 
 #include <propkey.h>
+#include <afxinet.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+
+static std::unique_ptr<CInternetSession> g_pInternetSession;
+
+static CString GetSourceUrlName(LPCTSTR lpszFileName)
+{
+    CString strSourceUrlName;
+
+    BYTE data[1024 * 2];
+    LPINTERNET_CACHE_ENTRY_INFO pCacheInfo = (LPINTERNET_CACHE_ENTRY_INFO) data;
+    pCacheInfo->dwStructSize = sizeof(INTERNET_CACHE_ENTRY_INFO);
+    DWORD size = ARRAYSIZE(data) * sizeof(BYTE);
+    HANDLE hFind = FindFirstUrlCacheEntry(nullptr, pCacheInfo, &size);
+    if (hFind != NULL)
+    {
+        do
+        {
+            if (pCacheInfo->lpszLocalFileName != nullptr && wcscmp(pCacheInfo->lpszLocalFileName, lpszFileName) == 0)
+            {
+                strSourceUrlName = pCacheInfo->lpszSourceUrlName;
+                break;
+            }
+
+            size = ARRAYSIZE(data) * sizeof(BYTE);
+        } while (FindNextUrlCacheEntry(hFind, pCacheInfo, &size));
+        ASSERT(GetLastError() == ERROR_SUCCESS);
+
+        FindCloseUrlCache(hFind);
+    }
+
+    return strSourceUrlName;
+}
 
 static const Encoding g_EncodingList[] = { Encoding::BOM_ANSI, Encoding::BOM_UTF16_LE, Encoding::BOM_UTF16_BE, Encoding::BOM_UTF8 };
 
@@ -105,7 +137,7 @@ CRadNotepadDoc::~CRadNotepadDoc()
 
 void CRadNotepadDoc::CheckUpdated()
 {
-    if (!GetPathName().IsEmpty())
+    if (!GetPathName().IsEmpty() && !CRadNotepadApp::IsInternetUrl(GetPathName()))
     {
         FILETIME ftWrite = {};
         {
@@ -140,8 +172,13 @@ void CRadNotepadDoc::CheckReadOnly()
         CScintillaView* pView = GetView();
         CScintillaCtrl& rCtrl = pView->GetCtrl();
 
-        DWORD dwAttr = GetFileAttributes(GetPathName());
-        BOOL bReadOnly = pView->GetUseROFileAttributeDuringLoading() && dwAttr != INVALID_FILE_ATTRIBUTES && dwAttr & FILE_ATTRIBUTE_READONLY;
+        BOOL bReadOnly = TRUE;
+        if (!CRadNotepadApp::IsInternetUrl(GetPathName()))
+        {
+            DWORD dwAttr = GetFileAttributes(GetPathName());
+            bReadOnly = pView->GetUseROFileAttributeDuringLoading() && dwAttr != INVALID_FILE_ATTRIBUTES && dwAttr & FILE_ATTRIBUTE_READONLY;
+        }
+
         if (bReadOnly != rCtrl.GetReadOnly())
         {
             rCtrl.SetReadOnly(bReadOnly);
@@ -166,7 +203,8 @@ BOOL CRadNotepadDoc::OnNewDocument()
 BOOL CRadNotepadDoc::OnOpenDocument(LPCTSTR lpszPathName)
 {
     m_eEncoding = theApp.m_Settings.DefaultEncoding;
-    if (PathFileExists(lpszPathName))
+
+    if (CRadNotepadApp::IsInternetUrl(lpszPathName) || PathFileExists(lpszPathName))
         return CScintillaDoc::OnOpenDocument(lpszPathName);
     else
         return TRUE; // Allow opening non-existent files
@@ -262,6 +300,13 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
         //Read the data in from the file in blocks
         CFile* pFile = ar.GetFile();
         ULONGLONG nLength = pFile->GetLength();
+        CHttpFile* pHttpFile = DYNAMIC_DOWNCAST(CHttpFile, pFile);
+        if (pHttpFile != nullptr)
+        {   // GetLength for CHttpFile returns how much can be read, not length  of file
+            DWORD dwLength = 0;
+            pHttpFile->QueryInfo(HTTP_QUERY_CONTENT_LENGTH, dwLength);
+            nLength = dwLength;
+        }
         ULONGLONG nBytesReadTotal = 0;
 
         BYTE Buffer[BUFSIZE];
@@ -281,7 +326,8 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
             else
                 AddText(rCtrl, Buffer, nBytesRead, m_eEncoding);
             nBytesReadTotal += nBytesRead;
-            pMsgWnd->SetPaneProgress(nIndex, static_cast<long>(nBytesReadTotal * 100 / nLength));
+            if (nLength > 0)
+                pMsgWnd->SetPaneProgress(nIndex, static_cast<long>(nBytesReadTotal * 100 / nLength));
 
             MSG msg;
             while (::PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
@@ -429,12 +475,63 @@ void CRadNotepadDoc::SetTitle(LPCTSTR lpszTitle)
 
 void CRadNotepadDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
 {
-    bool bPathNameFirstSet = GetPathName().IsEmpty();
-    CScintillaDoc::SetPathName(lpszPathName, bAddToMRU && PathFileExists(lpszPathName));
+    const bool bPathNameFirstSet = GetPathName().IsEmpty();
 
-    CFile rFile;
-    if (rFile.Open(GetPathName(), CFile::modeRead | CFile::shareDenyNone))
-        GetFileTime(rFile, NULL, NULL, &m_ftWrite);
+    if (!CRadNotepadApp::IsInternetUrl(lpszPathName))
+    {
+        CString strSourceUrlName = GetSourceUrlName(lpszPathName);
+
+        if (strSourceUrlName.IsEmpty())
+        {
+            CScintillaDoc::SetPathName(lpszPathName, bAddToMRU && PathFileExists(lpszPathName));
+
+            CFile rFile;
+            if (rFile.Open(GetPathName(), CFile::modeRead | CFile::shareDenyNone))
+                GetFileTime(rFile, NULL, NULL, &m_ftWrite);
+        }
+        else
+        {
+            m_strPathName = strSourceUrlName;
+
+            ASSERT(!m_strPathName.IsEmpty());       // must be set to something
+            m_bEmbedded = FALSE;
+            ASSERT_VALID(this);
+
+            SetTitle(strSourceUrlName);
+
+            bAddToMRU = FALSE;
+
+            ASSERT_VALID(this);
+        }
+    }
+    else
+    {
+        m_strPathName = lpszPathName;
+
+        ASSERT(!m_strPathName.IsEmpty());       // must be set to something
+        m_bEmbedded = FALSE;
+        ASSERT_VALID(this);
+
+        DWORD dwServiceType;
+        CString strServer;
+        CString strObject;
+        INTERNET_PORT nPort;
+        AfxParseURL(m_strPathName, dwServiceType, strServer, strObject, nPort);
+
+        int i = strObject.ReverseFind('/');
+        CString strTitle;
+        if (i >= 0)
+            strTitle = strObject.Mid(i + 1);
+        if (strTitle.IsEmpty())
+            strTitle = _T("index");
+        SetTitle(strTitle);
+
+        // add it to the file MRU list
+        if (bAddToMRU)
+            AfxGetApp()->AddToRecentFileList(m_strPathName);
+
+        ASSERT_VALID(this);
+    }
 
     if (bPathNameFirstSet)
         UpdateAllViews(nullptr, HINT_PATH_UPDATED);
@@ -442,12 +539,36 @@ void CRadNotepadDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
 
 CFile* CRadNotepadDoc::GetFile(LPCTSTR lpszFileName, UINT nOpenFlags, CFileException* pError)
 {
-    if (nOpenFlags & CFile::shareDenyWrite)
-    {   // Allow reading locked files
-        nOpenFlags &= ~CFile::shareDenyWrite;
-        nOpenFlags |= CFile::shareDenyNone;
+    if (!CRadNotepadApp::IsInternetUrl(lpszFileName))
+    {
+        if (nOpenFlags & CFile::shareDenyWrite)
+        {   // Allow reading locked files
+            nOpenFlags &= ~CFile::shareDenyWrite;
+            nOpenFlags |= CFile::shareDenyNone;
+        }
+        return CScintillaDoc::GetFile(lpszFileName, nOpenFlags, pError);
     }
-    return CScintillaDoc::GetFile(lpszFileName, nOpenFlags, pError);
+    else
+    {
+        if (g_pInternetSession == nullptr)
+            g_pInternetSession = std::make_unique<CInternetSession>();
+
+        CStdioFile* pFile = g_pInternetSession->OpenURL(lpszFileName, 1, INTERNET_FLAG_TRANSFER_BINARY);
+
+#if 0   // TODO May need to use these
+        CHttpFile* pHttpFile = DYNAMIC_DOWNCAST(CHttpFile, pFile);
+        if (pHttpFile != nullptr)
+        {
+            CString encoding;
+            pHttpFile->QueryInfo(HTTP_QUERY_CONTENT_ENCODING, encoding);
+
+            CString disposition;
+            pHttpFile->QueryInfo(HTTP_QUERY_CONTENT_DISPOSITION, disposition);
+        }
+#endif
+
+        return pFile;
+    }
 }
 
 void CRadNotepadDoc::SyncModified()
@@ -472,7 +593,7 @@ void CRadNotepadDoc::OnFileRevert()
 
 void CRadNotepadDoc::OnUpdateFileRevert(CCmdUI *pCmdUI)
 {
-    pCmdUI->Enable(!GetPathName().IsEmpty() && PathFileExists(GetPathName()));
+    pCmdUI->Enable(!GetPathName().IsEmpty() && (CRadNotepadApp::IsInternetUrl(GetPathName()) || PathFileExists(GetPathName())));
 }
 
 
