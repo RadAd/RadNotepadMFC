@@ -62,7 +62,7 @@ int CRadDocManager::GetModifiedDocumentCount() const
             while (pos != NULL)
             {
                 CDocument* pDoc = pTemplate->GetNextDoc(pos);
-                if (pDoc->IsModified())
+                if (!pDoc->GetPathName().IsEmpty() && pDoc->IsModified())
                     ++nModified;
             }
         }

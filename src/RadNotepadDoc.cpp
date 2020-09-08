@@ -189,8 +189,12 @@ void CRadNotepadDoc::CheckReadOnly()
     CScintillaView* pView = GetView();
     CScintillaCtrl& rCtrl = pView->GetCtrl();
 
-    BOOL bReadOnly = TRUE;
-    if (!CRadNotepadApp::IsInternetUrl(GetPathName()) && !GetPathName().IsEmpty())
+    BOOL bReadOnly = FALSE;
+    if (GetTitle().Left(5) == _T("temp:"))
+        bReadOnly = TRUE;
+    else if (CRadNotepadApp::IsInternetUrl(GetPathName()))
+        bReadOnly = TRUE;
+    else if (!GetPathName().IsEmpty())
     {
         DWORD dwAttr = GetFileAttributes(GetPathName());
         bReadOnly = pView->GetUseROFileAttributeDuringLoading() && dwAttr != INVALID_FILE_ATTRIBUTES && dwAttr & FILE_ATTRIBUTE_READONLY;

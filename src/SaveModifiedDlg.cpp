@@ -75,7 +75,8 @@ BOOL CSaveModifiedDlg::OnInitDialog()
                     int i = m_List.InsertItem(m_List.GetItemCount(), pDoc->GetTitle(), fi.iIcon);
                     m_List.SetItemData(i, (DWORD_PTR) pDoc);
                     m_List.SetItemText(i, 1, pDoc->GetPathName());
-                    m_List.SetCheck(i);
+                    if (!pDoc->GetPathName().IsEmpty())
+                        m_List.SetCheck(i);
                 }
             }
         }
