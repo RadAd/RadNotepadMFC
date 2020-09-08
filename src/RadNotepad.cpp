@@ -14,6 +14,7 @@
 #include "RadNotepadView.h"
 #include "RadDocManager.h"
 #include "RadUserTool.h"
+#include "RadRecentFileList.h"
 
 #include <afxinet.h>
 
@@ -245,9 +246,15 @@ BOOL CRadNotepadApp::InitInstance()
 #else
     SetRegistryKey(_T("RadSoft"));
 #endif
-	LoadStdProfileSettings(m_Settings.nMaxMRU);  // Load standard INI file options (including MRU)
+    LoadStdProfileSettings(m_Settings.nMaxMRU);  // Load standard INI file options (including MRU)
 
-	InitContextMenuManager();
+    ASSERT(m_pRecentFileList != NULL);
+    CRecentFileList* pRecentFileList = new CRadRecentFileList(*m_pRecentFileList);
+    m_pRecentFileList->m_arrNames = nullptr;
+    delete m_pRecentFileList;
+    m_pRecentFileList = pRecentFileList;
+
+    InitContextMenuManager();
 	InitKeyboardManager();
 
 	InitTooltipManager();
@@ -391,7 +398,7 @@ CDocument* CRadNotepadApp::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU
         ret = DYNAMIC_DOWNCAST(CRadNotepadDoc, CWinAppEx::OpenDocumentFile(lpszFileName, bAddToMRU));
     }
 
-    if (bAddToMRU && ret != nullptr && !PathFileExists(lpszFileName))
+    if (bAddToMRU && ret != nullptr && !IsInternetUrl(lpszFileName) && !PathFileExists(lpszFileName))
     {
         for (int nIndex = 0; nIndex < m_pRecentFileList->GetSize(); ++nIndex)
         {

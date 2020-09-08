@@ -9,7 +9,7 @@
 #include "RadWaitCursor.h"
 #include "RadToolBarsCustomizeDialog.h"
 #include "ToolBarHistoryButton.h"
-#include "..\OpenUrlDlg.h"
+#include "OpenUrlDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

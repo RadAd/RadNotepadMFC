@@ -249,7 +249,6 @@ CDocument* CRadDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU
             return NULL;
         }
 
-        bAddToMRU = FALSE; // TODO Remove this if I fix m_pRecentFileList to not call AfxFullPath
         return pBestTemplate->OpenDocumentFile(szPath, bAddToMRU, TRUE);
     }
 }

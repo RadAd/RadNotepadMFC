@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "OpenUrlDlg.h"
 #include "afxdialogex.h"
-#include "resource.h"
+#include "..\resource.h"
 
 
 // OpenUrl dialog

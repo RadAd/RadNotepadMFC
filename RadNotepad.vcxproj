@@ -246,6 +246,7 @@
     <ClInclude Include="src\MainFrm.h" />
     <ClInclude Include="src\OutputWnd.h" />
     <ClInclude Include="src\PropertiesWnd.h" />
+    <ClInclude Include="src\RadRecentFileList.h" />
     <ClInclude Include="src\RadToolBarsCustomizeDialog.h" />
     <ClInclude Include="src\RadUserTool.h" />
     <ClInclude Include="src\RadWaitCursor.h" />
@@ -277,6 +278,7 @@
     <ClCompile Include="src\MainFrm.cpp" />
     <ClCompile Include="src\OutputWnd.cpp" />
     <ClCompile Include="src\PropertiesWnd.cpp" />
+    <ClCompile Include="src\RadRecentFileList.cpp" />
     <ClCompile Include="src\RadToolBarsCustomizeDialog.cpp" />
     <ClCompile Include="src\RadUserTool.cpp" />
     <ClCompile Include="src\RadWaitCursor.cpp" />
