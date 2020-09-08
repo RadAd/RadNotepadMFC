@@ -25,13 +25,23 @@ static CString GetSourceUrlName(LPCTSTR lpszFileName)
 {
     CString strSourceUrlName;
 
-    BYTE data[1024 * 2];
-    LPINTERNET_CACHE_ENTRY_INFO pCacheInfo = (LPINTERNET_CACHE_ENTRY_INFO) data;
-    pCacheInfo->dwStructSize = sizeof(INTERNET_CACHE_ENTRY_INFO);
-    DWORD size = ARRAYSIZE(data) * sizeof(BYTE);
-    HANDLE hFind = FindFirstUrlCacheEntry(nullptr, pCacheInfo, &size);
+    std::vector<BYTE> data;
+    LPINTERNET_CACHE_ENTRY_INFO pCacheInfo = nullptr;
+    DWORD size = 1024;
+    HANDLE hFind = NULL;
+
+    do
+    {
+        data.resize(size / sizeof(BYTE));
+        pCacheInfo = (LPINTERNET_CACHE_ENTRY_INFO) data.data();
+        pCacheInfo->dwStructSize = sizeof(INTERNET_CACHE_ENTRY_INFO);
+        size = (DWORD) (data.size() * sizeof(BYTE));
+        hFind = FindFirstUrlCacheEntry(nullptr, pCacheInfo, &size);
+    } while (hFind == NULL && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+
     if (hFind != NULL)
     {
+        BOOL b = FALSE;
         do
         {
             if (pCacheInfo->lpszLocalFileName != nullptr && wcscmp(pCacheInfo->lpszLocalFileName, lpszFileName) == 0)
@@ -40,12 +50,21 @@ static CString GetSourceUrlName(LPCTSTR lpszFileName)
                 break;
             }
 
-            size = ARRAYSIZE(data) * sizeof(BYTE);
-        } while (FindNextUrlCacheEntry(hFind, pCacheInfo, &size));
-        ASSERT(GetLastError() == ERROR_SUCCESS);
+            size = (DWORD) (data.size() * sizeof(BYTE));
+
+            do
+            {
+                data.resize(size / sizeof(BYTE));
+                pCacheInfo = (LPINTERNET_CACHE_ENTRY_INFO) data.data();
+                size = (DWORD) (data.size() * sizeof(BYTE));
+                b = FindNextUrlCacheEntry(hFind, pCacheInfo, &size);
+            } while (!b && GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+        }
+        while (b);
 
         FindCloseUrlCache(hFind);
     }
+    ASSERT(GetLastError() == ERROR_SUCCESS);
 
     return strSourceUrlName;
 }
@@ -167,23 +186,20 @@ void CRadNotepadDoc::CheckUpdated()
 
 void CRadNotepadDoc::CheckReadOnly()
 {
-    if (!GetPathName().IsEmpty())
+    CScintillaView* pView = GetView();
+    CScintillaCtrl& rCtrl = pView->GetCtrl();
+
+    BOOL bReadOnly = TRUE;
+    if (!CRadNotepadApp::IsInternetUrl(GetPathName()) && !GetPathName().IsEmpty())
     {
-        CScintillaView* pView = GetView();
-        CScintillaCtrl& rCtrl = pView->GetCtrl();
+        DWORD dwAttr = GetFileAttributes(GetPathName());
+        bReadOnly = pView->GetUseROFileAttributeDuringLoading() && dwAttr != INVALID_FILE_ATTRIBUTES && dwAttr & FILE_ATTRIBUTE_READONLY;
+    }
 
-        BOOL bReadOnly = TRUE;
-        if (!CRadNotepadApp::IsInternetUrl(GetPathName()))
-        {
-            DWORD dwAttr = GetFileAttributes(GetPathName());
-            bReadOnly = pView->GetUseROFileAttributeDuringLoading() && dwAttr != INVALID_FILE_ATTRIBUTES && dwAttr & FILE_ATTRIBUTE_READONLY;
-        }
-
-        if (bReadOnly != rCtrl.GetReadOnly())
-        {
-            rCtrl.SetReadOnly(bReadOnly);
-            SetTitle(nullptr);
-        }
+    if (bReadOnly != rCtrl.GetReadOnly())
+    {
+        rCtrl.SetReadOnly(bReadOnly);
+        SetTitle(nullptr);
     }
 }
 
@@ -491,9 +507,9 @@ void CRadNotepadDoc::SetPathName(LPCTSTR lpszPathName, BOOL bAddToMRU)
         }
         else
         {
-            m_strPathName = strSourceUrlName;
+            //m_strPathName = strSourceUrlName;
 
-            ASSERT(!m_strPathName.IsEmpty());       // must be set to something
+            //ASSERT(!m_strPathName.IsEmpty());       // must be set to something
             m_bEmbedded = FALSE;
             ASSERT_VALID(this);
 
