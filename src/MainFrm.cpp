@@ -9,6 +9,7 @@
 #include "RadWaitCursor.h"
 #include "RadToolBarsCustomizeDialog.h"
 #include "ToolBarHistoryButton.h"
+#include "..\OpenUrlDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -95,6 +96,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_WM_SETTINGCHANGE()
     ON_WM_CONTEXTMENU()
     ON_MESSAGE(WM_SETMESSAGESTRING, &CMainFrame::OnSetMessageString)
+    ON_COMMAND(ID_FILE_OPENURL, &CMainFrame::OnFileOpenUrl)
     ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
     ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
     ON_COMMAND_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnViewPane)
@@ -401,6 +403,13 @@ LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
     }
     else
         return 0;
+}
+
+void CMainFrame::OnFileOpenUrl()
+{
+    COpenUrlDlg dlg;
+    if (dlg.DoModal() == IDOK)
+        theApp.OpenDocumentFile(dlg.m_strUrl);
 }
 
 void CMainFrame::OnWindowManager()

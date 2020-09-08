@@ -109,6 +109,9 @@
     <ClInclude Include="src\NewExtensionDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\OpenUrlDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ChildFrm.cpp">
@@ -184,6 +187,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\NewExtensionDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\OpenUrlDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -80,6 +80,7 @@ protected:
     DECLARE_MESSAGE_MAP()
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
+    afx_msg void OnFileOpenUrl();
     afx_msg void OnWindowManager();
     afx_msg void OnViewCustomize();
     afx_msg void OnSchemeIndicator();

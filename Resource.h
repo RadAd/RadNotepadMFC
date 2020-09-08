@@ -63,6 +63,8 @@
 #define IDR_EXTMAP                      314
 #define IDD_SAVE_MODIFIED               317
 #define IDD_NEW_EXTENSION               318
+#define IDD_NEW_EXTENSION1              319
+#define IDD_OPEN_URL                    319
 #define IDR_OUTPUT                      320
 #define IDR_POPUP_TAB                   321
 #define IDB_USER_IMAGES                 322
@@ -79,6 +81,7 @@
 #define IDC_MFCLINK1                    1005
 #define IDC_MFCLINK2                    1006
 #define IDC_EXTENSION                   1006
+#define IDC_URL                         1007
 #define ID_FILE_REVERT                  32784
 #define ID_FILE_CLOSEALL                32788
 #define ID_FILE_SAVEALL                 32789
@@ -129,6 +132,8 @@
 #define ID_SEARCH_NEXT                  32879
 #define ID_SEARCH_INCREMENTAL           32884
 #define ID_PROPERTIES_NEW               32897
+#define ID_FILE_NEWURL                  32898
+#define ID_FILE_OPENURL                 32899
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -137,8 +142,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        331
-#define _APS_NEXT_COMMAND_VALUE         32898
-#define _APS_NEXT_CONTROL_VALUE         1007
+#define _APS_NEXT_COMMAND_VALUE         32902
+#define _APS_NEXT_CONTROL_VALUE         1008
 #define _APS_NEXT_SYMED_VALUE           311
 #endif
 #endif
