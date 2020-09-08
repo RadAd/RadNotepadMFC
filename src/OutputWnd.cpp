@@ -357,3 +357,11 @@ void COutputList::OnPopupWordWrap()
     wm = wm == SC_WRAP_WORD ? SC_WRAP_NONE : SC_WRAP_WORD;
     SetWrapMode(wm);
 }
+
+
+void COutputList::PostNcDestroy()
+{
+    CScintillaCtrl::PostNcDestroy();
+
+    delete this; // TODO Not sure why this isn't happening normally
+}

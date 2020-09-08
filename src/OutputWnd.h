@@ -41,6 +41,8 @@ protected:
     afx_msg void OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnUpdatePopupWordWrap(CCmdUI *pCmdUI);
     afx_msg void OnPopupWordWrap();
+
+    virtual void PostNcDestroy();
 };
 
 class COutputWnd : public CDockablePane
