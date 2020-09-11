@@ -816,7 +816,8 @@ void CPropertiesWnd::OnPropertiesNew()
         else
         {
             auto it = m_pSettings->user.mapExt.insert(std::map<CString, CString>::value_type(dlgNewExtension.m_strExtension, _T(""))).first;
-            CMFCPropertyGridProperty* pProp = CreateProperty(it->first, &it->second);
+            //CMFCPropertyGridProperty* pProp = CreateProperty(it->first, &it->second);
+            CMFCPropertyGridProperty* pProp = CreateProperty(it->first, m_LanguageNames[0], &it->second, m_LanguageNames, m_LanguageValues);
             m_pExtGroup->AddSubItem(pProp);
             m_wndPropList.SetCurSel(pProp);
             m_wndPropList.EnsureVisible(pProp, TRUE);
