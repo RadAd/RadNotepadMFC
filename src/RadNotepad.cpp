@@ -18,6 +18,76 @@
 
 #include <afxinet.h>
 
+#include <algorithm>
+
+static std::vector<ACCEL> CopyAcceleratorTable(HACCEL hAccel)
+{
+    std::vector<ACCEL> vecAccel(::CopyAcceleratorTable(hAccel, NULL, 0));
+    ::CopyAcceleratorTable(hAccel, vecAccel.data(), (int) vecAccel.size());
+    return vecAccel;
+}
+
+static std::vector<ACCEL> CopyAcceleratorTable(UINT nIdResources)
+{
+    HINSTANCE hInst = AfxFindResourceHandle(ATL_MAKEINTRESOURCE(nIdResources), ATL_RT_ACCELERATOR);
+    HACCEL hAccel = ::LoadAccelerators(hInst, ATL_MAKEINTRESOURCE(nIdResources));
+    return CopyAcceleratorTable(hAccel);
+}
+
+std::vector<ACCEL> LoadAccelFromRegistry()
+{
+    std::vector<ACCEL> vecAccel;
+
+    CString strProfileName = theApp.GetRegSectionPath();
+    LPCTSTR AFX_REG_SECTION_FMT = _T("%TsKeyboard-%d");
+    LPCTSTR AFX_REG_ENTRY_DATA = _T("DefaultAccelerators");
+    UINT uiResId = 0;
+
+    CString strSection;
+    strSection.Format(AFX_REG_SECTION_FMT, strProfileName.GetString(), uiResId);
+
+    CSettingsStoreSP regSP;
+    CSettingsStore& reg = regSP.Create(FALSE, FALSE);
+
+    if (reg.Open(strSection))
+    {
+        UINT uiSize;
+        LPACCEL lpAccel;
+
+        if (reg.Read(AFX_REG_ENTRY_DATA, (LPBYTE*) &lpAccel, &uiSize))
+        {
+            int nAccelSize = uiSize / sizeof(ACCEL);
+            ENSURE(lpAccel != NULL);
+
+            vecAccel.resize(nAccelSize);
+            std::copy(lpAccel, lpAccel + nAccelSize, vecAccel.data());
+        }
+
+        delete[] lpAccel;
+    }
+
+    return vecAccel;
+}
+
+void SaveAccelToRegistry(const std::vector<ACCEL>& vecAccel)
+{
+    CString strProfileName = theApp.GetRegSectionPath();
+    LPCTSTR AFX_REG_SECTION_FMT = _T("%TsKeyboard-%d");
+    LPCTSTR AFX_REG_ENTRY_DATA = _T("DefaultAccelerators");
+    UINT uiResId = 0;
+
+    CString strSection;
+    strSection.Format(AFX_REG_SECTION_FMT, strProfileName.GetString(), uiResId);
+
+    CSettingsStoreSP regSP;
+    CSettingsStore& reg = regSP.Create(FALSE, FALSE);
+
+    if (reg.CreateKey(strSection))
+    {
+        reg.Write(AFX_REG_ENTRY_DATA, (LPBYTE) vecAccel.data(), (UINT) (vecAccel.size() * sizeof(ACCEL)));
+    }
+}
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -289,6 +359,105 @@ BOOL CRadNotepadApp::InitInstance()
 	}
 	m_pMainWnd = pMainFrame;
 
+    std::vector<ACCEL> vecOldAccel = LoadAccelFromRegistry();
+
+    if (!vecOldAccel.empty())
+    {
+        const auto fAccelCmp = [](const ACCEL& rAccelL, const ACCEL& rAccelR) {
+            if (rAccelL.key != rAccelR.key)
+                return rAccelL.key < rAccelR.key;
+            else if (rAccelL.fVirt != rAccelR.fVirt)
+                return rAccelL.fVirt < rAccelR.fVirt;
+            else //if (rAccelL.cmd != rAccelR.cmd)
+                return rAccelL.cmd < rAccelR.cmd;
+        };
+        const auto fAccelKeyCmp = [](const ACCEL& rAccelL, const ACCEL& rAccelR) {
+            if (rAccelL.key != rAccelR.key)
+                return rAccelL.key < rAccelR.key;
+            else //if (rAccelL.fVirt != rAccelR.fVirt)
+                return rAccelL.fVirt < rAccelR.fVirt;
+        };
+        const auto fAccelKeyEq = [](const ACCEL& rAccelL, const ACCEL& rAccelR) {
+            return (rAccelL.key == rAccelR.key)
+                && (rAccelL.fVirt == rAccelR.fVirt);
+        };
+
+
+        std::sort(vecOldAccel.begin(), vecOldAccel.end(), fAccelCmp);
+
+        std::vector<ACCEL> vecOrigAccel = ::CopyAcceleratorTable(IDR_MAINFRAME);
+        std::sort(vecOrigAccel.begin(), vecOrigAccel.end(), fAccelCmp);
+        ASSERT(std::adjacent_find(vecOrigAccel.begin(), vecOrigAccel.end(), fAccelKeyEq) == vecOrigAccel.end());
+
+        std::vector<ACCEL> vecRemoved;
+        std::vector<ACCEL> vecAdded;
+
+        {
+            auto itOld = vecOldAccel.begin();
+            auto itOrig = vecOrigAccel.begin();
+            while (itOld != vecOldAccel.end() && itOrig != vecOrigAccel.end())
+            {
+                if (fAccelCmp(*itOld, *itOrig))
+                {
+                    vecRemoved.push_back(*itOld);
+                    ++itOld;
+                }
+                else if (fAccelCmp(*itOrig, *itOld))
+                {
+                    vecAdded.push_back(*itOrig);
+                    ++itOrig;
+                }
+                else
+                {
+                    ++itOld;
+                    ++itOrig;
+                }
+            }
+            while (itOld != vecOldAccel.end())
+            {
+                vecRemoved.push_back(*itOld);
+                ++itOld;
+            }
+            while (itOrig != vecOrigAccel.end())
+            {
+                vecAdded.push_back(*itOrig);
+                ++itOrig;
+            }
+        }
+
+        if (!vecRemoved.empty() || !vecAdded.empty())
+        {
+            std::vector<ACCEL> vecCurrentAccel = ::CopyAcceleratorTable(pMainFrame->m_hAccelTable);
+            std::sort(vecCurrentAccel.begin(), vecCurrentAccel.end(), fAccelCmp);
+            bool fModified = false;
+
+            for (const ACCEL& rAccel : vecRemoved)
+            {
+                auto it = std::lower_bound(vecCurrentAccel.begin(), vecCurrentAccel.end(), rAccel, fAccelCmp);
+                if (it != vecCurrentAccel.end())
+                {
+                    fModified = true;
+                    vecCurrentAccel.erase(it);
+                }
+            }
+            for (const ACCEL& rAccel : vecAdded)
+            {
+                auto it = std::lower_bound(vecCurrentAccel.begin(), vecCurrentAccel.end(), rAccel, fAccelKeyCmp);
+                if (it == vecCurrentAccel.end() || !fAccelKeyEq(*it, rAccel))
+                {
+                    fModified = true;
+                    vecCurrentAccel.push_back(rAccel);
+                }
+            }
+
+            if (fModified)
+            {
+                ::DestroyAcceleratorTable(pMainFrame->m_hAccelTable);
+                pMainFrame->m_hAccelTable = ::CreateAcceleratorTable(vecCurrentAccel.data(), (int) vecCurrentAccel.size());
+            }
+        }
+    }
+
 #if 0
     // Parse command line for standard shell commands, DDE, file open
     CCommandLineInfo cmdInfo;
@@ -348,7 +517,13 @@ BOOL CRadNotepadApp::SaveState(LPCTSTR lpszSectionName, CFrameImpl* pFrameImpl)
         return TRUE;
     }
     else
+    {
+        std::vector<ACCEL> vecAccel = ::CopyAcceleratorTable(IDR_MAINFRAME);
+        //std::sort(vecAccel.begin(), vecAccel.end(), fAccelCmp);
+        SaveAccelToRegistry(vecAccel);
+
         return CWinAppEx::SaveState(lpszSectionName, pFrameImpl);
+    }
 }
 
 void CRadNotepadApp::PreLoadState()

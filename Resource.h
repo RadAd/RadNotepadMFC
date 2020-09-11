@@ -63,7 +63,6 @@
 #define IDR_EXTMAP                      314
 #define IDD_SAVE_MODIFIED               317
 #define IDD_NEW_EXTENSION               318
-#define IDD_NEW_EXTENSION1              319
 #define IDD_OPEN_URL                    319
 #define IDR_OUTPUT                      320
 #define IDR_POPUP_TAB                   321
