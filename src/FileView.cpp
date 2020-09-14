@@ -191,8 +191,9 @@ static inline void SetChildren(CTreeCtrl& rTreeCtrl, HTREEITEM hItem, int cChild
     rTreeCtrl.SetItem(&item);
 }
 
-#define ID_VIEW 1
-#define MIN_SHELL_ID 2
+//#define ID_NEW_FOLDER 1
+#define ID_VIEW 2
+#define MIN_SHELL_ID 1000
 #define MAX_SHELL_ID 2000
 
 static IContextMenu2* g_pIContext2 = 0;
@@ -239,8 +240,7 @@ static LRESULT CALLBACK ContextMenuHookWndProc(HWND hWnd, UINT msg, WPARAM wp, L
             if (g_pIContext3->HandleMenuMsg2(msg, wp, lp, &ret) == S_OK)
                 return ret;
         }
-
-        if (g_pIContext2)
+        else if (g_pIContext2)
         {
             if (g_pIContext2->HandleMenuMsg(msg, wp, lp) == S_OK)
                 return 0;
@@ -252,10 +252,17 @@ static LRESULT CALLBACK ContextMenuHookWndProc(HWND hWnd, UINT msg, WPARAM wp, L
     return DefSubclassProc(hWnd, msg, wp, lp);
 }
 
-static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int Flags, int x, int y, BOOL bCanView)
+static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int Flags, int x, int y, BOOL bCanView, BOOL bIsFolder)
 {
     CMenu    Menu;
     Menu.CreatePopupMenu();
+
+    if (bIsFolder)
+    {
+        Menu.AppendMenu(MF_ENABLED | MF_STRING, ID_NEW_FOLDER, _T("New Folder"));
+        // TODO Set an icon
+        Menu.AppendMenu(MF_ENABLED | MF_SEPARATOR);
+    }
 
     if (bCanView)
     {
@@ -271,6 +278,7 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
     Command.nShow = SW_NORMAL;
     Command.ptInvoke.x = x;
     Command.ptInvoke.y = y;
+    ClientToScreen(Command.hwnd, &Command.ptInvoke);
     if (GetKeyState(VK_CONTROL) < 0)
         Command.fMask |= CMIC_MASK_CONTROL_DOWN;
     if (GetKeyState(VK_SHIFT) < 0)
@@ -293,7 +301,11 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
 
     if (Cmd > 0)
     {
-        if (Cmd == ID_VIEW)
+        if (Cmd == ID_NEW_FOLDER)
+        {
+            pWnd->SendMessage(WM_COMMAND, ID_NEW_FOLDER);
+        }
+        else if (Cmd == ID_VIEW)
         {
             pWnd->SendMessage(WM_COMMAND, ID_EDIT_VIEW);
         }
@@ -361,6 +373,7 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
     ON_UPDATE_COMMAND_UI(ID_EDIT_RENAME, OnUpdateFileSelected)
     ON_COMMAND(ID_EDIT_VIEW, OnEditView)
     ON_UPDATE_COMMAND_UI(ID_EDIT_VIEW, OnUpdateFileSelected)
+    ON_COMMAND(ID_NEW_FOLDER, OnNewFolder)
     ON_NOTIFY(TVN_ITEMEXPANDING, ID_FILE_VIEW_TREE, OnItemExpanding)
     ON_NOTIFY(TVN_DELETEITEM, ID_FILE_VIEW_TREE, OnDeleteItem)
     ON_NOTIFY(TVN_BEGINLABELEDIT, ID_FILE_VIEW_TREE, OnBeginLabelEdit)
@@ -790,8 +803,9 @@ void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
                 SFGAOF AttrFlags = SHCIDS_BITMASK;
                 ti->GetAttributesOf(&AttrFlags);
                 BOOL bCanView = (AttrFlags & SFGAO_FILESYSTEM) && !(AttrFlags & SFGAO_FOLDER);
+                BOOL bIsFolder = (AttrFlags & SFGAO_FILESYSTEM) && (AttrFlags & SFGAO_FOLDER);
 
-                ::DoContextMenu(this, TheContextMenu, Flags, ptTree.x, ptTree.y, bCanView);
+                ::DoContextMenu(this, TheContextMenu, Flags, ptTree.x, ptTree.y, bCanView, bIsFolder);
             }
         }
     }
@@ -915,6 +929,38 @@ void CFileView::OnEditView()
         else
         {
             AfxMessageBox(L"Cannot view folders.", MB_OK | MB_ICONERROR);
+        }
+    }
+}
+
+void CFileView::OnNewFolder()
+{
+    HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+
+    if (hItem != NULL)
+    {
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+
+        SFGAOF AttrFlags = SHCIDS_BITMASK;
+        ti->GetAttributesOf(&AttrFlags);
+        BOOL bCanNewFolder = (AttrFlags & SFGAO_FILESYSTEM) && (AttrFlags & SFGAO_FOLDER);
+
+        if (bCanNewFolder)
+        {
+            CComPtr<IShellFolder> Folder = ti->GetFolder();
+
+            CComQIPtr<IStorage> pStorage(Folder);
+            if (pStorage)
+            {
+                CComPtr<IStorage> dummy;
+                /*hr = */pStorage->CreateStorage(L"New Folder", STGM_FAILIFTHERE, 0, 0, &dummy);
+                // TODO If exist try another name ie "New Folder (2)"
+                // TODO Select and rename it???
+            }
+        }
+        else
+        {
+            AfxMessageBox(L"Cannot create folder.", MB_OK | MB_ICONERROR);
         }
     }
 }

@@ -64,6 +64,7 @@ protected:
     afx_msg void OnSync();
     afx_msg void OnEditRename();
     afx_msg void OnEditView();
+    afx_msg void OnNewFolder();
     afx_msg void OnPaint();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
     afx_msg void OnItemExpanding(NMHDR* pHdr, LRESULT* pResult);
