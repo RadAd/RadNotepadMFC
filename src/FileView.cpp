@@ -949,6 +949,7 @@ void CFileView::OnNewFolder()
         {
             CComPtr<IShellFolder> Folder = ti->GetFolder();
 
+#if 0
             CComQIPtr<IStorage> pStorage(Folder);
             if (pStorage)
             {
@@ -956,7 +957,13 @@ void CFileView::OnNewFolder()
                 /*hr = */pStorage->CreateStorage(L"New Folder", STGM_FAILIFTHERE, 0, 0, &dummy);
                 // TODO If exist try another name ie "New Folder (2)"
                 // TODO Select and rename it???
+                // TODO SHChangeNotify();
             }
+#else
+            CString name = ti->GetDisplayNameOf(m_Malloc, SHGDN_FORPARSING);
+            name += _T("\\New Folder");
+            SHCreateDirectory(GetSafeHwnd(), name);
+#endif
         }
         else
         {
