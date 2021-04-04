@@ -10,7 +10,7 @@ Text Editor for Source Code
 
 [Scintilla](https://www.scintilla.org/)
 =======
-Evrything is included in order to build RadNotepadMFC.
+Everything is included in order to build RadNotepadMFC.
 If you want to download the scintilla source:
 ```
 msbuild ScintillaPre.vcxproj /t:Update
