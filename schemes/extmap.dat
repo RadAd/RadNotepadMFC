@@ -47,9 +47,11 @@
 .inl=cpp
 .java=java
 .js=javascript
+.json=javascript
 .lisp=lisp
 .lsp=lisp
 .lua=lua
+.mk=makefile
 .mod=modula2
 .pag=vb
 .pas=pascal

@@ -494,7 +494,7 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "CompanyName", "RadSoft"
-            VALUE "FileDescription", "Text Editor"
+            VALUE "FileDescription", "Rad Notepad"
             VALUE "FileVersion", "1.2.0.0"
             VALUE "InternalName", "RadNotepad.exe"
             VALUE "LegalCopyright", "Copyright © 2018"
