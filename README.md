@@ -11,7 +11,7 @@ Text Editor for Source Code. Supports many languages and customizable themes.
 ![Screenshot](doc/RadNotepad.png)
 
 [Scintilla](https://www.scintilla.org/)
-=======
+-----------
 The main text control is a scintilla control.
 Everything is included in order to build RadNotepadMFC.
 If you want to download the scintilla source:
@@ -20,7 +20,7 @@ msbuild ScintillaPre.vcxproj /t:Update
 ```
 
 Build
-=======
+-----
 ```bat
 msbuild RadNotepad.vcxproj -p:Configuration=Release -p:Platform=x64
 ```
