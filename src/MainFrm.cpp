@@ -134,7 +134,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     SetWindowSubclass(m_hWndMDIClient, MDIClientHookWndProc, 0, (DWORD_PTR) this);
 
     CMDITabInfo mdiTabParams;
-    mdiTabParams.m_style = CMFCTabCtrl::STYLE_3D_ONENOTE; // other styles available...
+    mdiTabParams.m_style = CMFCTabCtrl::STYLE_3D_SCROLLED; // other styles available...
     mdiTabParams.m_bActiveTabCloseButton = TRUE;      // set to FALSE to place close button at right of tab area
     mdiTabParams.m_bTabIcons = TRUE;    // set to TRUE to enable document icons on MDI taba
     mdiTabParams.m_bAutoColor = FALSE;    // set to FALSE to disable auto-coloring of MDI tabs
@@ -166,7 +166,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     struct {
         UINT nID;
         UINT nStr;
-    } tbs[] = { 
+    } tbs[] = {
         { IDR_DOCKING, IDS_TOOLBAR_DOCKING },
         { IDR_VIEW, IDS_TOOLBAR_VIEW },
         { IDR_BOOKMARK, IDS_TOOLBAR_BOOKMARK },

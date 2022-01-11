@@ -234,6 +234,7 @@ protected:
 BOOL CRadNotepadApp::InitInstance()
 {
     m_bSaveState = FALSE;
+    SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
 
     // Parse command line for standard shell commands, DDE, file open
     CRadCommandLineInfo cmdInfo;
