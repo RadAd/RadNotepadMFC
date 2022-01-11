@@ -279,9 +279,9 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
     Command.ptInvoke.x = x;
     Command.ptInvoke.y = y;
     ClientToScreen(Command.hwnd, &Command.ptInvoke);
-    if (GetKeyState(VK_CONTROL) < 0)
+    if (GetKeyState(VK_CONTROL) & KF_UP)
         Command.fMask |= CMIC_MASK_CONTROL_DOWN;
-    if (GetKeyState(VK_SHIFT) < 0)
+    if (GetKeyState(VK_SHIFT) & KF_UP)
         Command.fMask |= CMIC_MASK_SHIFT_DOWN;
 
     CComPtr<IContextMenu2>    TheContextMenu2;
@@ -797,7 +797,7 @@ void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
             if (!!TheContextMenu)
             {
                 int Flags = /*CMF_EXPLORE |*/ CMF_NORMAL | CMF_CANRENAME | CMF_ITEMMENU;
-                if (GetKeyState(VK_SHIFT) < 0)
+                if (GetKeyState(VK_SHIFT) & KF_UP)
                     Flags |= CMF_EXTENDEDVERBS;
 
                 SFGAOF AttrFlags = SHCIDS_BITMASK;
@@ -844,9 +844,9 @@ void CFileView::OnProperties()
             Command.fMask = CMIC_MASK_UNICODE;
             Command.hwnd = GetSafeHwnd();
             Command.nShow = SW_NORMAL;
-            if (GetKeyState(VK_CONTROL) < 0)
+            if (GetKeyState(VK_CONTROL) & KF_UP)
                 Command.fMask |= CMIC_MASK_CONTROL_DOWN;
-            if (GetKeyState(VK_SHIFT) < 0)
+            if (GetKeyState(VK_SHIFT) & KF_UP)
                 Command.fMask |= CMIC_MASK_SHIFT_DOWN;
 
             Command.lpVerb = "properties";

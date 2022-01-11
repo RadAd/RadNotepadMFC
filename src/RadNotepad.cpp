@@ -242,7 +242,7 @@ BOOL CRadNotepadApp::InitInstance()
         cmdInfo.m_nShellCommand = CCommandLineInfo::FileNothing;
     ParseCommandLine(cmdInfo);
 
-    if (!cmdInfo.m_bNewWindow && cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen)
+    if (!cmdInfo.m_bNewWindow && cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen && !(GetKeyState(VK_SHIFT) & KF_UP))
     {
         HWND hOther = NULL;
         EnumWindows(FindRadNotepadProc, (LPARAM) &hOther);
