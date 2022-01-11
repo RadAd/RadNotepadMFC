@@ -3,17 +3,17 @@ Module : ScintillaCtrl.h
 Purpose: Defines the interface for an MFC wrapper class for the Scintilla edit control (www.scintilla.org)
 Created: PJN / 19-03-2004
 
-Copyright (c) 2004 - 2020 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2021 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
 Copyright / Usage Details:
 
-You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise) 
-when your product is released in binary form. You are allowed to modify the source code in any way you want 
-except you cannot modify the copyright details at the top of each module. If you want to distribute source 
-code with your application, then you are only allowed to distribute versions released by the author. This is 
-to maintain a single distribution point for the source code. 
+You are allowed to include the source code in any product (commercial, shareware, freeware or otherwise)
+when your product is released in binary form. You are allowed to modify the source code in any way you want
+except you cannot modify the copyright details at the top of each module. If you want to distribute source
+code with your application, then you are only allowed to distribute versions released by the author. This is
+to maintain a single distribution point for the source code.
 
 */
 
@@ -29,11 +29,6 @@ to maintain a single distribution point for the source code.
 #pragma message("To avoid this message, please put scintilla.h in your pre compiled header (normally stdafx.h)")
 #include <Scintilla.h>
 #endif //#ifndef SCINTILLA_H
-
-#ifndef __ATTR_SAL
-#pragma message("To avoid this message, please put sal.h in your pre compiled header (normally stdafx.h)")
-#include <sal.h>
-#endif //#ifndef __ATTR_SAL
 
 #ifndef SCINTILLACTRL_EXT_CLASS
 #define SCINTILLACTRL_EXT_CLASS
@@ -56,10 +51,36 @@ public:
 
 //Misc
   void SetupDirectAccess();
-  inline LRESULT Call(_In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam);
-  LRESULT GetDirectFunction();
-  LRESULT GetDirectPointer();
+
+  inline LRESULT Call(_In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam)
+  {
+    //Validate our parameters
+    ASSERT(::IsWindow(m_hWnd)); //Window must be valid
+
+    if (m_bCallDirect)
+    {
+      ASSERT(GetWindowThreadProcessId(m_hWnd, nullptr) == GetCurrentThreadId());
+      ASSERT(m_DirectFunction != nullptr); //Direct function must be valid
+      return (m_DirectFunction)(m_DirectPointer, message, wParam, lParam);
+    }
+    else
+      return SendMessage(message, wParam, lParam);
+  }
+
+#pragma warning(suppress: 26440)
+  inline LRESULT Call(_In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam, _Inout_ int* pStatus)
+  {
+    //Validate our parameters
+    ASSERT(::IsWindow(m_hWnd)); //Window must be valid
+    ASSERT(m_DirectStatusFunction != nullptr); //Direct status function must be valid
+
+    return (m_DirectStatusFunction)(m_DirectPointer, message, wParam, lParam, pStatus);
+  }
+
+  [[nodiscard]] SciFnDirect GetDirectFunction();
+  [[nodiscard]] sptr_t GetDirectPointer();
   [[nodiscard]] BOOL GetCallDirect() const noexcept;
+  [[nodiscard]] SciFnDirectStatus GetDirectStatusFunction();
   void SetCallDirect(_In_ BOOL bDirect) noexcept;
 
 //Unicode support
@@ -93,8 +114,6 @@ public:
   void SetScintillaProperty(_In_z_ const wchar_t* key, _In_z_ const wchar_t* value);
   void SetKeyWords(_In_ int keywordSet, _In_z_ const wchar_t* keyWords);
   void SetIdentifiers(_In_ int style, _In_z_ const wchar_t* identifiers);
-  void SetLexerLanguage(_In_z_ const wchar_t* language);
-  void LoadLexerLibrary(_In_z_ const wchar_t* path);
   CStringW GetScintillaProperty(_In_z_ const wchar_t* key);
   CStringW GetPropertyExpanded(_In_z_ const wchar_t* key);
   int GetPropertyInt(_In_z_ const wchar_t* key, _In_ int defaultValue);
@@ -109,6 +128,8 @@ public:
   int PropertyType(_In_z_ const wchar_t* name);
   void ToggleFoldShowText(_In_ int line, _In_ const wchar_t* text);
   void SetDefaultFoldDisplayText(_In_z_ const wchar_t* text);
+  void EOLAnnotationSetText(_In_ int line, _In_ const wchar_t* text);
+  CStringW EOLAnnotationGetText(_In_ int line);
   CStringW DescribeProperty(_In_z_ const wchar_t* name);
   CStringW DescribeKeyWordSets();
   CStringW GetTag(_In_ int tagNumber);
@@ -134,6 +155,7 @@ public:
   CStringA AutoCGetCurrentText();
   CStringA GetLexerLanguage();
   CStringA PropertyNames();
+  CStringA EOLAnnotationGetText(_In_ int line);
   CStringA DescribeProperty(_In_z_ const char* name);
   CStringA DescribeKeyWordSets();
   CStringA GetTag(_In_ int tagNumber);
@@ -197,12 +219,18 @@ public:
   void AddTabStop(_In_ int line, _In_ int x);
   int GetNextTabStop(_In_ int line, _In_ int x);
   void SetCodePage(_In_ int codePage);
+  void SetFontLocale(_In_z_ const char* localeName);
+  int GetFontLocale(_Inout_opt_ char* localeName);
   int GetIMEInteraction();
   void SetIMEInteraction(_In_ int imeInteraction);
   void MarkerDefine(_In_ int markerNumber, _In_ int markerSymbol);
   void MarkerSetFore(_In_ int markerNumber, _In_ COLORREF fore);
   void MarkerSetBack(_In_ int markerNumber, _In_ COLORREF back);
   void MarkerSetBackSelected(_In_ int markerNumber, _In_ COLORREF back);
+  void MarkerSetForeTranslucent(_In_ int markerNumber, _In_ int fore);
+  void MarkerSetBackTranslucent(_In_ int markerNumber, _In_ int back);
+  void MarkerSetBackSelectedTranslucent(_In_ int markerNumber, _In_ int back);
+  void MarkerSetStrokeWidth(_In_ int markerNumber, _In_ int hundredths);
   void MarkerEnableHighlight(_In_ BOOL enabled);
   int MarkerAdd(_In_ int line, _In_ int markerNumber);
   void MarkerDelete(_In_ int line, _In_ int markerNumber);
@@ -213,6 +241,8 @@ public:
   void MarkerDefinePixmap(_In_ int markerNumber, _In_ const char* pixmap);
   void MarkerAddSet(_In_ int line, _In_ int markerSet);
   void MarkerSetAlpha(_In_ int markerNumber, _In_ int alpha);
+  int MarkerGetLayer(_In_ int markerNumber);
+  void MarkerSetLayer(_In_ int markerNumber, _In_ int layer);
   void SetMarginTypeN(_In_ int margin, _In_ int marginType);
   int GetMarginTypeN(_In_ int margin);
   void SetMarginWidthN(_In_ int margin, _In_ int pixelWidth);
@@ -257,12 +287,26 @@ public:
   int StyleGetWeight(_In_ int style);
   void StyleSetCharacterSet(_In_ int style, _In_ int characterSet);
   void StyleSetHotSpot(_In_ int style, _In_ BOOL hotspot);
+  void StyleSetCheckMonospaced(_In_ int style, _In_ BOOL checkMonospaced);
+  BOOL StyleGetCheckMonospaced(_In_ int style);
+  void SetElementColour(_In_ int element, _In_ int colourElement);
+  int GetElementColour(_In_ int element);
+  void ResetElementColour(_In_ int element);
+  BOOL GetElementIsSet(_In_ int element);
+  BOOL GetElementAllowsTranslucent(_In_ int element);
+  int GetElementBaseColour(_In_ int element);
   void SetSelFore(_In_ BOOL useSetting, _In_ COLORREF fore);
   void SetSelBack(_In_ BOOL useSetting, _In_ COLORREF back);
   int GetSelAlpha();
   void SetSelAlpha(_In_ int alpha);
   BOOL GetSelEOLFilled();
   void SetSelEOLFilled(_In_ BOOL filled);
+  int GetSelectionLayer();
+  void SetSelectionLayer(_In_ int layer);
+  int GetCaretLineLayer();
+  void SetCaretLineLayer(_In_ int layer);
+  BOOL GetCaretLineHighlightSubLine();
+  void SetCaretLineHighlightSubLine(_In_ BOOL subLine);
   void SetCaretFore(_In_ COLORREF fore);
   void AssignCmdKey(_In_ DWORD keyDefinition, _In_ int sciCommand);
   void ClearCmdKey(_In_ DWORD keyDefinition);
@@ -289,6 +333,8 @@ public:
   COLORREF IndicGetHoverFore(_In_ int indicator);
   void IndicSetFlags(_In_ int indicator, _In_ int flags);
   int IndicGetFlags(_In_ int indicator);
+  void IndicSetStrokeWidth(_In_ int indicator, _In_ int hundredths);
+  int IndicGetStrokeWidth(_In_ int indicator);
   void SetWhitespaceFore(_In_ BOOL useSetting, _In_ COLORREF fore);
   void SetWhitespaceBack(_In_ BOOL useSetting, _In_ COLORREF back);
   void SetWhitespaceSize(_In_ int size);
@@ -322,6 +368,8 @@ public:
   void UserListShow(_In_ int listType, _In_z_ const char* itemList);
   void AutoCSetAutoHide(_In_ BOOL autoHide);
   BOOL AutoCGetAutoHide();
+  void AutoCSetOptions(_In_ int options);
+  int AutoCGetOptions();
   void AutoCSetDropRestOfWord(_In_ BOOL dropRestOfWord);
   BOOL AutoCGetDropRestOfWord();
   void RegisterImage(_In_ int type, _In_ const char* xpmData);
@@ -367,6 +415,7 @@ public:
   int GetFirstVisibleLine();
   Sci_Position GetLine(_In_ int line, _Inout_ char* text);
   int GetLineCount();
+  void AllocateLines(_In_ int lines);
   void SetMarginLeft(_In_ int pixelWidth);
   int GetMarginLeft();
   void SetMarginRight(_In_ int pixelWidth);
@@ -571,6 +620,7 @@ public:
   void BraceBadLight(_In_ Sci_Position pos);
   void BraceBadLightIndicator(_In_ BOOL useSetting, _In_ int indicator);
   Sci_Position BraceMatch(_In_ Sci_Position pos, _In_ int maxReStyle);
+  Sci_Position BraceMatchNext(_In_ Sci_Position pos, _In_ Sci_Position startPos);
   BOOL GetViewEOL();
   void SetViewEOL(_In_ BOOL visible);
   void* GetDocPointer();
@@ -584,6 +634,7 @@ public:
   void SetEdgeColour(_In_ COLORREF edgeColour);
   void MultiEdgeAddLine(_In_ Sci_Position column, _In_ COLORREF edgeColour);
   void MultiEdgeClearAll();
+  Sci_Position GetMultiEdgeColumn(_In_ int which);
   void SearchAnchor();
   Sci_Position SearchNext(_In_ int searchFlags, _In_z_ const char* text);
   Sci_Position SearchPrev(_In_ int searchFlags, _In_z_ const char* text);
@@ -689,6 +740,7 @@ public:
   void ToggleCaretSticky();
   void SetPasteConvertEndings(_In_ BOOL convert);
   BOOL GetPasteConvertEndings();
+  void ReplaceRectangular(_In_ Sci_Position length, _In_z_ const char* text);
   void SelectionDuplicate();
   void SetCaretLineBackAlpha(_In_ int alpha);
   int GetCaretLineBackAlpha();
@@ -831,15 +883,32 @@ public:
   void SetRepresentation(_In_ const char* encodedCharacter, _In_ const char* representation);
   int GetRepresentation(_In_ const char* encodedCharacter, _Inout_z_ char* representation);
   void ClearRepresentation(_In_ const char* encodedCharacter);
+  void ClearAllRepresentations();
+  void SetRepresentationAppearance(_In_ const char* encodedCharacter, _In_ int appearance);
+  int GetRepresentationAppearance(_In_ const char* encodedCharacter);
+  void SetRepresentationColour(_In_ const char* encodedCharacter, _In_ int colour);
+  int GetRepresentationColour(_In_ const char* encodedCharacter);
+  void EOLAnnotationSetText(_In_ int line, _In_ const char* text);
+  int EOLAnnotationGetText(_In_ int line, _Inout_z_ char* text);
+  void EOLAnnotationSetStyle(_In_ int line, _In_ int style);
+  int EOLAnnotationGetStyle(_In_ int line);
+  void EOLAnnotationClearAll();
+  void EOLAnnotationSetVisible(_In_ int visible);
+  int EOLAnnotationGetVisible();
+  void EOLAnnotationSetStyleOffset(_In_ int style);
+  int EOLAnnotationGetStyleOffset();
+  BOOL SupportsFeature(_In_ int feature);
+  int GetLineCharacterIndex();
+  void AllocateLineCharacterIndex(_In_ int lineCharacterIndex);
+  void ReleaseLineCharacterIndex(_In_ int lineCharacterIndex);
+  int LineFromIndexPosition(_In_ Sci_Position pos, _In_ int lineCharacterIndex);
+  Sci_Position IndexPositionFromLine(_In_ int line, _In_ int lineCharacterIndex);
   void StartRecord();
   void StopRecord();
-  void SetLexer(_In_ int lexer);
   int GetLexer();
   void Colourise(_In_ Sci_Position start, _In_ Sci_Position end);
   void SetScintillaProperty(_In_z_ const char* key, _In_z_ const char* value);
   void SetKeyWords(_In_ int keyWordSet, _In_z_ const char* keyWords);
-  void SetLexerLanguage(_In_z_ const char* language);
-  void LoadLexerLibrary(_In_z_ const char* path);
   int GetScintillaProperty(_In_z_ const char* key, _Inout_opt_ char* value);
   int GetPropertyExpanded(_In_z_ const char* key, _Inout_opt_ char* value);
   int GetPropertyInt(_In_z_ const char* key, _In_ int defaultValue);
@@ -866,19 +935,15 @@ public:
   void SetILexer(_In_ void* ilexer);
   int GetBidirectional();
   void SetBidirectional(_In_ int bidirectional);
-  int GetLineCharacterIndex();
-  void AllocateLineCharacterIndex(_In_ int lineCharacterIndex);
-  void ReleaseLineCharacterIndex(_In_ int lineCharacterIndex);
-  int LineFromIndexPosition(_In_ Sci_Position pos, _In_ int lineCharacterIndex);
-  Sci_Position IndexPositionFromLine(_In_ int line, _In_ int lineCharacterIndex);
 
 protected:
   DECLARE_DYNAMIC(CScintillaCtrl)
 
 //Member variables
-  BOOL    m_bCallDirect;
-  LRESULT m_DirectFunction;
-  LRESULT m_DirectPointer;
+  BOOL m_bCallDirect;
+  SciFnDirect m_DirectFunction;
+  SciFnDirectStatus m_DirectStatusFunction;
+  sptr_t m_DirectPointer;
 };
 
 

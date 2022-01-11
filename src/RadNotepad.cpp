@@ -20,6 +20,9 @@
 
 #include <algorithm>
 
+typedef void*(FAR WINAPI* CreateLexerPtr)(const char* name);
+CreateLexerPtr CreateLexer;
+
 static std::vector<ACCEL> CopyAcceleratorTable(HACCEL hAccel)
 {
     std::vector<ACCEL> vecAccel(::CopyAcceleratorTable(hAccel, NULL, 0));
@@ -152,6 +155,7 @@ END_MESSAGE_MAP()
 CRadNotepadApp::CRadNotepadApp()
 {
     m_hSciDLL = NULL;
+    m_hLexDLL = NULL;
     m_SaveSettings = FALSE;
 
 	// support Restart Manager
@@ -284,12 +288,20 @@ BOOL CRadNotepadApp::InitInstance()
 	InitCtrls.dwICC = ICC_WIN95_CLASSES;
 	InitCommonControlsEx(&InitCtrls);
 
-    m_hSciDLL = LoadLibrary(_T("SciLexer.dll"));
+    m_hSciDLL = LoadLibrary(_T("Scintilla.dll"));
     if (m_hSciDLL == NULL)
     {
-        AfxMessageBox(_T("Scintilla DLL is not installed, Please download the SciTE editor and copy the SciLexer.dll into this application's directory"));
+        AfxMessageBox(_T("Scintilla DLL is not installed, Please download the SciTE editor and copy the Scintilla.dll into this application's directory"));
         return FALSE;
     }
+
+    m_hLexDLL = LoadLibrary(_T("Lexilla.dll"));
+    if (m_hLexDLL == NULL)
+    {
+        AfxMessageBox(_T("Scintilla DLL is not installed, Please download the SciTE editor and copy the Lexilla.dll into this application's directory"));
+        return FALSE;
+    }
+    CreateLexer = reinterpret_cast<CreateLexerPtr>(GetProcAddress(m_hLexDLL, "CreateLexer"));
 
     CWinAppEx::InitInstance();
 
@@ -485,7 +497,10 @@ int CRadNotepadApp::ExitInstance()
     FreeLibrary(m_hSciDLL);
     m_hSciDLL = NULL;
 
-	return CWinAppEx::ExitInstance();
+    FreeLibrary(m_hLexDLL);
+    m_hLexDLL = NULL;
+
+    return CWinAppEx::ExitInstance();
 }
 
 void CRadNotepadApp::NotifySettingsChanged()

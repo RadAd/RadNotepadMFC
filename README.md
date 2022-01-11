@@ -17,6 +17,7 @@ Everything is included in order to build RadNotepadMFC.
 If you want to download the scintilla source:
 ```bat
 msbuild ScintillaPre.vcxproj /t:Update
+msbuild LexillaPre.vcxproj /t:Update
 ```
 
 Build

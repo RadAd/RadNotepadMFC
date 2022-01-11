@@ -31,6 +31,7 @@ public:
 
 // Implementation
     HMODULE m_hSciDLL;
+    HMODULE m_hLexDLL;
     Settings m_Settings;
     BOOL m_SaveSettings;
 

@@ -144,7 +144,7 @@ History: PJN / 12-08-2004 1. Made all the remaining non virtual functions relate
                           reporting this issue.
          PJN / 28-12-2019 1. Fixed some further Clang-Tidy static code analysis warnings in the code.
 
-Copyright (c) 2004 - 2020 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2021 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 

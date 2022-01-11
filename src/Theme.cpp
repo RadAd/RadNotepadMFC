@@ -1,7 +1,10 @@
 #include "stdafx.h"
 #include "Theme.h"
-#include <SciLexer.h>
+//#include <Scintilla.h>
 #include <string>
+
+typedef void* (FAR WINAPI* CreateLexerPtr)(const char* name);
+extern CreateLexerPtr CreateLexer;
 
 #if 0
 static inline LOGFONT Font(int size, LPCWSTR face, bool bold = false)
@@ -188,9 +191,15 @@ void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBas
 void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme)
 {
     if (pLanguage != nullptr)
-        rCtrl.SetLexerLanguage(pLanguage->lexer);
+    {
+        char lexer[100];
+        size_t len = 0;
+        wcstombs_s(&len, lexer, pLanguage->lexer, _TRUNCATE);
+        void* pLexer = CreateLexer(lexer);
+        rCtrl.SetILexer(pLexer);
+    }
     else
-        rCtrl.SetLexer(SCLEX_NULL);
+        rCtrl.SetILexer(nullptr);
 
     ApplyThemeItem(rCtrl, STYLE_DEFAULT, pTheme->tDefault);
     rCtrl.StyleClearAll();

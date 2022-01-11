@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Update" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="Common.tasks" />
+
+  <Target Name="Download" Outputs="lexilla.zip">
+    <DownloadFile Address="https://www.scintilla.org/lexilla514.zip" FileName="lexilla.zip" />
+  </Target>
+
+  <Target Name="Extract" Inputs="lexilla.zip" Outputs="lexilla">
+    <UnzipFile FileName="lexilla.zip" />
+  </Target>
+
+  <Target Name="Update" DependsOnTargets="Download;Extract">
+  </Target>
+</Project>

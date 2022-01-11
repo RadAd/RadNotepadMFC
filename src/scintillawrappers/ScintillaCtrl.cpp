@@ -258,8 +258,30 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           4. Changed return value from IndicatorStart method to be Sci_Position from int.
                           5. Changed return value from IndicatorEnd method to be Sci_Position from int.
          PJN / 14-06-2020 1. Verified the code against Scintilla v4.4.3.
+         PJN / 15-08-2020 1. Updated class to work with Scintilla v4.4.4. New messages wrapped include: SCI_BRACEMATCHNEXT,
+                          SCI_EOLANNOTATIONSETTEXT, SCI_EOLANNOTATIONGETTEXT, SCI_EOLANNOTATIONSETSTYLE, SCI_EOLANNOTATIONGETSTYLE, 
+                          SCI_EOLANNOTATIONCLEARALL, SCI_EOLANNOTATIONSETVISIBLE, SCI_EOLANNOTATIONGETVISIBLE, 
+                          SCI_EOLANNOTATIONSETSTYLEOFFSET & SCI_EOLANNOTATIONGETSTYLEOFFSET.
+         PJN / 26-09-2020 1. Updated class to work with Scintilla v4.4.5. New messages wrapped include: SCI_GETMULTIEDGECOLUMN
+         PJN / 10-05-2021 1. Updated class to work with Scintilla v5.0.2. New messages wrapped include: SCI_SETFONTLOCALE, 
+                          SCI_GETFONTLOCALE, SCI_MARKERSETFORETRANSLUCENT, SCI_MARKERSETBACKTRANSLUCENT, SCI_MARKERSETBACKSELECTEDTRANSLUCENT,
+                          SCI_MARKERSETSTROKEWIDTH, SCI_SETELEMENTCOLOUR, SCI_GETELEMENTCOLOUR, SCI_RESETELEMENTCOLOUR, SCI_GETELEMENTISSET, 
+                          SCI_GETELEMENTALLOWSTRANSLUCENT, SCI_INDICSETSTROKEWIDTH, SCI_INDICGETSTROKEWIDTH & SCI_SUPPORTSFEATURE
+                          2. Updated copyright details
+         PJN / 05-06-2021 1. Updated class to work with Scintilla v5.0.3. New messages wrapped include: SCI_MARKERGETLAYER, 
+                          SCI_MARKERSETLAYER, SCI_GETELEMENTBASECOLOUR, SCI_GETSELECTIONLAYER, SCI_SETSELECTIONLAYER, SCI_GETCARETLINELAYER
+                          & SCI_SETCARETLINELAYER.
+         PJN / 11-07-2021 1. Updated class to work with Scintilla v5.1.0. New messages wrapped include: SCI_GETDIRECTSTATUSFUNCTION,
+                          SCI_REPLACERECTANGULAR, SCI_CLEARALLREPRESENTATIONS, SCI_SETREPRESENTATIONAPPEARANCE,
+                          SCI_GETREPRESENTATIONAPPEARANCE, SCI_SETREPRESENTATIONCOLOUR & SCI_GETREPRESENTATIONCOLOUR
+                          2. Changed the return values from GetDirectFunction & GetDirectPointer to less generic data types.
+         PJN / 14-08-2021 1. Updated class to work with Scintilla v5.1.1. New messages wrapped include: SCI_AUTOCSETOPTIONS, 
+                          SCI_AUTOCGETOPTIONS & SCI_ALLOCATELINES.
+         PJN / 30-09-2021 1. Updated class to work with Scintilla v5.1.3. New messages wrapped include: 
+                          SCI_STYLESETCHECKMONOSPACED, SCI_STYLEGETCHECKMONOSPACED, SCI_GETCARETLINEHIGHLIGHTSUBLINE & 
+                          SCI_SETCARETLINEHIGHLIGHTSUBLINE.
 
-Copyright (c) 2004 - 2020 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2021 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -293,7 +315,8 @@ to maintain a single distribution point for the source code.
 IMPLEMENT_DYNAMIC(CScintillaCtrl, CWnd)
 
 CScintillaCtrl::CScintillaCtrl() noexcept : m_bCallDirect(TRUE),
-                                            m_DirectFunction(0),
+                                            m_DirectFunction(nullptr),
+                                            m_DirectStatusFunction(nullptr),
                                             m_DirectPointer(0)
 {
 }
@@ -322,6 +345,7 @@ void CScintillaCtrl::SetupDirectAccess()
   //Setup the direct access data
   m_DirectFunction = GetDirectFunction();
   m_DirectPointer = GetDirectPointer();
+  m_DirectStatusFunction = GetDirectStatusFunction();
 }
 
 BOOL CScintillaCtrl::GetCallDirect() const noexcept
@@ -334,27 +358,13 @@ void CScintillaCtrl::SetCallDirect(_In_ BOOL bDirect) noexcept
   m_bCallDirect = bDirect;
 }
 
-inline LRESULT CScintillaCtrl::Call(_In_ UINT message, _In_ WPARAM wParam, _In_ LPARAM lParam)
+SciFnDirect CScintillaCtrl::GetDirectFunction()
 {
-  //Validate our parameters
-  ASSERT(::IsWindow(m_hWnd)); //Window must be valid
-
-  if (m_bCallDirect && GetWindowThreadProcessId(m_hWnd, nullptr) == GetCurrentThreadId())
-  {
-    ASSERT(m_DirectFunction); //Direct function must be valid
 #pragma warning(suppress: 26490)
-    return (reinterpret_cast<SciFnDirect>(m_DirectFunction))(m_DirectPointer, message, wParam, lParam);
-  }
-  else
-    return SendMessage(message, wParam, lParam);
+  return reinterpret_cast<SciFnDirect>(SendMessage(SCI_GETDIRECTFUNCTION, 0, 0));
 }
 
-LRESULT CScintillaCtrl::GetDirectFunction()
-{
-  return SendMessage(SCI_GETDIRECTFUNCTION, 0, 0);
-}
-
-LRESULT CScintillaCtrl::GetDirectPointer()
+sptr_t CScintillaCtrl::GetDirectPointer()
 {
   return SendMessage(SCI_GETDIRECTPOINTER, 0, 0);
 }
@@ -702,24 +712,6 @@ void CScintillaCtrl::SetIdentifiers(_In_ int style, _In_z_ const wchar_t* identi
   SetIdentifiers(style, sUTF8);
 }
 
-void CScintillaCtrl::SetLexerLanguage(_In_z_ const wchar_t* language)
-{
-  //Convert the unicode text to UTF8
-  CStringA sUTF8(W2UTF8(language, -1));
-
-  //Call the native scintilla version of the function with the UTF8 text
-  SetLexerLanguage(sUTF8);
-}
-
-void CScintillaCtrl::LoadLexerLibrary(_In_z_ const wchar_t* path)
-{
-  //Convert the unicode text to UTF8
-  CStringA sUTF8(W2UTF8(path, -1));
-
-  //Call the native scintilla version of the function with the UTF8 text
-  LoadLexerLibrary(sUTF8);
-}
-
 CStringW CScintillaCtrl::GetScintillaProperty(_In_z_ const wchar_t* key)
 {
   //Validate our parameters
@@ -863,6 +855,29 @@ void CScintillaCtrl::SetDefaultFoldDisplayText(_In_z_ const wchar_t* text)
 
   //Call the native scintilla version of the function with the UTF8 text
   SetDefaultFoldDisplayText(sUTF8);
+}
+
+void CScintillaCtrl::EOLAnnotationSetText(_In_ int line, _In_ const wchar_t* text)
+{
+  //Convert the unicode text to UTF8
+  CStringA sUTF8(W2UTF8(text, -1));
+
+  //Call the native scintilla version of the function with the UTF8 text
+  EOLAnnotationSetText(line, sUTF8);
+}
+
+CStringW CScintillaCtrl::EOLAnnotationGetText(_In_ int line)
+{
+  //Work out the length of string to allocate
+  const int nUTF8Length = EOLAnnotationGetText(line, nullptr);
+
+  //Call the function which does the work
+  CStringA sUTF8;
+  EOLAnnotationGetText(line, sUTF8.GetBufferSetLength(nUTF8Length));
+  sUTF8.ReleaseBuffer();
+
+  //Now convert the UTF8 text back to Unicode
+  return UTF82W(sUTF8, -1);
 }
 
 CStringW CScintillaCtrl::DescribeProperty(_In_z_ const wchar_t* name)
@@ -1144,6 +1159,19 @@ CStringA CScintillaCtrl::PropertyNames()
   sPropertyNames.ReleaseBuffer();
 
   return sPropertyNames;
+}
+
+CStringA CScintillaCtrl::EOLAnnotationGetText(_In_ int line)
+{
+  //Work out the length of string to allocate
+  const int nValueLength = EOLAnnotationGetText(line, nullptr);
+
+  //Call the function which does the work
+  CStringA sText;
+  EOLAnnotationGetText(line, sText.GetBufferSetLength(nValueLength));
+  sText.ReleaseBuffer();
+
+  return sText;
 }
 
 CStringA CScintillaCtrl::DescribeProperty(_In_z_ const char* name)
@@ -1541,6 +1569,16 @@ void CScintillaCtrl::SetCodePage(_In_ int codePage)
   Call(SCI_SETCODEPAGE, static_cast<WPARAM>(codePage), 0);
 }
 
+void CScintillaCtrl::SetFontLocale(_In_z_ const char* localeName)
+{
+  Call(SCI_SETFONTLOCALE, 0, reinterpret_cast<LPARAM>(localeName));
+}
+
+int CScintillaCtrl::GetFontLocale(_Inout_opt_ char* localeName)
+{
+  return static_cast<int>(Call(SCI_GETFONTLOCALE, 0, reinterpret_cast<LPARAM>(localeName)));
+}
+
 int CScintillaCtrl::GetIMEInteraction()
 {
   return static_cast<int>(Call(SCI_GETIMEINTERACTION, 0, 0));
@@ -1569,6 +1607,26 @@ void CScintillaCtrl::MarkerSetBack(_In_ int markerNumber, _In_ COLORREF back)
 void CScintillaCtrl::MarkerSetBackSelected(_In_ int markerNumber, _In_ COLORREF back)
 {
   Call(SCI_MARKERSETBACKSELECTED, static_cast<WPARAM>(markerNumber), static_cast<LPARAM>(back));
+}
+
+void CScintillaCtrl::MarkerSetForeTranslucent(_In_ int markerNumber, _In_ int fore)
+{
+  Call(SCI_MARKERSETFORETRANSLUCENT, static_cast<WPARAM>(markerNumber), static_cast<LPARAM>(fore));
+}
+
+void CScintillaCtrl::MarkerSetBackTranslucent(_In_ int markerNumber, _In_ int back)
+{
+  Call(SCI_MARKERSETBACKTRANSLUCENT, static_cast<WPARAM>(markerNumber), static_cast<LPARAM>(back));
+}
+
+void CScintillaCtrl::MarkerSetBackSelectedTranslucent(_In_ int markerNumber, _In_ int back)
+{
+  Call(SCI_MARKERSETBACKSELECTEDTRANSLUCENT, static_cast<WPARAM>(markerNumber), static_cast<LPARAM>(back));
+}
+
+void CScintillaCtrl::MarkerSetStrokeWidth(_In_ int markerNumber, _In_ int hundredths)
+{
+  Call(SCI_MARKERSETSTROKEWIDTH, static_cast<WPARAM>(markerNumber), static_cast<LPARAM>(hundredths));
 }
 
 void CScintillaCtrl::MarkerEnableHighlight(_In_ BOOL enabled)
@@ -1619,6 +1677,16 @@ void CScintillaCtrl::MarkerAddSet(_In_ int line, _In_ int markerSet)
 void CScintillaCtrl::MarkerSetAlpha(_In_ int markerNumber, _In_ int alpha)
 {
   Call(SCI_MARKERSETALPHA, static_cast<WPARAM>(markerNumber), static_cast<LPARAM>(alpha));
+}
+
+int CScintillaCtrl::MarkerGetLayer(_In_ int markerNumber)
+{
+  return static_cast<int>(Call(SCI_MARKERGETLAYER, static_cast<WPARAM>(markerNumber), 0));
+}
+
+void CScintillaCtrl::MarkerSetLayer(_In_ int markerNumber, _In_ int layer)
+{
+  Call(SCI_MARKERSETLAYER, static_cast<WPARAM>(markerNumber), static_cast<LPARAM>(layer));
 }
 
 void CScintillaCtrl::SetMarginTypeN(_In_ int margin, _In_ int marginType)
@@ -1841,6 +1909,46 @@ void CScintillaCtrl::StyleSetHotSpot(_In_ int style, _In_ BOOL hotspot)
   Call(SCI_STYLESETHOTSPOT, static_cast<WPARAM>(style), static_cast<LPARAM>(hotspot));
 }
 
+void CScintillaCtrl::StyleSetCheckMonospaced(_In_ int style, _In_ BOOL checkMonospaced)
+{
+  Call(SCI_STYLESETCHECKMONOSPACED, static_cast<WPARAM>(style), static_cast<LPARAM>(checkMonospaced));
+}
+
+BOOL CScintillaCtrl::StyleGetCheckMonospaced(_In_ int style)
+{
+  return static_cast<BOOL>(Call(SCI_STYLEGETCHECKMONOSPACED, static_cast<WPARAM>(style), 0));
+}
+
+void CScintillaCtrl::SetElementColour(_In_ int element, _In_ int colourElement)
+{
+  Call(SCI_SETELEMENTCOLOUR, static_cast<WPARAM>(element), static_cast<LPARAM>(colourElement));
+}
+
+int CScintillaCtrl::GetElementColour(_In_ int element)
+{
+  return static_cast<int>(Call(SCI_GETELEMENTCOLOUR, static_cast<WPARAM>(element), 0));
+}
+
+void CScintillaCtrl::ResetElementColour(_In_ int element)
+{
+  Call(SCI_RESETELEMENTCOLOUR, static_cast<WPARAM>(element), 0);
+}
+
+BOOL CScintillaCtrl::GetElementIsSet(_In_ int element)
+{
+  return static_cast<BOOL>(Call(SCI_GETELEMENTISSET, static_cast<WPARAM>(element), 0));
+}
+
+BOOL CScintillaCtrl::GetElementAllowsTranslucent(_In_ int element)
+{
+  return static_cast<BOOL>(Call(SCI_GETELEMENTALLOWSTRANSLUCENT, static_cast<WPARAM>(element), 0));
+}
+
+int CScintillaCtrl::GetElementBaseColour(_In_ int element)
+{
+  return static_cast<int>(Call(SCI_GETELEMENTBASECOLOUR, static_cast<WPARAM>(element), 0));
+}
+
 void CScintillaCtrl::SetSelFore(_In_ BOOL useSetting, _In_ COLORREF fore)
 {
   Call(SCI_SETSELFORE, static_cast<WPARAM>(useSetting), static_cast<LPARAM>(fore));
@@ -1869,6 +1977,36 @@ BOOL CScintillaCtrl::GetSelEOLFilled()
 void CScintillaCtrl::SetSelEOLFilled(_In_ BOOL filled)
 {
   Call(SCI_SETSELEOLFILLED, static_cast<WPARAM>(filled), 0);
+}
+
+int CScintillaCtrl::GetSelectionLayer()
+{
+  return static_cast<int>(Call(SCI_GETSELECTIONLAYER, 0, 0));
+}
+
+void CScintillaCtrl::SetSelectionLayer(_In_ int layer)
+{
+  Call(SCI_SETSELECTIONLAYER, static_cast<WPARAM>(layer), 0);
+}
+
+int CScintillaCtrl::GetCaretLineLayer()
+{
+  return static_cast<int>(Call(SCI_GETCARETLINELAYER, 0, 0));
+}
+
+void CScintillaCtrl::SetCaretLineLayer(_In_ int layer)
+{
+  Call(SCI_SETCARETLINELAYER, static_cast<WPARAM>(layer), 0);
+}
+
+BOOL CScintillaCtrl::GetCaretLineHighlightSubLine()
+{
+  return static_cast<BOOL>(Call(SCI_GETCARETLINEHIGHLIGHTSUBLINE, 0, 0));
+}
+
+void CScintillaCtrl::SetCaretLineHighlightSubLine(_In_ BOOL subLine)
+{
+  Call(SCI_SETCARETLINEHIGHLIGHTSUBLINE, static_cast<WPARAM>(subLine), 0);
 }
 
 void CScintillaCtrl::SetCaretFore(_In_ COLORREF fore)
@@ -1999,6 +2137,16 @@ void CScintillaCtrl::IndicSetFlags(_In_ int indicator, _In_ int flags)
 int CScintillaCtrl::IndicGetFlags(_In_ int indicator)
 {
   return static_cast<int>(Call(SCI_INDICGETFLAGS, static_cast<WPARAM>(indicator), 0));
+}
+
+void CScintillaCtrl::IndicSetStrokeWidth(_In_ int indicator, _In_ int hundredths)
+{
+  Call(SCI_INDICSETSTROKEWIDTH, static_cast<WPARAM>(indicator), static_cast<LPARAM>(hundredths));
+}
+
+int CScintillaCtrl::IndicGetStrokeWidth(_In_ int indicator)
+{
+  return static_cast<int>(Call(SCI_INDICGETSTROKEWIDTH, static_cast<WPARAM>(indicator), 0));
 }
 
 void CScintillaCtrl::SetWhitespaceFore(_In_ BOOL useSetting, _In_ COLORREF fore)
@@ -2164,6 +2312,16 @@ void CScintillaCtrl::AutoCSetAutoHide(_In_ BOOL autoHide)
 BOOL CScintillaCtrl::AutoCGetAutoHide()
 {
   return static_cast<BOOL>(Call(SCI_AUTOCGETAUTOHIDE, 0, 0));
+}
+
+void CScintillaCtrl::AutoCSetOptions(_In_ int options)
+{
+  Call(SCI_AUTOCSETOPTIONS, static_cast<WPARAM>(options), 0);
+}
+
+int CScintillaCtrl::AutoCGetOptions()
+{
+  return static_cast<int>(Call(SCI_AUTOCGETOPTIONS, 0, 0));
 }
 
 void CScintillaCtrl::AutoCSetDropRestOfWord(_In_ BOOL dropRestOfWord)
@@ -2391,6 +2549,11 @@ int CScintillaCtrl::GetLineCount()
   return static_cast<int>(Call(SCI_GETLINECOUNT, 0, 0));
 }
 
+void CScintillaCtrl::AllocateLines(_In_ int lines)
+{
+  Call(SCI_ALLOCATELINES, static_cast<WPARAM>(lines), 0);
+}
+
 void CScintillaCtrl::SetMarginLeft(_In_ int pixelWidth)
 {
   Call(SCI_SETMARGINLEFT, 0, static_cast<LPARAM>(pixelWidth));
@@ -2539,6 +2702,11 @@ Sci_Position CScintillaCtrl::GetText(_In_ Sci_Position length, _Inout_updates_op
 Sci_Position CScintillaCtrl::GetTextLength()
 {
   return static_cast<Sci_Position>(Call(SCI_GETTEXTLENGTH, 0, 0));
+}
+
+SciFnDirectStatus CScintillaCtrl::GetDirectStatusFunction()
+{
+  return reinterpret_cast<SciFnDirectStatus>(Call(SCI_GETDIRECTSTATUSFUNCTION, 0, 0));
 }
 
 void CScintillaCtrl::SetOvertype(_In_ BOOL overType)
@@ -3411,6 +3579,11 @@ Sci_Position CScintillaCtrl::BraceMatch(_In_ Sci_Position pos, _In_ int maxReSty
   return static_cast<Sci_Position>(Call(SCI_BRACEMATCH, static_cast<WPARAM>(pos), maxReStyle));
 }
 
+Sci_Position CScintillaCtrl::BraceMatchNext(_In_ Sci_Position pos, _In_ Sci_Position startPos)
+{
+  return static_cast<Sci_Position>(Call(SCI_BRACEMATCHNEXT, static_cast<WPARAM>(pos), static_cast<LPARAM>(startPos)));
+}
+
 BOOL CScintillaCtrl::GetViewEOL()
 {
   return static_cast<BOOL>(Call(SCI_GETVIEWEOL, 0, 0));
@@ -3475,6 +3648,11 @@ void CScintillaCtrl::MultiEdgeAddLine(_In_ Sci_Position column, _In_ COLORREF ed
 void CScintillaCtrl::MultiEdgeClearAll()
 {
   Call(SCI_MULTIEDGECLEARALL, 0, 0);
+}
+
+Sci_Position CScintillaCtrl::GetMultiEdgeColumn(_In_ int which)
+{
+  return static_cast<Sci_Position>(Call(SCI_GETMULTIEDGECOLUMN, static_cast<WPARAM>(which), 0));
 }
 
 void CScintillaCtrl::SearchAnchor()
@@ -4001,6 +4179,11 @@ void CScintillaCtrl::SetPasteConvertEndings(_In_ BOOL convert)
 BOOL CScintillaCtrl::GetPasteConvertEndings()
 {
   return static_cast<BOOL>(Call(SCI_GETPASTECONVERTENDINGS, 0, 0));
+}
+
+void CScintillaCtrl::ReplaceRectangular(_In_ Sci_Position length, _In_z_ const char* text)
+{
+  Call(SCI_REPLACERECTANGULAR, static_cast<WPARAM>(length), reinterpret_cast<LPARAM>(text));
 }
 
 void CScintillaCtrl::SelectionDuplicate()
@@ -4716,6 +4899,106 @@ void CScintillaCtrl::ClearRepresentation(_In_ const char* encodedCharacter)
   Call(SCI_CLEARREPRESENTATION, reinterpret_cast<WPARAM>(encodedCharacter), 0);
 }
 
+void CScintillaCtrl::ClearAllRepresentations()
+{
+  Call(SCI_CLEARALLREPRESENTATIONS, 0, 0);
+}
+
+void CScintillaCtrl::SetRepresentationAppearance(_In_ const char* encodedCharacter, _In_ int appearance)
+{
+  Call(SCI_SETREPRESENTATIONAPPEARANCE, reinterpret_cast<WPARAM>(encodedCharacter), static_cast<LPARAM>(appearance));
+}
+
+int CScintillaCtrl::GetRepresentationAppearance(_In_ const char* encodedCharacter)
+{
+  return static_cast<int>(Call(SCI_GETREPRESENTATIONAPPEARANCE, reinterpret_cast<WPARAM>(encodedCharacter), 0));
+}
+
+void CScintillaCtrl::SetRepresentationColour(_In_ const char* encodedCharacter, _In_ int colour)
+{
+  Call(SCI_SETREPRESENTATIONCOLOUR, reinterpret_cast<WPARAM>(encodedCharacter), static_cast<LPARAM>(colour));
+}
+
+int CScintillaCtrl::GetRepresentationColour(_In_ const char* encodedCharacter)
+{
+  return static_cast<int>(Call(SCI_GETREPRESENTATIONCOLOUR, reinterpret_cast<WPARAM>(encodedCharacter), 0));
+}
+
+void CScintillaCtrl::EOLAnnotationSetText(_In_ int line, _In_ const char* text)
+{
+  Call(SCI_EOLANNOTATIONSETTEXT, static_cast<WPARAM>(line), reinterpret_cast<LPARAM>(text));
+}
+
+int CScintillaCtrl::EOLAnnotationGetText(_In_ int line, _Inout_z_ char* text)
+{
+  return static_cast<int>(Call(SCI_EOLANNOTATIONGETTEXT, static_cast<WPARAM>(line), reinterpret_cast<LPARAM>(text)));
+}
+
+void CScintillaCtrl::EOLAnnotationSetStyle(_In_ int line, _In_ int style)
+{
+  Call(SCI_EOLANNOTATIONSETSTYLE, static_cast<WPARAM>(line), static_cast<LPARAM>(style));
+}
+
+int CScintillaCtrl::EOLAnnotationGetStyle(_In_ int line)
+{
+  return static_cast<int>(Call(SCI_EOLANNOTATIONGETSTYLE, static_cast<WPARAM>(line), 0));
+}
+
+void CScintillaCtrl::EOLAnnotationClearAll()
+{
+  Call(SCI_EOLANNOTATIONCLEARALL, 0, 0);
+}
+
+void CScintillaCtrl::EOLAnnotationSetVisible(_In_ int visible)
+{
+  Call(SCI_EOLANNOTATIONSETVISIBLE, static_cast<WPARAM>(visible), 0);
+}
+
+int CScintillaCtrl::EOLAnnotationGetVisible()
+{
+  return static_cast<int>(Call(SCI_EOLANNOTATIONGETVISIBLE, 0, 0));
+}
+
+void CScintillaCtrl::EOLAnnotationSetStyleOffset(_In_ int style)
+{
+  Call(SCI_EOLANNOTATIONSETSTYLEOFFSET, static_cast<WPARAM>(style), 0);
+}
+
+int CScintillaCtrl::EOLAnnotationGetStyleOffset()
+{
+  return static_cast<int>(Call(SCI_EOLANNOTATIONGETSTYLEOFFSET, 0, 0));
+}
+
+BOOL CScintillaCtrl::SupportsFeature(_In_ int feature)
+{
+  return static_cast<BOOL>(Call(SCI_SUPPORTSFEATURE, static_cast<WPARAM>(feature), 0));
+}
+
+int CScintillaCtrl::GetLineCharacterIndex()
+{
+  return static_cast<int>(Call(SCI_GETLINECHARACTERINDEX, 0, 0));
+}
+
+void CScintillaCtrl::AllocateLineCharacterIndex(_In_ int lineCharacterIndex)
+{
+  Call(SCI_ALLOCATELINECHARACTERINDEX, static_cast<WPARAM>(lineCharacterIndex), 0);
+}
+
+void CScintillaCtrl::ReleaseLineCharacterIndex(_In_ int lineCharacterIndex)
+{
+  Call(SCI_RELEASELINECHARACTERINDEX, static_cast<WPARAM>(lineCharacterIndex), 0);
+}
+
+int CScintillaCtrl::LineFromIndexPosition(_In_ Sci_Position pos, _In_ int lineCharacterIndex)
+{
+  return static_cast<int>(Call(SCI_LINEFROMINDEXPOSITION, static_cast<WPARAM>(pos), static_cast<LPARAM>(lineCharacterIndex)));
+}
+
+Sci_Position CScintillaCtrl::IndexPositionFromLine(_In_ int line, _In_ int lineCharacterIndex)
+{
+  return static_cast<Sci_Position>(Call(SCI_INDEXPOSITIONFROMLINE, static_cast<WPARAM>(line), static_cast<LPARAM>(lineCharacterIndex)));
+}
+
 void CScintillaCtrl::StartRecord()
 {
   Call(SCI_STARTRECORD, 0, 0);
@@ -4724,11 +5007,6 @@ void CScintillaCtrl::StartRecord()
 void CScintillaCtrl::StopRecord()
 {
   Call(SCI_STOPRECORD, 0, 0);
-}
-
-void CScintillaCtrl::SetLexer(_In_ int lexer)
-{
-  Call(SCI_SETLEXER, static_cast<WPARAM>(lexer), 0);
 }
 
 int CScintillaCtrl::GetLexer()
@@ -4749,16 +5027,6 @@ void CScintillaCtrl::SetScintillaProperty(_In_z_ const char* key, _In_z_ const c
 void CScintillaCtrl::SetKeyWords(_In_ int keyWordSet, _In_z_ const char* keyWords)
 {
   Call(SCI_SETKEYWORDS, static_cast<WPARAM>(keyWordSet), reinterpret_cast<LPARAM>(keyWords));
-}
-
-void CScintillaCtrl::SetLexerLanguage(_In_z_ const char* language)
-{
-  Call(SCI_SETLEXERLANGUAGE, 0, reinterpret_cast<LPARAM>(language));
-}
-
-void CScintillaCtrl::LoadLexerLibrary(_In_z_ const char* path)
-{
-  Call(SCI_LOADLEXERLIBRARY, 0, reinterpret_cast<LPARAM>(path));
 }
 
 int CScintillaCtrl::GetScintillaProperty(_In_z_ const char* key, _Inout_opt_ char* value)
@@ -4890,30 +5158,5 @@ int CScintillaCtrl::GetBidirectional()
 void CScintillaCtrl::SetBidirectional(_In_ int bidirectional)
 {
   Call(SCI_SETBIDIRECTIONAL, static_cast<WPARAM>(bidirectional), 0);
-}
-
-int CScintillaCtrl::GetLineCharacterIndex()
-{
-  return static_cast<int>(Call(SCI_GETLINECHARACTERINDEX, 0, 0));
-}
-
-void CScintillaCtrl::AllocateLineCharacterIndex(_In_ int lineCharacterIndex)
-{
-  Call(SCI_ALLOCATELINECHARACTERINDEX, static_cast<WPARAM>(lineCharacterIndex), 0);
-}
-
-void CScintillaCtrl::ReleaseLineCharacterIndex(_In_ int lineCharacterIndex)
-{
-  Call(SCI_RELEASELINECHARACTERINDEX, static_cast<WPARAM>(lineCharacterIndex), 0);
-}
-
-int CScintillaCtrl::LineFromIndexPosition(_In_ Sci_Position pos, _In_ int lineCharacterIndex)
-{
-  return static_cast<int>(Call(SCI_LINEFROMINDEXPOSITION, static_cast<WPARAM>(pos), static_cast<LPARAM>(lineCharacterIndex)));
-}
-
-Sci_Position CScintillaCtrl::IndexPositionFromLine(_In_ int line, _In_ int lineCharacterIndex)
-{
-  return static_cast<Sci_Position>(Call(SCI_INDEXPOSITIONFROMLINE, static_cast<WPARAM>(line), static_cast<LPARAM>(lineCharacterIndex)));
 }
 #pragma warning(pop)
