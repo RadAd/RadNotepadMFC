@@ -1,5 +1,5 @@
-scintilla/* linguist-vendored
-lexilla/* linguist-vendored
+scintilla/** linguist-vendored
+lexilla/** linguist-vendored
 
 # Auto detect text files and perform LF normalization
 * text=auto
