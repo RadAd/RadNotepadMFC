@@ -1,6 +1,5 @@
 <!-- ![Icon](res/RadNotepad.ico) RadNotepad MFC -->
-<img src="res/RadNotepad.ico" width=32/> RadNotepad MFC
-==========
+# <img src="res/RadNotepad.ico" width=32/> RadNotepad MFC
 
 Text Editor for Source Code. Supports many languages and customizable themes.
 
