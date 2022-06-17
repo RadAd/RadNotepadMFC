@@ -1,3 +1,9 @@
+---
+food: Pizza
+---
+
+# {{ page.food }}
+
 <!-- ![Icon](res/RadNotepad.ico) RadNotepad MFC -->
 # <img src="res/RadNotepad.ico" width=32/> RadNotepad MFC
 
