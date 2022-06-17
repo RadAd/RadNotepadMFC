@@ -7,7 +7,7 @@ Text Editor for Source Code. Supports many languages and customizable themes.
 [![Releases](https://img.shields.io/github/release/RadAd/RadNotepadMFC.svg)](https://github.com/RadAd/RadNotepadMFC/releases/latest)
 [![Build](https://img.shields.io/appveyor/ci/RadAd/RadNotepadMFC.svg)](https://ci.appveyor.com/project/RadAd/RadNotepadMFC)
 
-![Screenshot](doc/RadNotepad.png)
+![Screenshot](docs/RadNotepad.png)
 
 [Scintilla](https://www.scintilla.org/)
 -----------
