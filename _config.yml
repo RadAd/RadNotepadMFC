@@ -1,5 +1,3 @@
-remote_theme: RadAd/midnight
-plugins:
-- jekyll-remote-theme
+remote_theme: pages-themes/midnight@v0.2.0
 title: RadNotepad MFC
 show_downloads: true
