@@ -4,7 +4,8 @@
 Text Editor for Source Code. Supports many languages and customizable themes.
 
 ![Windows](https://img.shields.io/badge/platform-Windows-blue.svg)
-[![Releases](https://img.shields.io/github/release/RadAd/RadNotepadMFC.svg)](https://github.com/RadAd/RadNotepadMFC/releases/latest)
+[![Releases](https://img.shields.io/github/release/RadAd/RadNotepadMFC.svg)](releases/latest)
+[![commits-since](https://img.shields.io/github/commits-since/RadAd/RadNotepadMFC/latest.svg)](commits/master)
 [![Build](https://img.shields.io/appveyor/ci/RadAd/RadNotepadMFC.svg)](https://ci.appveyor.com/project/RadAd/RadNotepadMFC)
 
 ![Screenshot](docs/RadNotepad.png)
