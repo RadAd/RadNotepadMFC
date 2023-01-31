@@ -200,7 +200,7 @@ BOOL CRadUserTool::Invoke()
         if (hExeInst <= HINSTANCE(32))
         {
             CString msg;
-            msg.Format(_T("Error ShellExecute: %d"), reinterpret_cast<INT_PTR>(hExeInst));
+            msg.Format(_T("Error ShellExecute: %d"), static_cast<int>(reinterpret_cast<INT_PTR>(hExeInst)));
             AfxMessageBox(msg, MB_ICONSTOP | MB_OK);
             return FALSE;
         }

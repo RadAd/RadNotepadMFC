@@ -70,7 +70,8 @@ BOOL CSaveModifiedDlg::OnInitDialog()
                         SHGetFileInfo(pDoc->GetPathName(), 0, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
                     if (fi.hIcon == NULL)
                         SHGetFileInfo(_T(".txt"), 0, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
-                    DestroyIcon(fi.hIcon);
+                    if (fi.hIcon != NULL)
+                        DestroyIcon(fi.hIcon);
 
                     int i = m_List.InsertItem(m_List.GetItemCount(), pDoc->GetTitle(), fi.iIcon);
                     m_List.SetItemData(i, (DWORD_PTR) pDoc);

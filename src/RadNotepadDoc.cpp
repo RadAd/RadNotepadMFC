@@ -247,7 +247,7 @@ static void AddText(Scintilla::CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesR
 
         case Encoding::BOM_UTF16_BE:
             byteswap16(reinterpret_cast<unsigned short*>(Buffer), nBytesRead / sizeof(unsigned short));
-            // fallthrough
+            [[fallthrough]];
         case Encoding::BOM_UTF16_LE:
             rCtrl.AddText(nBytesRead / sizeof(wchar_t), reinterpret_cast<wchar_t*>(Buffer));
             ASSERT(nBytesRead % sizeof(wchar_t) == 0);
