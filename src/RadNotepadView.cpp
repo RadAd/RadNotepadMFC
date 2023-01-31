@@ -444,7 +444,7 @@ void CRadNotepadView::OnViewWhitespace()
     Scintilla::WhiteSpace ws = rCtrl.GetViewWS();
     const Theme* pTheme = &theApp.m_Settings.user;
     const ThemeEditor& pThemeEditor = m_pLanguage != nullptr ? m_pLanguage->editor : pTheme->editor;
-    ws = ws == Scintilla::WhiteSpace::Invisible ? static_cast<Scintilla::WhiteSpace>(Merge(pThemeEditor.nWhitespaceMode, &pTheme->editor.nWhitespaceMode, 0, SCWS_VISIBLEALWAYS)) : Scintilla::WhiteSpace::Invisible;
+    ws = ws == Scintilla::WhiteSpace::Invisible ? Merge(pThemeEditor.nWhitespaceMode, &pTheme->editor.nWhitespaceMode, 0, Scintilla::WhiteSpace::VisibleAlways) : Scintilla::WhiteSpace::Invisible;
     rCtrl.SetViewWS(ws);
 }
 

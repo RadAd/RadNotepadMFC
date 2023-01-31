@@ -125,20 +125,20 @@ void AddExt(Theme* pTheme, const CString& ext, const CString& lexer)
 static inline void ApplyEditor(Scintilla::CScintillaCtrl& rCtrl, const ThemeEditor& rThemeEditor, const ThemeEditor* pBaseThemeEditor, const Theme* pTheme)
 {
     rCtrl.SetCaretFore(Merge(rThemeEditor.cCaretFG, pn(pBaseThemeEditor, cCaretFG), COLOR_NONE, pTheme->tDefault.fore));
-    rCtrl.SetCaretStyle(static_cast<Scintilla::CaretStyle>(Merge(rThemeEditor.nCaretStyle, pn(pBaseThemeEditor, nCaretStyle), -1, CARETSTYLE_LINE)));
+    rCtrl.SetCaretStyle(Merge(rThemeEditor.nCaretStyle, pn(pBaseThemeEditor, nCaretStyle), -1, Scintilla::CaretStyle::Line));
     rCtrl.SetCaretWidth(Merge(rThemeEditor.nCaretWidth, pn(pBaseThemeEditor, nCaretWidth), 0, 1));
 
     rCtrl.SetUseTabs(Merge(rThemeEditor.bUseTabs, pn(pBaseThemeEditor, bUseTabs), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     rCtrl.SetTabWidth(Merge(rThemeEditor.nTabWidth, pn(pBaseThemeEditor, nTabWidth), 0, 4));
 
-    rCtrl.SetIndentationGuides(static_cast<Scintilla::IndentView>(Merge(rThemeEditor.nIndentGuideType, pn(pBaseThemeEditor, nIndentGuideType), -1, SC_IV_LOOKBOTH)));
+    rCtrl.SetIndentationGuides(Merge(rThemeEditor.nIndentGuideType, pn(pBaseThemeEditor, nIndentGuideType), -1, Scintilla::IndentView::LookBoth));
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
     bool bShowWS = Merge(rThemeEditor.bShowWhitespace, pn(pBaseThemeEditor, bShowWhitespace), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
-    rCtrl.SetViewWS(bShowWS ? static_cast<Scintilla::WhiteSpace>(Merge(rThemeEditor.nWhitespaceMode, pn(pBaseThemeEditor, nWhitespaceMode), 0, SCWS_VISIBLEALWAYS)) : Scintilla::WhiteSpace::Invisible);
+    rCtrl.SetViewWS(bShowWS ? Merge(rThemeEditor.nWhitespaceMode, pn(pBaseThemeEditor, nWhitespaceMode), 0, Scintilla::WhiteSpace::VisibleAlways) : Scintilla::WhiteSpace::Invisible);
     rCtrl.SetViewEOL(Merge(rThemeEditor.bShowEOL, pn(pBaseThemeEditor, bShowEOL), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     rCtrl.SetWhitespaceSize(Merge(rThemeEditor.nWhitespaceSize, pn(pBaseThemeEditor, nWhitespaceSize), 0, 1));
-    rCtrl.SetTabDrawMode(static_cast<Scintilla::TabDrawMode>(Merge(rThemeEditor.nTabDrawMode, pn(pBaseThemeEditor, nTabDrawMode), 0, SCTD_LONGARROW)));
+    rCtrl.SetTabDrawMode(Merge(rThemeEditor.nTabDrawMode, pn(pBaseThemeEditor, nTabDrawMode), 0, Scintilla::TabDrawMode::LongArrow));
 
     rCtrl.SetWrapMode(Merge(rThemeEditor.bWordWrap, pn(pBaseThemeEditor, bWordWrap), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE ? Scintilla::Wrap::Word : Scintilla::Wrap::None);
 }
@@ -156,7 +156,7 @@ static inline void ApplyStyle(Scintilla::CScintillaCtrl& rCtrl, const Style& sty
 
 static inline void ApplyMarker(Scintilla::CScintillaCtrl& rCtrl, const Marker& marker, const Marker* pBaseMarker)
 {
-    rCtrl.MarkerDefine(marker.id, static_cast<Scintilla::MarkerSymbol>(Merge(marker.type, pn(pBaseMarker, type), -1, 0)));
+    rCtrl.MarkerDefine(marker.id, Merge(marker.type, pn(pBaseMarker, type), -1, Scintilla::MarkerSymbol::Circle));
     rCtrl.MarkerSetFore(marker.id, Merge(marker.fore, pn(pBaseMarker, fore), COLOR_NONE, COLOR_LT_MAGENTA));
     rCtrl.MarkerSetBack(marker.id, Merge(marker.back, pn(pBaseMarker, back), COLOR_NONE, COLOR_LT_MAGENTA));
 }

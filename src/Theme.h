@@ -356,13 +356,13 @@ static inline typename T::pointer GetKey(T& vec, int id)
     return nullptr;
 }
 
-template<class T>
-static T Merge(const T& a, const T* b, const T& n, const T& d)
+template<class T, class U>
+static U Merge(const T& a, const T* b, const T& n, const U& d)
 {
     if (a != n)
-        return a;
+        return static_cast<U>(a);
     else if (b != nullptr && *b != n)
-        return *b;
+        return static_cast<U>(*b);
     else
         return d;
 }
