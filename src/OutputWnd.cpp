@@ -269,7 +269,7 @@ void COutputList::OnViewOutput()
 void COutputList::OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult)
 {
     SCNotification* pSCNotification = reinterpret_cast<SCNotification*>(pHdr);
-    int nLine = LineFromPosition(pSCNotification->position);
+    Scintilla::Line nLine = LineFromPosition(pSCNotification->position);
     CString strLine = GetLine(nLine);
     strLine.Trim();
 
@@ -302,7 +302,7 @@ void COutputList::OnHotSpotClick(NMHDR* pHdr, LRESULT* pResult)
         CRadNotepadDoc* pDoc = DYNAMIC_DOWNCAST(CRadNotepadDoc, theApp.OpenDocumentFile(path));
         if (pDoc != nullptr && nFileLine > 0)
         {
-            CScintillaView* pScintillaView = pDoc->GetView();
+            Scintilla::CScintillaView* pScintillaView = pDoc->GetView();
             if (pScintillaView != nullptr)
             {
                 pScintillaView->SetFocus();
@@ -323,7 +323,7 @@ int COutputList::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
     SetReadOnly(TRUE);
     SetHotspotActiveUnderline(TRUE);
-    SetWrapVisualFlags(SC_WRAPVISUALFLAG_END);
+    SetWrapVisualFlags(Scintilla::WrapVisualFlag::End);
     return 0;
 }
 
@@ -347,14 +347,14 @@ BOOL COutputWnd::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void COutputList::OnUpdatePopupWordWrap(CCmdUI *pCmdUI)
 {
-    pCmdUI->SetCheck(GetWrapMode() != SC_WRAP_NONE);
+    pCmdUI->SetCheck(GetWrapMode() != Scintilla::Wrap::None);
 }
 
 
 void COutputList::OnPopupWordWrap()
 {
-    int wm = GetWrapMode();
-    wm = wm == SC_WRAP_WORD ? SC_WRAP_NONE : SC_WRAP_WORD;
+    Scintilla::Wrap wm = GetWrapMode();
+    wm = wm == Scintilla::Wrap::Word ? Scintilla::Wrap::None : Scintilla::Wrap::Word;
     SetWrapMode(wm);
 }
 

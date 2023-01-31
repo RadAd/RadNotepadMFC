@@ -28,7 +28,7 @@ void CGoToLineDlg::DoDataExchange(CDataExchange* pDX)
     CDialogEx::DoDataExchange(pDX);
     DDX_Text(pDX, IDC_LINE, m_nLine);
     if (m_nMaxLine > 0)
-        DDV_MinMaxInt(pDX, m_nLine, 1, m_nMaxLine);
+        DDV_MinMaxInt(pDX, static_cast<int>(m_nLine), 1, static_cast<int>(m_nMaxLine));
 }
 
 

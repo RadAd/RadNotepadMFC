@@ -3,7 +3,7 @@
 
 class CRadNotepadDoc;
 
-class CRadNotepadView : public CScintillaView
+class CRadNotepadView : public Scintilla::CScintillaView
 {
 protected: // create from serialization only
     CRadNotepadView();
@@ -15,8 +15,8 @@ public:
 
 // Operations
 public:
-    void SetLineEndingsMode(int mode);
-    CStringW GetTextRange(Sci_CharacterRange cr);
+    void SetLineEndingsMode(Scintilla::EndOfLine mode);
+    CStringW GetTextRange(Scintilla::CharacterRange cr);
     CStringW GetCurrentWord(BOOL bSelect = FALSE);
 
 // Overrides
@@ -25,9 +25,9 @@ public:
     virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
     virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/) override;
 
-    virtual void OnCharAdded(_Inout_ SCNotification* pSCNotification) override;
-    virtual void OnModified(_Inout_ SCNotification* pSCNotification) override;
-    virtual void OnUpdateUI(_Inout_ SCNotification* pSCNotification) override;
+    virtual void OnCharAdded(_Inout_ Scintilla::NotificationData* pSCNotification) override;
+    virtual void OnModified(_Inout_ Scintilla::NotificationData* pSCNotification) override;
+    virtual void OnUpdateUI(_Inout_ Scintilla::NotificationData* pSCNotification) override;
 
     virtual BOOL FindText(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression) override;
     virtual void TextNotFound(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression, _In_ BOOL bReplaced) override;
@@ -55,7 +55,6 @@ protected:
     afx_msg void OnUpdateLine(CCmdUI* pCmdUI);
     afx_msg void OnUpdateSchemeIndicator(CCmdUI* pCmdUI);
     afx_msg void OnUpdateLineEndingIndicator(CCmdUI* pCmdUI);
-    afx_msg void OnUpdate(CCmdUI* pCmdUI);
     afx_msg void OnUpdateInsert(CCmdUI* pCmdUI);
     afx_msg void OnViewMargin(UINT nID);
     afx_msg void OnUpdateViewMargin(CCmdUI *pCmdUI);

@@ -6,7 +6,7 @@ struct Language;
 /////////////////////////////////////////////////////////////////////////////
 // COutputList window
 
-class COutputList : public CScintillaCtrl
+class COutputList : public Scintilla::CScintillaCtrl
 {
 // Construction
 public:

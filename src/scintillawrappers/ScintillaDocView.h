@@ -4,7 +4,7 @@ Purpose: Defines the interface for MFC CView and CDocument derived wrapper class
          edit control (www.scintilla.org)
 Created: PJN / 19-03-2004
 
-Copyright (c) 2004 - 2021 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2022 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -26,7 +26,6 @@ to maintain a single distribution point for the source code.
 #ifndef __SCINTILLADOCVIEW_H__
 #define __SCINTILLADOCVIEW_H__
 
-
 #include "ScintillaCtrl.h"
 
 #ifndef _VECTOR_
@@ -39,7 +38,6 @@ to maintain a single distribution point for the source code.
 #include <memory>
 #endif //#ifndef _MEMORY_
 
-
 #ifndef SCINTILLADOCVIEW_EXT_CLASS
 #define SCINTILLADOCVIEW_EXT_CLASS
 #endif //#ifndef SCINTILLADOCVIEW_EXT_CLASS
@@ -47,13 +45,22 @@ to maintain a single distribution point for the source code.
 
 //////////////////// Classes //////////////////////////////////////////////////
 
+namespace Scintilla
+{
+
+
 class SCINTILLADOCVIEW_EXT_CLASS CScintillaFindReplaceDlg : public CFindReplaceDialog
 {
 public:
 //Constructors / Destructors
   CScintillaFindReplaceDlg() noexcept;
+  CScintillaFindReplaceDlg(const CScintillaFindReplaceDlg&) = delete;
+  CScintillaFindReplaceDlg(CScintillaFindReplaceDlg&&) = delete;
+  ~CScintillaFindReplaceDlg() = default; //NOLINT(modernize-use-override)
 
 //Methods
+  CScintillaFindReplaceDlg& operator=(const CScintillaFindReplaceDlg&) = delete;
+  CScintillaFindReplaceDlg& operator=(CScintillaFindReplaceDlg&&) = delete;
   BOOL Create(BOOL bFindDialogOnly, LPCTSTR lpszFindWhat, LPCTSTR lpszReplaceWith = nullptr, DWORD dwFlags = FR_DOWN, CWnd* pParentWnd = nullptr) override;
   [[nodiscard]] BOOL GetRegularExpression() const noexcept { return m_bRegularExpression; };
   void SetRegularExpression(_In_ BOOL bRegularExpression) noexcept { m_bRegularExpression = bRegularExpression; };
@@ -75,18 +82,25 @@ protected:
 class SCINTILLADOCVIEW_EXT_CLASS CScintillaEditState
 {
 public:
-    //Constructors / Destructors
-    CScintillaEditState() noexcept;
+//Constructors / Destructors
+  CScintillaEditState() noexcept;
+  CScintillaEditState(const CScintillaEditState&) = default;
+  CScintillaEditState(CScintillaEditState&&) = default;
+  ~CScintillaEditState() = default;
 
-    //Member variables
-    CScintillaFindReplaceDlg* pFindReplaceDlg;    //find or replace dialog
-    BOOL                      bFindOnly;          //Is pFindReplace the find or replace?
-    CString                   strFind;            //last find string
-    CString                   strReplace;         //last replace string
-    BOOL                      bCase;              //TRUE==case sensitive, FALSE==not
-    int                       bNext;              //TRUE==search down, FALSE== search up
-    BOOL                      bWord;              //TRUE==match whole word, FALSE==not
-    BOOL                      bRegularExpression; //TRUE==regular expression search, FALSE==not
+//Methods
+  CScintillaEditState& operator=(const CScintillaEditState&) = default;
+  CScintillaEditState& operator=(CScintillaEditState&&) = default;
+
+//Member variables
+  CScintillaFindReplaceDlg* pFindReplaceDlg; //find or replace dialog
+  BOOL bFindOnly; //Is pFindReplace the find or replace?
+  CString strFind; //last find string
+  CString strReplace; //last replace string
+  BOOL bCase; //TRUE==case sensitive, FALSE==not
+  int bNext; //TRUE==search down, FALSE== search up
+  BOOL bWord; //TRUE==match whole word, FALSE==not
+  BOOL bRegularExpression; //TRUE==regular expression search, FALSE==not
 };
 
 class SCINTILLADOCVIEW_EXT_CLASS CScintillaView : public CView
@@ -94,8 +108,13 @@ class SCINTILLADOCVIEW_EXT_CLASS CScintillaView : public CView
 public:
 //Constructors / Destructors
   CScintillaView();
+  CScintillaView(const CScintillaView&) = delete;
+  CScintillaView(CScintillaView&&) = delete;
+  ~CScintillaView() = default; //NOLINT(modernize-use-override)
 
 //Methods
+  CScintillaView& operator=(const CScintillaView&) = delete;
+  CScintillaView& operator=(CScintillaView&&) = delete;
   CScintillaCtrl& GetCtrl();
   void SetMargins(_In_ const CRect& rMargin) noexcept { m_rMargin = rMargin; };
   [[nodiscard]] CRect GetMargins() const noexcept { return m_rMargin; };
@@ -114,9 +133,9 @@ protected:
   void OnPrint(CDC* pDC, CPrintInfo* pInfo) override;
   void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo = nullptr) override;
   virtual BOOL PaginateTo(CDC* pDC, CPrintInfo* pInfo);
-  virtual Sci_Position PrintPage(CDC* pDC, CPrintInfo* pInfo, Sci_Position nIndexStart, Sci_Position nIndexStop);
-  virtual void PrintHeader(CDC* pDC, CPrintInfo* pInfo, Sci_RangeToFormat& frPrint);
-  virtual void PrintFooter(CDC* pDC, CPrintInfo* pInfo, Sci_RangeToFormat& frPrint);
+  virtual Position PrintPage(CDC* pDC, CPrintInfo* pInfo, Position nIndexStart, Position nIndexStop);
+  virtual void PrintHeader(CDC* pDC, CPrintInfo* pInfo, RangeToFormatFull& frPrint);
+  virtual void PrintFooter(CDC* pDC, CPrintInfo* pInfo, RangeToFormatFull& frPrint);
 
 //Search and Replace support
   virtual void OnFindNext(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression);
@@ -127,7 +146,7 @@ protected:
   virtual void OnReplaceSel(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression, _In_z_ LPCTSTR lpszReplace);
   virtual void OnReplaceAll(_In_z_ LPCTSTR lpszFind, _In_z_ LPCTSTR lpszReplace, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression);
   virtual BOOL SameAsSelected(_In_z_ LPCTSTR lpszCompare, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression);
-  virtual Sci_Position FindAndSelect(_In_ DWORD dwFlags, _Inout_ Sci_TextToFind& ft);
+  virtual Position FindAndSelect(_In_ FindOption flags, _Inout_ TextToFindFull& ft);
   virtual void AdjustFindDialogPosition();
   virtual CScintillaFindReplaceDlg* CreateFindReplaceDialog();
 
@@ -145,54 +164,55 @@ protected:
   virtual BOOL ShouldDestroyFindReplaceDialog();
 
 //Notifications
-  virtual void OnStyleNeeded(_Inout_ SCNotification* pSCNotification);
-  virtual void OnCharAdded(_Inout_ SCNotification* pSCNotification);
-  virtual void OnSavePointReached(_Inout_ SCNotification* pSCNotification);
-  virtual void OnSavePointLeft(_Inout_ SCNotification* pSCNotification);
-  virtual void OnModifyAttemptRO(_Inout_ SCNotification* pSCNotification);
-  virtual void OnDoubleClick(_Inout_ SCNotification* pSCNotification);
-  virtual void OnUpdateUI(_Inout_ SCNotification* pSCNotification);
-  virtual void OnModified(_Inout_ SCNotification* pSCNotification);
-  virtual void OnMacroRecord(_Inout_ SCNotification* pSCNotification);
-  virtual void OnMarginClick(_Inout_ SCNotification* pSCNotification);
-  virtual void OnMarginRightClick(_Inout_ SCNotification* pSCNotification);
-  virtual void OnNeedShown(_Inout_ SCNotification* pSCNotification);
-  virtual void OnPainted(_Inout_ SCNotification* pSCNotification);
-  virtual void OnUserListSelection(_Inout_ SCNotification* pSCNotification);
-  virtual void OnDwellStart(_Inout_ SCNotification* pSCNotification);
-  virtual void OnDwellEnd(_Inout_ SCNotification* pSCNotification);
-  virtual void OnZoom(_Inout_ SCNotification* pSCNotification);
-  virtual void OnHotSpotClick(_Inout_ SCNotification* pSCNotification);
-  virtual void OnHotSpotDoubleClick(_Inout_ SCNotification* pSCNotification);
-  virtual void OnCallTipClick(_Inout_ SCNotification* pSCNotification);
-  virtual void OnAutoCSelection(_Inout_ SCNotification* pSCNotification);
-  virtual void OnIndicatorClick(_Inout_ SCNotification* pSCNotification);
-  virtual void OnIndicatorRelease(_Inout_ SCNotification* pSCNotification);
-  virtual void OnAutoCCharDeleted(_Inout_ SCNotification* pSCNotification);
-  virtual void OnAutoCCancelled(_Inout_ SCNotification* pSCNotification);
-  virtual void OnHotspotReleaseClick(_Inout_ SCNotification* pSCNotification);
-  virtual void OnFocusIn(_Inout_ SCNotification* pSCNotification);
-  virtual void OnFocusOut(_Inout_ SCNotification* pSCNotification);
-  virtual void OnAutoCCompleted(_Inout_ SCNotification* pSCNotification);
-  virtual void OnAutoCSelectionChange(_Inout_ SCNotification* pSCNotification);
+  virtual void OnStyleNeeded(_Inout_ NotificationData* pSCNotification);
+  virtual void OnCharAdded(_Inout_ NotificationData* pSCNotification);
+  virtual void OnSavePointReached(_Inout_ NotificationData* pSCNotification);
+  virtual void OnSavePointLeft(_Inout_ NotificationData* pSCNotification);
+  virtual void OnModifyAttemptRO(_Inout_ NotificationData* pSCNotification);
+  virtual void OnDoubleClick(_Inout_ NotificationData* pSCNotification);
+  virtual void OnUpdateUI(_Inout_ NotificationData* pSCNotification);
+  virtual void OnModified(_Inout_ NotificationData* pSCNotification);
+  virtual void OnMacroRecord(_Inout_ NotificationData* pSCNotification);
+  virtual void OnMarginClick(_Inout_ NotificationData* pSCNotification);
+  virtual void OnMarginRightClick(_Inout_ NotificationData* pSCNotification);
+  virtual void OnNeedShown(_Inout_ NotificationData* pSCNotification);
+  virtual void OnPainted(_Inout_ NotificationData* pSCNotification);
+  virtual void OnUserListSelection(_Inout_ NotificationData* pSCNotification);
+  virtual void OnDwellStart(_Inout_ NotificationData* pSCNotification);
+  virtual void OnDwellEnd(_Inout_ NotificationData* pSCNotification);
+  virtual void OnZoom(_Inout_ NotificationData* pSCNotification);
+  virtual void OnHotSpotClick(_Inout_ NotificationData* pSCNotification);
+  virtual void OnHotSpotDoubleClick(_Inout_ NotificationData* pSCNotification);
+  virtual void OnCallTipClick(_Inout_ NotificationData* pSCNotification);
+  virtual void OnAutoCSelection(_Inout_ NotificationData* pSCNotification);
+  virtual void OnIndicatorClick(_Inout_ NotificationData* pSCNotification);
+  virtual void OnIndicatorRelease(_Inout_ NotificationData* pSCNotification);
+  virtual void OnAutoCCharDeleted(_Inout_ NotificationData* pSCNotification);
+  virtual void OnAutoCCancelled(_Inout_ NotificationData* pSCNotification);
+  virtual void OnHotspotReleaseClick(_Inout_ NotificationData* pSCNotification);
+  virtual void OnFocusIn(_Inout_ NotificationData* pSCNotification);
+  virtual void OnFocusOut(_Inout_ NotificationData* pSCNotification);
+  virtual void OnAutoCCompleted(_Inout_ NotificationData* pSCNotification);
+  virtual void OnAutoCSelectionChange(_Inout_ NotificationData* pSCNotification);
   virtual void OnChange();
   virtual void OnScintillaSetFocus();
   virtual void OnScintillaKillFocus();
 
 //Member variables
-  std::unique_ptr<CScintillaCtrl>    m_pEdit;                            //The scintilla control
-  std::vector<Sci_Position>          m_PageStart;                       //array of starting pages
-  CRect                              m_rMargin;                          //Margin for printing
-  BOOL                               m_bFirstSearch;                     //Is this the first search
-  BOOL                               m_bChangeFindRange;                 //Should search start again from beginning
-  Sci_Position                       m_lInitialSearchPos;                //Initial search position
-  BOOL                               m_bUseROFileAttributeDuringLoading; //Should we check the RO file attribute to see if the file should be opened in read only mode by scintilla
-  BOOL                               m_bPrintHeader;                     //Should Headers be printed?
-  BOOL                               m_bPrintFooter;                     //Should Footers be printed?
-  BOOL                               m_bUsingMetric;                     //TRUE if the margin is specified in Metric units, else FALSE implies imperial
-  BOOL                               m_bPersistMarginSettings;           //Should we persist the margin settings for the Page Setup dialog
-  BOOL                               m_bCPP11Regex;                      //Should the C++11 regex functionality in Scintilla be used
+  std::unique_ptr<CScintillaCtrl> m_pEdit; //The scintilla control
+  std::vector<Position> m_PageStart; //array of starting pages
+  CRect m_rMargin; //Margin for printing
+  BOOL m_bFirstSearch; //Is this the first search
+  BOOL m_bChangeFindRange; //Should search start again from beginning
+  Position m_lInitialSearchPos; //Initial search position
+  BOOL m_bUseROFileAttributeDuringLoading; //Should we check the RO file attribute to see if the file should be opened in read only mode by scintilla
+  BOOL m_bPrintHeader; //Should Headers be printed?
+  BOOL m_bPrintFooter; //Should Footers be printed?
+  BOOL m_bUsingMetric; //TRUE if the margin is specified in Metric units, else FALSE implies imperial
+  BOOL m_bPersistMarginSettings; //Should we persist the margin settings for the Page Setup dialog
+  BOOL m_bCPP11Regex; //Should the C++11 regex functionality in Scintilla be used
 
+//Message handlers
   afx_msg void OnPaint();
   afx_msg void OnUpdateNeedSel(CCmdUI* pCmdUI);
   afx_msg void OnUpdateNeedPaste(CCmdUI* pCmdUI);
@@ -232,12 +252,16 @@ protected: //create from serialization only
   CScintillaDoc();
   DECLARE_DYNAMIC(CScintillaDoc)
 
-//Attributes
 public:
-  [[nodiscard]] virtual CScintillaView* GetView() const;
+//Constructors / Destructors
+  CScintillaDoc(const CScintillaDoc&) = delete;
+  CScintillaDoc(CScintillaDoc&&) = delete;
+  ~CScintillaDoc() = default; //NOLINT(modernize-use-override)
 
-//Implementation
-public:
+//Methods
+  CScintillaDoc& operator=(const CScintillaDoc&) = delete;
+  CScintillaDoc& operator=(CScintillaDoc&&) = delete;
+  [[nodiscard]] virtual CScintillaView* GetView() const;
   void DeleteContents() override;
   BOOL IsModified() override;
   void SetModifiedFlag(BOOL bModified = TRUE) override;
@@ -245,5 +269,7 @@ public:
   BOOL OnSaveDocument(LPCTSTR lpszPathName) override;
 };
 
+
+}; //namespace Scintilla
 
 #endif //#ifndef __SCINTILLADOCVIEW_H__

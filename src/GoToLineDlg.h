@@ -21,6 +21,6 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-    int m_nLine;
-    int m_nMaxLine;
+	Scintilla::Line m_nLine;
+	Scintilla::Line m_nMaxLine;
 };

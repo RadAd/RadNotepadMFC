@@ -334,14 +334,14 @@ struct Theme
     }
 };
 
-void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
-void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin);
+void Apply(Scintilla::CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme);
+void ApplyMargin(Scintilla::CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin);
 void LoadTheme(Theme* pTheme, Theme* pDefaultTheme);
 void SaveTheme(const Theme* pTheme, const Theme* pDefaultTheme);
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName);
 const Language* GetLanguageForExt(const Theme* pTheme, LPCTSTR strExt);
 const StyleClass* GetStyleClass(const Theme* pTheme, LPCTSTR strName);
-int GetMarginWidth(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin);
+int GetMarginWidth(Scintilla::CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin);
 
 #define pn(x, y) ((x) == nullptr ? nullptr : &(x)->y)
 

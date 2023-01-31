@@ -19,17 +19,19 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTEXTHELP | WS
 CAPTION "Find"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LTEXT           "Fi&nd what:",-1,4,8,42,8
-    EDITTEXT        1152,47,7,128,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Match &whole word only",1040,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,4,26,100,12
-    CONTROL         "Match &case",1041,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,42,64,12
-    CONTROL         "Regular &expression",IDC_REGULAR_EXPRESSION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,58,83,12
-    GROUPBOX        "Direction",1072,107,26,68,28,WS_GROUP
-    CONTROL         "&Up",1056,"Button",BS_AUTORADIOBUTTON | WS_GROUP,111,38,25,12
-    CONTROL         "&Down",1057,"Button",BS_AUTORADIOBUTTON,138,38,35,12
-    DEFPUSHBUTTON   "&Find Next",IDOK,182,7,50,14,WS_GROUP
-    PUSHBUTTON      "Cancel",IDCANCEL,182,30,50,14
-    PUSHBUTTON      "&Help",1038,182,55,50,14
+    LTEXT           "Fi&nd what:", -1, 4, 8, 42, 8
+    EDITTEXT        edt1, 47, 7, 128, 12, WS_GROUP | WS_TABSTOP | ES_AUTOHSCROLL
+    AUTOCHECKBOX    "Match &whole word only", chx1, 4, 26, 100, 12, WS_GROUP
+    AUTOCHECKBOX    "Match &case", chx2, 4, 42, 64, 12
+    AUTOCHECKBOX    "W&rap around", chx3, 4, 58, 64, 12
+    AUTOCHECKBOX    "Regular &expression", IDC_REGULAR_EXPRESSION, 4, 58, 83, 12
+    GROUPBOX        "Direction", grp1, 107, 26, 68, 28, WS_GROUP
+    AUTORADIOBUTTON "&Up", rad1, 111, 38, 25, 12, WS_GROUP
+    AUTORADIOBUTTON "&Down", rad2, 138, 38, 35, 12
+    DEFPUSHBUTTON   "&Find Next", IDOK, 182, 5, 50, 14, WS_GROUP
+    PUSHBUTTON      "Cancel", IDCANCEL, 182, 23, 50, 14
+    PUSHBUTTON      "&Help", pshHelp, 182, 45, 50, 14
+    LTEXT           "", stc1, 4, 56, 1, 1, NOT WS_VISIBLE
 END
 
 IDD_SCINTILLA_REPLACEDLGORD DIALOGEX 36, 44, 230, 94
@@ -37,18 +39,20 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CONTEXTHELP | WS
 CAPTION "Replace"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LTEXT           "Fi&nd what:",-1,4,9,48,8
-    EDITTEXT        1152,54,7,114,12,ES_AUTOHSCROLL | WS_GROUP
-    LTEXT           "Re&place with:",-1,4,26,48,8
-    EDITTEXT        1153,54,24,114,12,ES_AUTOHSCROLL | WS_GROUP
-    CONTROL         "Match &whole word only",1040,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,5,44,104,12
-    CONTROL         "Match &case",1041,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,61,59,12
-    CONTROL         "Regular &expression",IDC_REGULAR_EXPRESSION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,77,83,12
-    DEFPUSHBUTTON   "&Find Next",IDOK,174,4,50,14,WS_GROUP
-    PUSHBUTTON      "&Replace",1024,174,21,50,14
-    PUSHBUTTON      "Replace &All",1025,174,38,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,174,55,50,14
-    PUSHBUTTON      "&Help",1038,174,75,50,14
+    LTEXT           "Fi&nd what:", -1, 4, 9, 48, 8
+    EDITTEXT        edt1, 54, 7, 114, 12, WS_GROUP | WS_TABSTOP | ES_AUTOHSCROLL
+    LTEXT           "Re&place with:", -1, 4, 26, 48, 8
+    EDITTEXT        edt2, 54, 24, 114, 12, WS_GROUP | WS_TABSTOP | ES_AUTOHSCROLL
+    AUTOCHECKBOX    "Match &whole word only", chx1, 4, 46, 104, 12, WS_GROUP
+    AUTOCHECKBOX    "Match &case", chx2, 4, 62, 59, 12
+    AUTOCHECKBOX    "W&rap around", chx3, 4, 78, 64, 12
+    AUTOCHECKBOX    "Regular &expression", IDC_REGULAR_EXPRESSION, 4, 77, 83, 12
+    DEFPUSHBUTTON   "&Find Next", IDOK, 174, 4, 50, 14, WS_GROUP
+    PUSHBUTTON      "&Replace", psh1, 174, 21, 50, 14
+    PUSHBUTTON      "Replace &All", psh2, 174, 38, 50, 14
+    PUSHBUTTON      "Cancel", IDCANCEL, 174, 55, 50, 14
+    PUSHBUTTON      "&Help", pshHelp, 174, 75, 50, 14
+    LTEXT           "", stc1, 4, 76, 1, 1, NOT WS_VISIBLE
 END
 
 

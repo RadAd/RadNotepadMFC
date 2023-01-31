@@ -3,19 +3,19 @@
 
 <head>
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
-<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.69</title>
+<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.77</title>
 <link href="naughter.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
 
-<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.69</h2>
-<h2><i>Freeware MFC wrapper classes for the Scintilla edit control</i></h2>
-<p>These classes provides a MFC wrapping for the Scintilla edit control (<a href="http://www.scintilla.org">http://www.scintilla.org</a>). 
+<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.77</h2>
+<h2><i>Freeware MFC and ATL/WTL wrapper classes for the Scintilla edit control</i></h2>
+<p>These classes provides a MFC and ATL/WTL wrapping for the Scintilla edit control (<a href="http://www.scintilla.org">http://www.scintilla.org</a>). 
 This control provides an open source cross platform edit control. Some of the features 
 it provides include syntax colouring, call tips, brace highlighting, Styles, margins 
 and markers to name but a few. The provided wrapper classes make it easier to include 
-the control in MFC projects on Windows.</p>
+the control in MFC / WTL projects on Windows.</p>
 <table>
 	<tr>
 		<td><a href="#Features">Features</a></td>
@@ -41,9 +41,10 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Features"></a>Features</h2>
 <ul>
-	<li>Implements all the functionality provided by Scintilla v5.1.5.</li>
+	<li>Implements all the functionality provided by Scintilla v5.3.2.</li>
 	<li>The CScintillaCtrl wrapper class observes the same semantics as the built 
-	in MFC &quot;CEdit&quot; wrapper class.</li>
+	in MFC &quot;CEdit&quot; wrapper class. This class can also be used with ATL 
+	/ WTL without taking a dependency on MFC.</li>
 	<li>Uses the direct access functions provided by Scintilla to improve performance. 
 	Multi threaded code can still use SendMessage by calling the method SetCallDirect 
 	with a FALSE parameter value.</li>
@@ -91,7 +92,8 @@ the control in MFC projects on Windows.</p>
 	and ScintillaDocView.cpp in your project.</li>
 	<li>As of v1.50, the classes are now designed for VC 2017 or later. They will 
 	not compile on earlier releases of VC.</li>
-	<li>Your code will need to include MFC either statically or dynamically.</li>
+	<li>Your code will need to include MFC either statically or dynamically if 
+	using MFC or just ATL/WTL if you do not want to pull in an MFC dependency.</li>
 	<li>If you are linking to Scintilla dynamically, then you should call LoadLibrary 
 	on &quot;Scintilla.dll&quot; and &quot;Lexilla.dll&quot; in the start-up of your application. Bear in mind 
 	security concerns about DLL Planting when calling LoadLibrary. As best practice, 
@@ -127,6 +129,75 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2><a name="History"></a>History</h2>
+<p><b>v1.77 (19 December 2022)</b></p>
+<ul>
+	<li>Fixed a bug where the first parameter to SetXCaretPolicy and 
+	SetYCaretPolicy should be a CaretPolicy instead of VisiblePolicy. Thanks to 
+	Markus Nissl for reporting this issue. </li>
+	<li>Removed unnecessary Scintilla namespace usage in ScintillaCtrl.cpp. 
+	Thanks to Markus Nissl for reporting this issue. </li>
+	<li>Removed unnecessary Scintilla namespace usage in ScintillaDocView.cpp. 
+	Thanks to Markus Nissl for reporting this issue.</li>
+</ul>
+<p><b>v1.76 (16 December 2022)</b></p>
+<ul>
+	<li>Fixed up issue with Regular expression checkbox not appearing in find 
+	and replace dialogs. </li>
+	<li>Replaced intptr_t type with Line typedef. </li>
+	<li>Updated code to use message values from Scintilla provided 
+	&quot;ScintillaMessages.h&quot; header file. </li>
+	<li>Renamed SetScintillaProperty method to SetSCIProperty. </li>
+	<li>Renamed GetScintillaProperty method to GetSCIProperty. </li>
+	<li>Updated code to use structs from Scintilla provided 
+	&quot;ScintillaStructures.h&quot; header file. </li>
+	<li>Updated code to use Scintilla provided &quot;ScintillaCall.h&quot; header file 
+	instead of the &quot;Scintilla.h&quot; which is designed for C clients. </li>
+	<li>Updated code to use Scintilla::Position instead of Sci_Position. </li>
+	<li>Changed virtual functions in CScintillaView to use 
+	Scintilla::NotificationData struct. </li>
+</ul>
+<p><b>v1.75 (14 December 2022)</b></p>
+<ul>
+	<li>All classes are now contained in the workspace &quot;Scintilla&quot;. </li>
+	<li>Updated code to use enums from Scintilla provided &quot;ScintillaTypes.h&quot; 
+	header file. </li>
+	<li>Updated class to work with Scintilla v5.3.2. New messages wrapperd 
+	include: SCI_GETSTYLEDTEXTFULL and SCI_REPLACETARGETMINIMAL. </li>
+</ul>
+<p><b>v1.74 (29 October 2022)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v5.3.1. New messages wrapped 
+	include: SCI_STYLESETINVISIBLEREPRESENTATION &amp; 
+	SCI_STYLEGETINVISIBLEREPRESENTATION. </li>
+</ul>
+<p><b>v1.73 (12 September 2022)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v5.3.0. New messages wrapped 
+	include: SCI_SETCHANGEHISTORY, SCI_GETCHANGEHISTORY &amp; 
+	SCI_GETSELECTIONHIDDEN. </li>
+	<li>Updated CScintillaCtrl class to support being compiled with WTL support. 
+	Thanks to Niek Albers for suggesting this update. </li>
+</ul>
+<p><b>v1.72 (10 August 2022)</b></p>
+<ul>
+	<li>Updated all line parameters to use intptr_t instead of int. Thanks to 
+	Markus Ni&szlig;l for reporting this issue.</li>
+</ul>
+<p><b>v1.71 (17 July 2022)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v5.2.4. New messages wrapped 
+	include: SCI_FINDTEXTFULL, SCI_FORMATRANGEFULL &amp; SCI_GETTEXTRANGEFULL.
+	</li>
+</ul>
+<p><b>v1.70 (31 March 2022)</b></p>
+<ul>
+	<li>Updated copyright details. </li>
+	<li>Updated class to work with Scintilla v5.2.2. New messages wrapped 
+	include: SCI_GETSTYLEINDEXAT, SCI_SETLAYOUTTHREADS and SCI_GETLAYOUTTHREADS.
+	</li>
+	<li>Updated the code to use C++ uniform initialization for all variable 
+	declarations.</li>
+</ul>
 <p><b>10 December 2021</b></p>
 <ul>
 	<li>Verified the code against Scintilla v5.1.5. </li>
@@ -268,7 +339,7 @@ the control in MFC projects on Windows.</p>
 	2019 Preview</li>
 	<li>Optimized the code in CScintillaView::PrintHeader to use CTime instead 
 	of COleDateTime when getting the current date and time. Thanks to Markus 
-	Nissl for reporting this issue. </li>
+	Ni&szlig;l for reporting this issue. </li>
 </ul>
 <p><b>v1.52 (19 January 2019)</b></p>
 <ul>
@@ -406,7 +477,7 @@ the control in MFC projects on Windows.</p>
 	from Scintilla.h</li>
 	<li>Added a new member variable called &quot;m_bCPP11Regex&quot; which decides 
 	if Scintilla's support for C++11 regex should be used in the find / replace 
-	functionality. Thanks to Markus Nissl for suggesting this update. </li>
+	functionality. Thanks to Markus Ni&szlig;l for suggesting this update. </li>
 </ul>
 <p><b>v1.39 (20 November 2016)</b></p>
 <ul>
@@ -418,7 +489,7 @@ the control in MFC projects on Windows.</p>
 <ul>
 	<li>Replaced all occurrences of NULL with nullptr throughout the codebase. This 
 	now means that the minimum requirement to compile the code is Visual Studio 
-	2010 or later. Thanks to Markus Nissl for requesting this update.</li>
+	2010 or later. Thanks to Markus Ni&szlig;l for requesting this update.</li>
 	<li>Updated class to work with Scintilla v3.7.0. New messages wrapped include: 
 	SCI_SETMARGINBACKN, SCI_GETMARGINBACKN, SCI_SETMARGINS, SCI_GETMARGINS, SCI_MULTIEDGEADDLINE, 
 	SCI_MULTIEDGECLEARALL, SCI_SETMOUSEWHEELCAPTURES &amp; SCI_GETMOUSEWHEELCAPTURES.</li>
@@ -496,10 +567,10 @@ the control in MFC projects on Windows.</p>
 	<li>Updated copyright details</li>
 	<li>Added virtual methods for SCN_INDICATORCLICK, SCN_INDICATORRELEASE, SCN_AUTOCCHARDELETED, 
 	SCN_AUTOCCANCELLED &amp; SCN_HOTSPOTRELEASECLICK notifications. Thanks to Markus 
-	Nissl for prompting this update. </li>
+	Ni&szlig;l for prompting this update. </li>
 	<li>The classes are now encapsulated in a Scintilla namespace if the SCI_NAMESPACE 
 	define is defined. This is consistent with how the scintilla.h header file operates 
-	in the presence of this define. Thanks to Markus Nißl for prompting this update.</li>
+	in the presence of this define. Thanks to Markus Ni&szlig;l for prompting this update.</li>
 	<li>Updated class to work with Scintilla v3.2.4. New messages wrapped include: 
 	SCI_GETSELECTIONEMPTY, SCI_RGBAIMAGESETSCALE, SCI_VCHOMEDISPLAY, SCI_VCHOMEDISPLAYEXTEND, 
 	SCI_GETCARETLINEVISIBLEALWAYS &amp; SCI_SETCARETLINEVISIBLEALWAYS. </li>
@@ -880,8 +951,8 @@ the control in MFC projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Contact"></a>Contacting the Author</h2>
 <p>PJ Naughter<br>Email: <a href="mailto:pjna@naughter.com">pjna@naughter.com</a><br>
-Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>10 
-December 2021</p>
+Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>19 
+December 2022</p>
 
 </body>
 

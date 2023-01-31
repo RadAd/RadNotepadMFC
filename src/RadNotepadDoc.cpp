@@ -112,17 +112,17 @@ static Encoding CheckBom(PBYTE pData)
     return Encoding::BOM_ANSI;
 }
 
-static int GetLineEndingMode(CScintillaCtrl& rCtrl, int nLine, int def)
+static Scintilla::EndOfLine GetLineEndingMode(Scintilla::CScintillaCtrl& rCtrl, int nLine, Scintilla::EndOfLine def)
 {
     CString line = rCtrl.GetLine(nLine);
-    int mode = def;
     if (line.Right(2) == _T("\r\n"))
-        mode = SC_EOL_CRLF;
+        return Scintilla::EndOfLine::CrLf;
     else if (line.Right(1) == _T("\n"))
-        mode = SC_EOL_LF;
+        return Scintilla::EndOfLine::Lf;
     else if (line.Right(1) == _T("\r"))
-        mode = SC_EOL_CR;
-    return mode;
+        return Scintilla::EndOfLine::Cr;
+    else
+        return def;
 }
 
 // CRadNotepadDoc
@@ -144,7 +144,7 @@ END_MESSAGE_MAP()
 
 CRadNotepadDoc::CRadNotepadDoc()
     : m_eEncoding(Encoding::BOM_ANSI)
-    , m_nLineEndingMode(SC_EOL_CRLF)
+    , m_nLineEndingMode(Scintilla::EndOfLine::CrLf)
     , m_ftWrite {}
 
 {
@@ -186,8 +186,8 @@ void CRadNotepadDoc::CheckUpdated()
 
 void CRadNotepadDoc::CheckReadOnly()
 {
-    CScintillaView* pView = GetView();
-    CScintillaCtrl& rCtrl = pView->GetCtrl();
+    Scintilla::CScintillaView* pView = GetView();
+    Scintilla::CScintillaCtrl& rCtrl = pView->GetCtrl();
 
     BOOL bReadOnly = FALSE;
     if (GetTitle().Left(5) == _T("temp:"))
@@ -213,7 +213,7 @@ BOOL CRadNotepadDoc::OnNewDocument()
 		return FALSE;
 
     m_eEncoding = theApp.m_Settings.DefaultEncoding;
-    m_nLineEndingMode = theApp.m_Settings.DefaultLineEnding;
+    m_nLineEndingMode = static_cast<Scintilla::EndOfLine>(theApp.m_Settings.DefaultLineEnding);
     m_ftWrite.dwHighDateTime = 0;
     m_ftWrite.dwLowDateTime = 0;
 
@@ -232,7 +232,7 @@ BOOL CRadNotepadDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 // CRadNotepadDoc serialization
 
-static void AddText(CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesRead, Encoding eEncoding)
+static void AddText(Scintilla::CScintillaCtrl& rCtrl, LPBYTE Buffer, int nBytesRead, Encoding eEncoding)
 {
     // TODO Check/Handle when nBytesRead is not an exact multiple
     if (nBytesRead > 0)
@@ -281,7 +281,7 @@ static void WriteText(CFile* pFile, const char* Buffer, int nBytes, Encoding eEn
         case Encoding::BOM_UTF16_BE:
         case Encoding::BOM_UTF16_LE:
             {
-                CStringW s = CScintillaCtrl::UTF82W(Buffer, nBytes);
+                CStringW s = Scintilla::CScintillaCtrl::UTF82W(Buffer, nBytes);
                 if (eEncoding == Encoding::BOM_UTF16_BE)
                 {
                     int nLen = s.GetLength();
@@ -301,7 +301,7 @@ static void WriteText(CFile* pFile, const char* Buffer, int nBytes, Encoding eEn
 
 void CRadNotepadDoc::Serialize(CArchive& ar)
 {
-    CScintillaCtrl& rCtrl = GetView()->GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetView()->GetCtrl();
     CRadWaitCursor wc;
     CMFCStatusBar* pMsgWnd = wc.GetStatusBar();
     const int nIndex = 0;
@@ -371,22 +371,22 @@ void CRadNotepadDoc::Serialize(CArchive& ar)
     else
     {
         //Get the length of the document
-        Sci_Position nDocLength = rCtrl.GetLength();
+        Scintilla::Position nDocLength = rCtrl.GetLength();
         ULONGLONG nBytesWriteTotal = 0;
 
         //Write the data in blocks to disk
         CFile* pFile = ar.GetFile();
         WriteBom(pFile, m_eEncoding);
-        for (int i = 0; i<nDocLength; i += (BUFSIZE - 1)) // (BUFSIZE - 1) because data will be returned nullptr terminated
+        for (int i = 0; i < nDocLength; i += (BUFSIZE - 1)) // (BUFSIZE - 1) because data will be returned nullptr terminated
         {
-            Sci_Position nGrabSize = nDocLength - i;
+            Scintilla::Position nGrabSize = nDocLength - i;
             if (nGrabSize > (BUFSIZE - 1))
                 nGrabSize = (BUFSIZE - 1);
 
             //Get the data from the control
-            Sci_TextRange tr;
+            Scintilla::TextRange tr;
             tr.chrg.cpMin = i;
-            tr.chrg.cpMax = static_cast<Sci_PositionCR>(i + nGrabSize);
+            tr.chrg.cpMax = static_cast<Scintilla::PositionCR>(i + nGrabSize);
             char Buffer[BUFSIZE];
             tr.lpstrText = Buffer;
             rCtrl.GetTextRange(&tr);
@@ -481,7 +481,7 @@ void CRadNotepadDoc::Dump(CDumpContext& dc) const
 
 void CRadNotepadDoc::SetTitle(LPCTSTR lpszTitle)
 {
-    CScintillaView* pView = GetView();
+    Scintilla::CScintillaView* pView = GetView();
     CString strTitle = lpszTitle ? lpszTitle : GetTitle();
     strTitle.Remove(_T('^'));
     strTitle.Remove(_T('*'));
@@ -593,7 +593,7 @@ CFile* CRadNotepadDoc::GetFile(LPCTSTR lpszFileName, UINT nOpenFlags, CFileExcep
 
 void CRadNotepadDoc::SyncModified()
 {
-    CScintillaView* pView = GetView();
+    Scintilla::CScintillaView* pView = GetView();
     if (m_bModified != pView->GetCtrl().GetModify())
     {
         m_bModified = pView->GetCtrl().GetModify();
@@ -643,8 +643,8 @@ void CRadNotepadDoc::OnFileReadOnly()
 
 void CRadNotepadDoc::OnUpdateFileReadOnly(CCmdUI *pCmdUI)
 {
-    CScintillaView* pView = GetView();
-    CScintillaCtrl& rCtrl = pView->GetCtrl();
+    Scintilla::CScintillaView* pView = GetView();
+    Scintilla::CScintillaCtrl& rCtrl = pView->GetCtrl();
     pCmdUI->Enable(!GetPathName().IsEmpty());
     pCmdUI->SetCheck(rCtrl.GetReadOnly());
 }

@@ -115,18 +115,18 @@ CRadNotepadView::~CRadNotepadView()
 {
 }
 
-void CRadNotepadView::OnCharAdded(_Inout_ SCNotification* pSCNotification)
+void CRadNotepadView::OnCharAdded(_Inout_ Scintilla::NotificationData* pSCNotification)
 {
     CScintillaView::OnCharAdded(pSCNotification);
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     if (m_bAutoIndent)
     {
-        if ((rCtrl.GetEOLMode() == SC_EOL_CR &&  pSCNotification->ch == '\r')
-            || (rCtrl.GetEOLMode() == SC_EOL_LF &&  pSCNotification->ch == '\n')
-            || (rCtrl.GetEOLMode() == SC_EOL_CRLF &&  pSCNotification->ch == '\n'))
+        if ((rCtrl.GetEOLMode() == Scintilla::EndOfLine::Cr && pSCNotification->ch == '\r')
+            || (rCtrl.GetEOLMode() == Scintilla::EndOfLine::Lf && pSCNotification->ch == '\n')
+            || (rCtrl.GetEOLMode() == Scintilla::EndOfLine::CrLf && pSCNotification->ch == '\n'))
         {
-            Sci_Position nPos = rCtrl.GetCurrentPos();
-            int nLine = rCtrl.LineFromPosition(nPos);
+            Scintilla::Position nPos = rCtrl.GetCurrentPos();
+            Scintilla::Line nLine = rCtrl.LineFromPosition(nPos);
             if (nLine > 0)
             {
                 CString strLine = rCtrl.GetLine(nLine - 1);
@@ -145,10 +145,10 @@ void CRadNotepadView::OnCharAdded(_Inout_ SCNotification* pSCNotification)
     }
 }
 
-void CRadNotepadView::OnModified(_Inout_ SCNotification* pSCNotification)
+void CRadNotepadView::OnModified(_Inout_ Scintilla::NotificationData* pSCNotification)
 {
     CScintillaView::OnModified(pSCNotification);
-    if (pSCNotification->modificationType & (SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT))
+    if ((pSCNotification->modificationType & (Scintilla::ModificationFlags::InsertText | Scintilla::ModificationFlags::DeleteText)) != Scintilla::ModificationFlags::None)
     {
         CRadNotepadDoc* pDoc = GetDocument();
         pDoc->SyncModified();
@@ -160,19 +160,19 @@ static bool IsBrace(int c)
     return strchr("()[]{}<>", c) != nullptr;
 }
 
-void CRadNotepadView::OnUpdateUI(_Inout_ SCNotification* pSCNotification)
+void CRadNotepadView::OnUpdateUI(_Inout_ Scintilla::NotificationData* pSCNotification)
 {
     CScintillaView::OnUpdateUI(pSCNotification);
 
     if (m_bHighlightMatchingBraces)
     {
-        CScintillaCtrl& rCtrl = GetCtrl();
-        Sci_Position nPos = rCtrl.GetCurrentPos();
+        Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+        Scintilla::Position nPos = rCtrl.GetCurrentPos();
 
         int c = rCtrl.GetCharAt(nPos);
         if (IsBrace(c))
         {
-            Sci_Position nMatch = rCtrl.BraceMatch(nPos, 0);
+            Scintilla::Position nMatch = rCtrl.BraceMatch(nPos, 0);
             if (nMatch >= 0)
                 rCtrl.BraceHighlight(nPos, nMatch);
             else
@@ -224,12 +224,12 @@ void CRadNotepadView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
 
 void CRadNotepadView::OnUpdateLine(CCmdUI* pCmdUI)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    const Sci_Position nPos = rCtrl.GetCurrentPos();
-    const int nLine = rCtrl.LineFromPosition(nPos);
-    const Sci_Position nLineStart = rCtrl.PositionFromLine(nLine);
-    const Sci_Position nColumn = rCtrl.GetColumn(nPos);
-    const Sci_Position nAnchor = rCtrl.GetAnchor();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    const Scintilla::Position nPos = rCtrl.GetCurrentPos();
+    const Scintilla::Line nLine = rCtrl.LineFromPosition(nPos);
+    const Scintilla::Position nLineStart = rCtrl.PositionFromLine(nLine);
+    const Scintilla::Position nColumn = rCtrl.GetColumn(nPos);
+    const Scintilla::Position nAnchor = rCtrl.GetAnchor();
 
     CString sLine;
     sLine.Format(ID_INDICATOR_LINE, nLine + 1, nColumn + 1, nPos - nLineStart + 1, abs(nAnchor - nPos));
@@ -251,13 +251,13 @@ void CRadNotepadView::OnUpdateSchemeIndicator(CCmdUI* pCmdUI)
 
 void CRadNotepadView::OnUpdateLineEndingIndicator(CCmdUI* pCmdUI)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     LPCTSTR eol[] = {
-        _T("CRLF"), // SC_EOL_CRLF
-        _T("CR"), // SC_EOL_CR
-        _T("LF"), // SC_EOL_LF
+        _T("CRLF"), // Scintilla::EndOfLine::CrLf
+        _T("CR"), // Scintilla::EndOfLine::Cr
+        _T("LF"), // Scintilla::EndOfLine::Lf
     };
-    pCmdUI->SetText(eol[rCtrl.GetEOLMode()]);
+    pCmdUI->SetText(eol[static_cast<std::underlying_type_t<Scintilla::EndOfLine>>(rCtrl.GetEOLMode())]);
 }
 
 void CRadNotepadView::OnUpdateInsert(CCmdUI* pCmdUI)
@@ -288,9 +288,9 @@ CRadNotepadDoc* CRadNotepadView::GetDocument() const // non-debug version is inl
 }
 #endif //_DEBUG
 
-void CRadNotepadView::SetLineEndingsMode(int mode)
+void CRadNotepadView::SetLineEndingsMode(Scintilla::EndOfLine mode)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     if (rCtrl.GetEOLMode() != mode)
     {
         int r = AfxMessageBox(IDS_CONVERTLINEENDINGS, MB_YESNOCANCEL);
@@ -301,41 +301,41 @@ void CRadNotepadView::SetLineEndingsMode(int mode)
     }
 }
 
-CStringW CRadNotepadView::GetTextRange(Sci_CharacterRange cr)
+CStringW CRadNotepadView::GetTextRange(Scintilla::CharacterRange cr)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     CStringA ret;
 
-    Sci_TextRange tr = {};
+    Scintilla::TextRange tr = {};
     tr.chrg = cr;
-    //int nLen = rCtrl.GetTextRange(&tr);
+    //Scintilla::Position nLen = rCtrl.GetTextRange(&tr);
     int nLen = tr.chrg.cpMax - tr.chrg.cpMin + 1;
     tr.lpstrText = ret.GetBufferSetLength(nLen);
-    /*Sci_Position nRange =*/ rCtrl.GetTextRange(&tr);
+    /*Scintilla::Position nRange =*/ rCtrl.GetTextRange(&tr);
     ret.ReleaseBuffer();
 
-    return CScintillaCtrl::UTF82W(ret, -1);
+    return Scintilla::CScintillaCtrl::UTF82W(ret, -1);
 }
 
 CStringW CRadNotepadView::GetCurrentWord(BOOL bSelect)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     if (rCtrl.GetSelectionEmpty())
     {
         if (bSelect)
         {
-            Sci_Position nPos = rCtrl.GetCurrentPos();
-            Sci_Position start = rCtrl.WordStartPosition(nPos, TRUE);
-            Sci_Position end = rCtrl.WordEndPosition(nPos, TRUE);
+            Scintilla::Position nPos = rCtrl.GetCurrentPos();
+            Scintilla::Position start = rCtrl.WordStartPosition(nPos, TRUE);
+            Scintilla::Position end = rCtrl.WordEndPosition(nPos, TRUE);
             rCtrl.SetSel(start, end);
             return rCtrl.GetSelText();
         }
         else
         {
-            Sci_Position nPos = rCtrl.GetCurrentPos();
-            Sci_CharacterRange cr;
-            cr.cpMin = static_cast<Sci_PositionCR>(rCtrl.WordStartPosition(nPos, TRUE));
-            cr.cpMax = static_cast<Sci_PositionCR>(rCtrl.WordEndPosition(nPos, TRUE));
+            Scintilla::Position nPos = rCtrl.GetCurrentPos();
+            Scintilla::CharacterRange cr;
+            cr.cpMin = static_cast<Scintilla::PositionCR>(rCtrl.WordStartPosition(nPos, TRUE));
+            cr.cpMax = static_cast<Scintilla::PositionCR>(rCtrl.WordEndPosition(nPos, TRUE));
             return GetTextRange(cr);
         }
     }
@@ -349,7 +349,7 @@ void CRadNotepadView::OnInitialUpdate()
 {
     CScintillaView::OnInitialUpdate();
 
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
 
     CRadNotepadDoc* pDoc = GetDocument();
     CString strFileName = pDoc->GetPathName();
@@ -384,9 +384,9 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.ClearCmdKey(']' | (SCMOD_CTRL << 16));
     rCtrl.ClearCmdKey(']' | ((SCMOD_CTRL | SCMOD_SHIFT) << 16));
 
-    rCtrl.UsePopUp(SC_POPUP_NEVER);
-    rCtrl.SetWrapVisualFlags(SC_WRAPVISUALFLAG_END);
-    rCtrl.SetTechnology(SC_TECHNOLOGY_DIRECTWRITE);
+    rCtrl.UsePopUp(Scintilla::PopUp::Never);
+    rCtrl.SetWrapVisualFlags(Scintilla::WrapVisualFlag::End);
+    rCtrl.SetTechnology(Scintilla::Technology::DirectWrite);
 
 #if 0
     //Setup auto completion
@@ -407,7 +407,7 @@ void CRadNotepadView::OnViewMargin(UINT nID)
     const std::vector<Margin>& vecMargin = m_pLanguage == nullptr ? pTheme->vecMargin : m_pLanguage->vecMargin;
     if (i >= 0 && i < vecMargin.size())
     {
-        CScintillaCtrl& rCtrl = GetCtrl();
+        Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
         const Margin& margin = vecMargin[i];
         bool show = rCtrl.GetMarginWidthN(margin.id) > 0;
         show = !show;
@@ -428,7 +428,7 @@ void CRadNotepadView::OnUpdateViewMargin(CCmdUI *pCmdUI)
     const std::vector<Margin>& vecMargin = m_pLanguage == nullptr ? pTheme->vecMargin : m_pLanguage->vecMargin;
     if (i >= 0 && i < vecMargin.size())
     {
-        CScintillaCtrl& rCtrl = GetCtrl();
+        Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
         const Margin& margin = vecMargin[i];
         pCmdUI->SetText(margin.name);
         bool show = rCtrl.GetMarginWidthN(margin.id) > 0;
@@ -440,23 +440,23 @@ void CRadNotepadView::OnUpdateViewMargin(CCmdUI *pCmdUI)
 
 void CRadNotepadView::OnViewWhitespace()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    int ws = rCtrl.GetViewWS();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::WhiteSpace ws = rCtrl.GetViewWS();
     const Theme* pTheme = &theApp.m_Settings.user;
     const ThemeEditor& pThemeEditor = m_pLanguage != nullptr ? m_pLanguage->editor : pTheme->editor;
-    ws = ws == SCWS_INVISIBLE ? Merge(pThemeEditor.nWhitespaceMode, &pTheme->editor.nWhitespaceMode, 0, SCWS_VISIBLEALWAYS) : SCWS_INVISIBLE;
+    ws = ws == Scintilla::WhiteSpace::Invisible ? static_cast<Scintilla::WhiteSpace>(Merge(pThemeEditor.nWhitespaceMode, &pTheme->editor.nWhitespaceMode, 0, SCWS_VISIBLEALWAYS)) : Scintilla::WhiteSpace::Invisible;
     rCtrl.SetViewWS(ws);
 }
 
 void CRadNotepadView::OnUpdateViewWhitespace(CCmdUI *pCmdUI)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    pCmdUI->SetCheck(rCtrl.GetViewWS() != SCWS_INVISIBLE);
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    pCmdUI->SetCheck(rCtrl.GetViewWS() != Scintilla::WhiteSpace::Invisible);
 }
 
 void CRadNotepadView::OnViewEndOfLine()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     BOOL bEol = rCtrl.GetViewEOL();
     bEol = !bEol;
     rCtrl.SetViewEOL(bEol);
@@ -464,22 +464,22 @@ void CRadNotepadView::OnViewEndOfLine()
 
 void CRadNotepadView::OnUpdateViewEndOfLine(CCmdUI *pCmdUI)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetViewEOL());
 }
 
 void CRadNotepadView::OnViewWordWrap()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    int wm = rCtrl.GetWrapMode();
-    wm = wm == SC_WRAP_WORD ? SC_WRAP_NONE : SC_WRAP_WORD;
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::Wrap wm = rCtrl.GetWrapMode();
+    wm = wm == Scintilla::Wrap::Word ? Scintilla::Wrap::None : Scintilla::Wrap::Word;
     rCtrl.SetWrapMode(wm);
 }
 
 void CRadNotepadView::OnUpdateViewWordWrap(CCmdUI *pCmdUI)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    pCmdUI->SetCheck(rCtrl.GetWrapMode() != SC_WRAP_NONE);
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    pCmdUI->SetCheck(rCtrl.GetWrapMode() != Scintilla::Wrap::None);
 }
 
 int CRadNotepadView::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -509,21 +509,21 @@ int CRadNotepadView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CRadNotepadView::OnViewUseTabs()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     rCtrl.SetUseTabs(!rCtrl.GetUseTabs());
 }
 
 void CRadNotepadView::OnUpdateViewUseTabs(CCmdUI *pCmdUI)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     pCmdUI->SetCheck(rCtrl.GetUseTabs());
 }
 
 void CRadNotepadView::OnEditToggleBookmark()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    Sci_Position nPos = rCtrl.GetCurrentPos();
-    int nLine = rCtrl.LineFromPosition(nPos);
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::Position nPos = rCtrl.GetCurrentPos();
+    Scintilla::Line nLine = rCtrl.LineFromPosition(nPos);
     if (rCtrl.MarkerGet(nLine) & (1 << RAD_MARKER_BOOKMARK))
         rCtrl.MarkerDelete(nLine, RAD_MARKER_BOOKMARK);
     else
@@ -532,9 +532,9 @@ void CRadNotepadView::OnEditToggleBookmark()
 
 void CRadNotepadView::OnEditPreviousBookmark()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    Sci_Position nPos = rCtrl.GetCurrentPos();
-    int nLine = rCtrl.LineFromPosition(nPos);
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::Position nPos = rCtrl.GetCurrentPos();
+    Scintilla::Line nLine = rCtrl.LineFromPosition(nPos);
     nLine = rCtrl.MarkerPrevious(nLine - 1, 1 << RAD_MARKER_BOOKMARK);
     if (nLine < 0)
         nLine = rCtrl.MarkerPrevious(rCtrl.GetLineCount() - 1, 1 << RAD_MARKER_BOOKMARK);
@@ -544,9 +544,9 @@ void CRadNotepadView::OnEditPreviousBookmark()
 
 void CRadNotepadView::OnEditNextBookmark()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    Sci_Position nPos = rCtrl.GetCurrentPos();
-    int nLine = rCtrl.LineFromPosition(nPos);
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::Position nPos = rCtrl.GetCurrentPos();
+    Scintilla::Line nLine = rCtrl.LineFromPosition(nPos);
     nLine = rCtrl.MarkerNext(nLine + 1, 1 << RAD_MARKER_BOOKMARK);
     if (nLine < 0)
         nLine = rCtrl.MarkerNext(0, 1 << RAD_MARKER_BOOKMARK);
@@ -556,14 +556,14 @@ void CRadNotepadView::OnEditNextBookmark()
 
 void CRadNotepadView::OnLineEndings(UINT nID)
 {
-    const int mode = nID - ID_LINEENDINGS_WINDOWS;
+    const Scintilla::EndOfLine mode = static_cast<Scintilla::EndOfLine>(nID - ID_LINEENDINGS_WINDOWS);
     SetLineEndingsMode(mode);
 }
 
 void CRadNotepadView::OnUpdateLineEndings(CCmdUI *pCmdUI)
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    const int mode = pCmdUI->m_nID - ID_LINEENDINGS_WINDOWS;
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    const Scintilla::EndOfLine mode = static_cast<Scintilla::EndOfLine>(pCmdUI->m_nID - ID_LINEENDINGS_WINDOWS);
     pCmdUI->SetRadio(rCtrl.GetEOLMode() == mode);
 }
 
@@ -572,7 +572,7 @@ void CRadNotepadView::OnEditMakeUppercase()
     CString sel = GetCurrentWord(TRUE);
     if (!sel.IsEmpty())
     {
-        CScintillaCtrl& rCtrl = GetCtrl();
+        Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
         rCtrl.UpperCase();
     }
 }
@@ -582,7 +582,7 @@ void CRadNotepadView::OnEditMakeLowercase()
     CString sel = GetCurrentWord(TRUE);
     if (!sel.IsEmpty())
     {
-        CScintillaCtrl& rCtrl = GetCtrl();
+        Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
         rCtrl.LowerCase();
     }
 }
@@ -605,9 +605,9 @@ afx_msg LRESULT CRadNotepadView::OnCheckUpdate(WPARAM /*wParam*/, LPARAM /*lPara
 
 void CRadNotepadView::OnEditGotoLine()
 {
-    CScintillaCtrl& rCtrl = GetCtrl();
-    Sci_Position nPos = rCtrl.GetCurrentPos();
-    int nLine = rCtrl.LineFromPosition(nPos);
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::Position nPos = rCtrl.GetCurrentPos();
+    Scintilla::Line nLine = rCtrl.LineFromPosition(nPos);
 
     CGoToLineDlg dlg;
     dlg.m_nLine = nLine + 1;
@@ -616,7 +616,7 @@ void CRadNotepadView::OnEditGotoLine()
         rCtrl.GotoLine(dlg.m_nLine - 1);
 }
 
-extern CScintillaEditState g_scintillaEditState;
+extern Scintilla::CScintillaEditState g_scintillaEditState;
 
 void CRadNotepadView::OnEditFindPrevious()
 {
@@ -654,12 +654,12 @@ void CRadNotepadView::OnEditFindPreviousCurrentWord()
 void CRadNotepadView::OnEditFindMatchingBrace()
 {
     // TODO Handle shift to also select
-    CScintillaCtrl& rCtrl = GetCtrl();
-    Sci_Position nPos = rCtrl.GetCurrentPos();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::Position nPos = rCtrl.GetCurrentPos();
     int c = rCtrl.GetCharAt(nPos);
     if (IsBrace(c))
     {
-        Sci_Position nMatch = rCtrl.BraceMatch(nPos, 0);
+        Scintilla::Position nMatch = rCtrl.BraceMatch(nPos, 0);
         if (nMatch >= 0)
             rCtrl.GotoPos(nMatch);
     }
@@ -670,7 +670,7 @@ void CRadNotepadView::OnSchemeNone()
     const Language* pLanguage = nullptr;
 
     m_pLanguage = pLanguage;
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     const Theme* pTheme = &theApp.m_Settings.user;
     Apply(rCtrl, m_pLanguage, pTheme);
 }
@@ -728,7 +728,7 @@ void CRadNotepadView::OnScheme(UINT nID)
     const Language* pLanguage = &vecLanguage[nID - ID_VIEW_FIRSTSCHEME];
 
     m_pLanguage = pLanguage;
-    CScintillaCtrl& rCtrl = GetCtrl();
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
     const Theme* pTheme = &theApp.m_Settings.user;
     Apply(rCtrl, m_pLanguage, pTheme);
 }
@@ -746,7 +746,7 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
     {
     case HINT_UPDATE_SETTINGS:
         {
-            CScintillaCtrl& rCtrl = GetCtrl();
+            Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
             const Theme* pTheme = &theApp.m_Settings.user;
             Apply(rCtrl, m_pLanguage, pTheme);
         }
@@ -762,7 +762,7 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
 
             m_pLanguage = GetLanguageForExt(&theApp.m_Settings.user, strExt);
 
-            CScintillaCtrl& rCtrl = GetCtrl();
+            Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
             const Theme* pTheme = &theApp.m_Settings.user;
             Apply(rCtrl, m_pLanguage, pTheme);
 
@@ -824,7 +824,7 @@ void CRadNotepadView::OnSearchNext()
 
 void CRadNotepadView::OnSearchTextEditChange()
 {
-    Sci_Position sel = GetCtrl().GetSelectionStart();
+    Scintilla::Position sel = GetCtrl().GetSelectionStart();
     GetCtrl().SetSel(sel, sel);
     CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, AfxGetMainWnd());
     CMFCToolBarComboBoxButton* pButton = pMainFrame->GetHistoryButton();

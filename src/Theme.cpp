@@ -62,7 +62,7 @@ static inline const ThemeItem* GetThemeItem(LPCTSTR strItem, const Theme* pTheme
     }
 };
 
-static inline void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
+static inline void ApplyThemeItem(Scintilla::CScintillaCtrl& rCtrl, int nStyle, const ThemeItem& rTheme)
 {
     if (rTheme.fore != COLOR_NONE)
         rCtrl.StyleSetFore(nStyle, rTheme.fore);
@@ -80,7 +80,7 @@ static inline void ApplyThemeItem(CScintillaCtrl& rCtrl, int nStyle, const Theme
     }
     if (rTheme.font.lfFaceName[0] != _T('\0'))
         rCtrl.StyleSetFont(nStyle, rTheme.font.lfFaceName);
-    rCtrl.StyleSetCharacterSet(nStyle, rTheme.font.lfCharSet);
+    rCtrl.StyleSetCharacterSet(nStyle, static_cast<Scintilla::CharacterSet>(rTheme.font.lfCharSet));
     if (rTheme.font.lfWeight >= FW_BOLD)
         rCtrl.StyleSetBold(nStyle, TRUE);
     if (rTheme.font.lfItalic)
@@ -122,28 +122,28 @@ void AddExt(Theme* pTheme, const CString& ext, const CString& lexer)
     filter += ext;
 }
 
-static inline void ApplyEditor(CScintillaCtrl& rCtrl, const ThemeEditor& rThemeEditor, const ThemeEditor* pBaseThemeEditor, const Theme* pTheme)
+static inline void ApplyEditor(Scintilla::CScintillaCtrl& rCtrl, const ThemeEditor& rThemeEditor, const ThemeEditor* pBaseThemeEditor, const Theme* pTheme)
 {
     rCtrl.SetCaretFore(Merge(rThemeEditor.cCaretFG, pn(pBaseThemeEditor, cCaretFG), COLOR_NONE, pTheme->tDefault.fore));
-    rCtrl.SetCaretStyle(Merge(rThemeEditor.nCaretStyle, pn(pBaseThemeEditor, nCaretStyle), -1, CARETSTYLE_LINE));
+    rCtrl.SetCaretStyle(static_cast<Scintilla::CaretStyle>(Merge(rThemeEditor.nCaretStyle, pn(pBaseThemeEditor, nCaretStyle), -1, CARETSTYLE_LINE)));
     rCtrl.SetCaretWidth(Merge(rThemeEditor.nCaretWidth, pn(pBaseThemeEditor, nCaretWidth), 0, 1));
 
     rCtrl.SetUseTabs(Merge(rThemeEditor.bUseTabs, pn(pBaseThemeEditor, bUseTabs), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     rCtrl.SetTabWidth(Merge(rThemeEditor.nTabWidth, pn(pBaseThemeEditor, nTabWidth), 0, 4));
 
-    rCtrl.SetIndentationGuides(Merge(rThemeEditor.nIndentGuideType, pn(pBaseThemeEditor, nIndentGuideType), -1, SC_IV_LOOKBOTH));
+    rCtrl.SetIndentationGuides(static_cast<Scintilla::IndentView>(Merge(rThemeEditor.nIndentGuideType, pn(pBaseThemeEditor, nIndentGuideType), -1, SC_IV_LOOKBOTH)));
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
     bool bShowWS = Merge(rThemeEditor.bShowWhitespace, pn(pBaseThemeEditor, bShowWhitespace), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
-    rCtrl.SetViewWS(bShowWS ? Merge(rThemeEditor.nWhitespaceMode, pn(pBaseThemeEditor, nWhitespaceMode), 0, SCWS_VISIBLEALWAYS)  : SCWS_INVISIBLE);
+    rCtrl.SetViewWS(bShowWS ? static_cast<Scintilla::WhiteSpace>(Merge(rThemeEditor.nWhitespaceMode, pn(pBaseThemeEditor, nWhitespaceMode), 0, SCWS_VISIBLEALWAYS)) : Scintilla::WhiteSpace::Invisible);
     rCtrl.SetViewEOL(Merge(rThemeEditor.bShowEOL, pn(pBaseThemeEditor, bShowEOL), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     rCtrl.SetWhitespaceSize(Merge(rThemeEditor.nWhitespaceSize, pn(pBaseThemeEditor, nWhitespaceSize), 0, 1));
-    rCtrl.SetTabDrawMode(Merge(rThemeEditor.nTabDrawMode, pn(pBaseThemeEditor, nTabDrawMode), 0, SCTD_LONGARROW));
+    rCtrl.SetTabDrawMode(static_cast<Scintilla::TabDrawMode>(Merge(rThemeEditor.nTabDrawMode, pn(pBaseThemeEditor, nTabDrawMode), 0, SCTD_LONGARROW)));
 
-    rCtrl.SetWrapMode(Merge(rThemeEditor.bWordWrap, pn(pBaseThemeEditor, bWordWrap), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE ? SC_WRAP_WORD : SC_WRAP_NONE);
+    rCtrl.SetWrapMode(Merge(rThemeEditor.bWordWrap, pn(pBaseThemeEditor, bWordWrap), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE ? Scintilla::Wrap::Word : Scintilla::Wrap::None);
 }
 
-static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const Style* pBaseStyle, const Theme* pTheme)
+static inline void ApplyStyle(Scintilla::CScintillaCtrl& rCtrl, const Style& style, const Style* pBaseStyle, const Theme* pTheme)
 {
     CString sclass = Merge(style.sclass, pn(pBaseStyle, sclass), CString(), CString());
     const ThemeItem* pThemeItem = GetThemeItem(sclass, pTheme);
@@ -154,14 +154,14 @@ static inline void ApplyStyle(CScintillaCtrl& rCtrl, const Style& style, const S
     ApplyThemeItem(rCtrl, style.id, style.theme);
 }
 
-static inline void ApplyMarker(CScintillaCtrl& rCtrl, const Marker& marker, const Marker* pBaseMarker)
+static inline void ApplyMarker(Scintilla::CScintillaCtrl& rCtrl, const Marker& marker, const Marker* pBaseMarker)
 {
-    rCtrl.MarkerDefine(marker.id, Merge(marker.type, pn(pBaseMarker, type), -1, 0));
+    rCtrl.MarkerDefine(marker.id, static_cast<Scintilla::MarkerSymbol>(Merge(marker.type, pn(pBaseMarker, type), -1, 0)));
     rCtrl.MarkerSetFore(marker.id, Merge(marker.fore, pn(pBaseMarker, fore), COLOR_NONE, COLOR_LT_MAGENTA));
     rCtrl.MarkerSetBack(marker.id, Merge(marker.back, pn(pBaseMarker, back), COLOR_NONE, COLOR_LT_MAGENTA));
 }
 
-int GetMarginWidth(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin)
+int GetMarginWidth(Scintilla::CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin)
 {
     CString width_text = Merge(margin.width_text, pn(pBaseMargin, width_text), CString(), CString());
     if (!width_text.IsEmpty())
@@ -170,7 +170,7 @@ int GetMarginWidth(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pB
         return Merge(margin.width, pn(pBaseMargin, width), 0, 16);
 }
 
-void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin)
+void ApplyMargin(Scintilla::CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBaseMargin)
 {
     if (Merge(margin.show, pn(pBaseMargin, show), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE)
     {
@@ -182,13 +182,13 @@ void ApplyMargin(CScintillaCtrl& rCtrl, const Margin& margin, const Margin* pBas
     rCtrl.SetMarginSensitiveN(margin.id, Merge(margin.sensitive, pn(pBaseMargin, sensitive), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     int type = Merge(margin.type, pn(pBaseMargin, type), -1, -1);
     if (type >= 0)
-        rCtrl.SetMarginTypeN(margin.id, type);
+        rCtrl.SetMarginTypeN(margin.id, static_cast<Scintilla::MarginType>(type));
     int mask = Merge(margin.mask, pn(pBaseMargin, mask), 0, 0);
     if (mask != 0)
         rCtrl.SetMarginMaskN(margin.id, mask);
 }
 
-void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme)
+void Apply(Scintilla::CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme)
 {
     if (pLanguage != nullptr)
     {
@@ -231,7 +231,7 @@ void Apply(CScintillaCtrl& rCtrl, const Language* pLanguage, const Theme* pTheme
         }
 
         for (const auto& prop : pLanguage->mapProperties)
-            rCtrl.SetScintillaProperty(prop.first, prop.second);
+            rCtrl.SetSCIProperty(prop.first, prop.second);
         for (const Style& style : pLanguage->vecStyle)
             ApplyStyle(rCtrl, style, nullptr, pTheme);
         for (const GroupStyle& groupstyle : pLanguage->vecGroupStyle)

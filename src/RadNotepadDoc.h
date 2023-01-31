@@ -3,13 +3,13 @@
 
 struct RevertData
 {
-    Sci_Position selStart;
-    Sci_Position selEnd;
-    int firstVisibleLine;
+    Scintilla::Position selStart;
+    Scintilla::Position selEnd;
+    Scintilla::Line firstVisibleLine;
 };
 typedef CMap<CView*, CView*, RevertData, RevertData&> RevertDataMapT;
 
-class CRadNotepadDoc : public CScintillaDoc
+class CRadNotepadDoc : public Scintilla::CScintillaDoc
 {
 protected: // create from serialization only
 	CRadNotepadDoc();
@@ -17,7 +17,7 @@ protected: // create from serialization only
 
 // Attributes
 public:
-    int GetLineEndingMode() const { return m_nLineEndingMode; }
+    Scintilla::EndOfLine GetLineEndingMode() const { return m_nLineEndingMode; }
 
 // Operations
 public:
@@ -48,7 +48,7 @@ public:
 
 protected:
     Encoding m_eEncoding;
-    int m_nLineEndingMode;
+    Scintilla::EndOfLine m_nLineEndingMode;
     FILETIME m_ftWrite;
 
 // Generated message map functions

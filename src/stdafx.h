@@ -33,7 +33,12 @@
 
 #include <vector>
 #include <memory>
+#include <string>
+#include <string_view>
 #include <Scintilla.h>
+#include <ScintillaTypes.h>
+#include <ScintillaCall.h>
+#include <ScintillaStructures.h>
 #include "scintillawrappers\ScintillaDocView.h"
 
 
