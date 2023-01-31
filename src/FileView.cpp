@@ -443,9 +443,9 @@ void CFileView::FillFileView()
         cne.fRecursive = TRUE;
         cne.pidl = m_pRootPidl.get();
 
-        const LONG fEvents = SHCNE_CREATE | SHCNE_DELETE |
-            SHCNE_MKDIR | SHCNE_RMDIR | SHCNE_RENAMEFOLDER |
-            SHCNE_RENAMEITEM;
+        //const LONG fEvents = SHCNE_CREATE | SHCNE_DELETE |
+            //SHCNE_MKDIR | SHCNE_RMDIR | SHCNE_RENAMEFOLDER |
+            //SHCNE_RENAMEITEM;
         //SHCNE_UPDATEITEM;     // TODO Look into this, not sure if handled properly at the moment
         //SHCNE_ATTRIBUTES;
 

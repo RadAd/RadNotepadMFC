@@ -83,9 +83,10 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
     CDialogEx::DoDataExchange(pDX);
     if (!pDX->m_bSaveAndValidate)
     {
-        VersionInfo viRadNotepad, viScintilla;
+        VersionInfo viRadNotepad, viScintilla, viLexilla;
         GetVersionData(NULL, &viRadNotepad);
         GetVersionData(theApp.m_hSciDLL, &viScintilla);
+        GetVersionData(theApp.m_hLexDLL, &viLexilla);
 
         TCHAR ProductVersion[100];
         _stprintf_s(ProductVersion, TEXT("%s, Version %s"), viRadNotepad.Product, viRadNotepad.Version);
@@ -95,6 +96,10 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
         _stprintf_s(ProductVersion, TEXT("%s, Version %s"), viScintilla.Product, viScintilla.Version);
         SetDlgItemText(ID_VERSION_SCINTILLA, ProductVersion);
         SetDlgItemText(ID_COPYRIGHT_SCINTILLA, viScintilla.Copyright);
+
+        _stprintf_s(ProductVersion, TEXT("%s, Version %s"), viLexilla.Product, viLexilla.Version);
+        SetDlgItemText(ID_VERSION_LEXILLA, ProductVersion);
+        SetDlgItemText(ID_COPYRIGHT_LEXILLA, viLexilla.Copyright);
     }
 }
 

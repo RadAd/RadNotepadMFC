@@ -77,10 +77,12 @@
 #define ID_COPYRIGHT                    1002
 #define ID_VERSION_SCINTILLA            1003
 #define ID_COPYRIGHT_SCINTILLA          1004
+#define ID_COPYRIGHT_LEXILLA            1008
 #define IDC_MFCLINK1                    1005
 #define IDC_MFCLINK2                    1006
 #define IDC_EXTENSION                   1006
 #define IDC_URL                         1007
+#define ID_VERSION_LEXILLA              1007
 #define ID_FILE_REVERT                  32784
 #define ID_FILE_CLOSEALL                32788
 #define ID_FILE_SAVEALL                 32789
