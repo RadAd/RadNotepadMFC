@@ -49,6 +49,23 @@ namespace
     }
 };
 
+class CRadScintillaCtrl : public Scintilla::CScintillaCtrl
+{
+protected:
+    DECLARE_MESSAGE_MAP()
+
+    void OnMButtonUp(UINT /* nFlags */, CPoint /*point*/)
+    {
+        if (GetSelectionEmpty())
+            Paste();
+        else
+            Copy();
+    }
+};
+
+BEGIN_MESSAGE_MAP(CRadScintillaCtrl, CScintillaCtrl)
+    ON_WM_MBUTTONUP()
+END_MESSAGE_MAP()
 
 // CRadNotepadView
 
@@ -58,7 +75,6 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     // Standard printing commands
     ON_WM_CREATE()
     ON_WM_CONTEXTMENU()
-    ON_WM_RBUTTONUP()
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE, &CRadNotepadView::OnUpdateLine)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_SCHEME, &CRadNotepadView::OnUpdateSchemeIndicator)
     ON_UPDATE_COMMAND_UI(ID_INDICATOR_LINE_ENDING, &CRadNotepadView::OnUpdateLineEndingIndicator)
@@ -207,12 +223,6 @@ void CRadNotepadView::OnFilePrintPreview()
 #ifndef SHARED_HANDLERS
     AFXPrintPreview(this);
 #endif
-}
-
-void CRadNotepadView::OnRButtonUp(UINT /* nFlags */, CPoint point)
-{
-    ClientToScreen(&point);
-    OnContextMenu(this, point);
 }
 
 void CRadNotepadView::OnContextMenu(CWnd* /* pWnd */, CPoint point)
@@ -398,6 +408,11 @@ void CRadNotepadView::OnInitialUpdate()
     //Enable Multiple selection
     rCtrl.SetMultipleSelection(TRUE);
 #endif
+}
+
+std::unique_ptr<Scintilla::CScintillaCtrl> CRadNotepadView::CreateScintillaControl()
+{
+    return std::make_unique<CRadScintillaCtrl>();
 }
 
 void CRadNotepadView::OnViewMargin(UINT nID)

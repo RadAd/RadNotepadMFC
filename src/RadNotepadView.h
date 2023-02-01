@@ -22,6 +22,7 @@ public:
 // Overrides
 public:
     virtual void OnInitialUpdate() override;
+    virtual std::unique_ptr<Scintilla::CScintillaCtrl> CreateScintillaControl() override;
     virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView) override;
     virtual void OnUpdate(CView* /*pSender*/, LPARAM /*lHint*/, CObject* /*pHint*/) override;
 
@@ -50,7 +51,6 @@ protected:
 protected:
     DECLARE_MESSAGE_MAP()
     afx_msg void OnFilePrintPreview();
-    afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg void OnUpdateLine(CCmdUI* pCmdUI);
     afx_msg void OnUpdateSchemeIndicator(CCmdUI* pCmdUI);
