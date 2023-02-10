@@ -407,7 +407,7 @@ LRESULT CMainFrame::OnSetMessageString(WPARAM wParam, LPARAM lParam)
 
 void CMainFrame::OnFileOpenUrl()
 {
-    COpenUrlDlg dlg;
+    COpenUrlDlg dlg(this);
     if (dlg.DoModal() == IDOK)
         theApp.OpenDocumentFile(dlg.m_strUrl);
 }

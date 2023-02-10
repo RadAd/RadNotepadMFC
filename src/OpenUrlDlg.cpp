@@ -25,7 +25,7 @@ COpenUrlDlg::COpenUrlDlg(CWnd* pParent /*=nullptr*/)
     : CDialogEx(IDD_OPEN_URL, pParent)
     , m_strUrl(_T(""))
 {
-    if (OpenClipboard())
+    if (pParent->OpenClipboard())
     {
         HANDLE hClip = GetClipboardData(CF_TTEXT);
         if (hClip != NULL)
