@@ -25,6 +25,9 @@ public:
 
 	void AdjustLayout();
 
+private:
+    CMFCToolBarComboBoxButton* GetRootButton();
+
 // Attributes
 protected:
     HACCEL m_hAccel;
@@ -62,9 +65,12 @@ protected:
     afx_msg void OnUpdateFileSelected(CCmdUI *pCmdUI);
     afx_msg void OnUpdateActiveDocument(CCmdUI *pCmdUI);
     afx_msg void OnSync();
+    afx_msg void OnRoot();
+    afx_msg void OnRootSelChanged();
     afx_msg void OnEditRename();
     afx_msg void OnEditView();
     afx_msg void OnNewFolder();
+    afx_msg void OnFolderRoot();
     afx_msg void OnPaint();
 	afx_msg void OnSetFocus(CWnd* pOldWnd);
     afx_msg void OnItemExpanding(NMHDR* pHdr, LRESULT* pResult);

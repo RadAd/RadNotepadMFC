@@ -21,6 +21,7 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 #define ID_FILE_VIEW_TREE 4
+#define ID_ROOT 124
 
 #define MSG_SHELLCHANGE (WM_USER + 117)
 
@@ -41,10 +42,8 @@ static inline PtrIDAbsolute operator+(const PtrIDAbsolute& p1, const PtrIDChild&
 
 static inline CComPtr<IShellFolder> GetFolder(PCIDLIST_ABSOLUTE pidl)
 {
-    HRESULT    hr = NOERROR;
-
     CComPtr<IShellFolder>    Desktop;
-    hr = SHGetDesktopFolder(&Desktop);
+    /*HRESULT hr =*/ SHGetDesktopFolder(&Desktop);
 
     CComPtr<IShellFolder>    Parent;
 
@@ -127,7 +126,7 @@ struct TreeItem
     {
         SFGAOF Flags = SHCIDS_BITMASK;
         GetAttributesOf(&Flags);
-        return ((Flags & SFGAO_FOLDER) || (Flags & SFGAO_HASSUBFOLDER));
+        return ((Flags & SFGAO_FOLDER) || (Flags & SFGAO_HASSUBFOLDER)) && !(Flags & SFGAO_STREAM);
     }
 
     template <class I>
@@ -192,6 +191,7 @@ static inline void SetChildren(CTreeCtrl& rTreeCtrl, HTREEITEM hItem, int cChild
 }
 
 //#define ID_NEW_FOLDER 1
+#define ID_FOLDER_ROOT 144
 #define ID_VIEW 2
 #define MIN_SHELL_ID 1000
 #define MAX_SHELL_ID 2000
@@ -261,6 +261,8 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
     {
         Menu.AppendMenu(MF_ENABLED | MF_STRING, ID_NEW_FOLDER, _T("New Folder"));
         // TODO Set an icon
+        Menu.AppendMenu(MF_ENABLED | MF_STRING, ID_FOLDER_ROOT, _T("Set as Root"));
+        // TODO Set an icon
         Menu.AppendMenu(MF_ENABLED | MF_SEPARATOR);
     }
 
@@ -304,6 +306,10 @@ static void DoContextMenu(CWnd* pWnd, CComPtr<IContextMenu>& TheContextMenu, int
         if (Cmd == ID_NEW_FOLDER)
         {
             pWnd->SendMessage(WM_COMMAND, ID_NEW_FOLDER);
+        }
+        else if (Cmd == ID_FOLDER_ROOT)
+        {
+            pWnd->SendMessage(WM_COMMAND, ID_FOLDER_ROOT);
         }
         else if (Cmd == ID_VIEW)
         {
@@ -369,16 +375,19 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
     ON_UPDATE_COMMAND_UI(ID_PROPERTIES, OnUpdateFileSelected)
     ON_COMMAND(ID_SYNC, OnSync)
     ON_UPDATE_COMMAND_UI(ID_SYNC, OnUpdateActiveDocument)
+    ON_COMMAND(ID_ROOT, OnRoot)
     ON_COMMAND(ID_EDIT_RENAME, OnEditRename)
     ON_UPDATE_COMMAND_UI(ID_EDIT_RENAME, OnUpdateFileSelected)
     ON_COMMAND(ID_EDIT_VIEW, OnEditView)
     ON_UPDATE_COMMAND_UI(ID_EDIT_VIEW, OnUpdateFileSelected)
     ON_COMMAND(ID_NEW_FOLDER, OnNewFolder)
+    ON_COMMAND(ID_FOLDER_ROOT, OnFolderRoot)
     ON_NOTIFY(TVN_ITEMEXPANDING, ID_FILE_VIEW_TREE, OnItemExpanding)
     ON_NOTIFY(TVN_DELETEITEM, ID_FILE_VIEW_TREE, OnDeleteItem)
     ON_NOTIFY(TVN_BEGINLABELEDIT, ID_FILE_VIEW_TREE, OnBeginLabelEdit)
     ON_NOTIFY(TVN_ENDLABELEDIT, ID_FILE_VIEW_TREE, OnEndLabelEdit)
     ON_NOTIFY(NM_DBLCLK, ID_FILE_VIEW_TREE, OnDblClick)
+    ON_CONTROL(CBN_SELCHANGE, ID_ROOT, OnRootSelChanged)
     ON_MESSAGE(MSG_SHELLCHANGE, OnShellChange)
 END_MESSAGE_MAP()
 
@@ -415,6 +424,13 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_EXPLORER);
 	m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);
+
+    CMFCToolBarComboBoxButton btnRoot(ID_ROOT, -1, CBS_DROPDOWNLIST | CBS_AUTOHSCROLL, 130);
+    TreeItem ti = {};
+    /*HRESULT hr =*/ SHGetDesktopFolder(&ti.Parent);
+    btnRoot.AddItem(ti.GetDisplayNameOf(m_Malloc));
+    btnRoot.SelectItem(0);
+    m_wndToolBar.InsertButton(btnRoot);
 
 	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
 	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
@@ -827,6 +843,12 @@ void CFileView::AdjustLayout()
 	m_wndFileView.SetWindowPos(NULL, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
+CMFCToolBarComboBoxButton* CFileView::GetRootButton()
+{
+    const int i = m_wndToolBar.CommandToIndex(ID_ROOT);
+    return dynamic_cast<CMFCToolBarComboBoxButton*>(m_wndToolBar.GetButton(i));
+}
+
 void CFileView::OnProperties()
 {
     HTREEITEM hItem = m_wndFileView.GetSelectedItem();
@@ -891,6 +913,23 @@ void CFileView::OnSync()
             AfxMessageBox(L"Cannot find file.", MB_OK | MB_ICONERROR);
         }
     }
+}
+
+void CFileView::OnRoot()
+{
+    // Needed to enable the dropdown window
+}
+
+void CFileView::OnRootSelChanged()
+{
+    CMFCToolBarComboBoxButton* btnRoot = GetRootButton();
+
+    int s = btnRoot->GetCurSel();
+    PCIDLIST_ABSOLUTE pidl = reinterpret_cast<PCIDLIST_ABSOLUTE>(btnRoot->GetItemData(s));
+    m_pRootPidl.reset(ILClone(pidl));
+
+    m_wndFileView.DeleteAllItems();
+    FillFileView();
 }
 
 void CFileView::OnEditRename()
@@ -968,6 +1007,39 @@ void CFileView::OnNewFolder()
         else
         {
             AfxMessageBox(L"Cannot create folder.", MB_OK | MB_ICONERROR);
+        }
+    }
+}
+
+void CFileView::OnFolderRoot()
+{
+    HTREEITEM hItem = m_wndFileView.GetSelectedItem();
+
+    if (hItem != NULL)
+    {
+        TreeItem* ti = (TreeItem*) m_wndFileView.GetItemData(hItem);
+
+        SFGAOF AttrFlags = SHCIDS_BITMASK;
+        ti->GetAttributesOf(&AttrFlags);
+        BOOL bCanFolderRoot = (AttrFlags & SFGAO_FILESYSTEM) && (AttrFlags & SFGAO_FOLDER);
+
+        if (bCanFolderRoot)
+        {
+            CComPtr<IShellFolder> Folder = ti->GetFolder();
+
+            PIDLIST_ABSOLUTE pRootPidl = nullptr;
+            SHGetIDListFromObject(Folder, &pRootPidl);
+            m_pRootPidl.reset(pRootPidl);
+
+            CString name = ti->GetDisplayNameOf(m_Malloc);
+            GetRootButton()->AddItem(name, reinterpret_cast<DWORD_PTR>(ILClone(pRootPidl)));
+
+            m_wndFileView.DeleteAllItems();
+            FillFileView();
+        }
+        else
+        {
+            AfxMessageBox(L"Not a folder.", MB_OK | MB_ICONERROR);
         }
     }
 }
@@ -1087,7 +1159,7 @@ LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
         sc.wEventId = wEventId;
 
         CComPtr<IShellFolder>    Desktop;
-        SHGetDesktopFolder(&Desktop);
+        /*HRESULT hr =*/ SHGetDesktopFolder(&Desktop);
         sc.strName = GetDisplayNameOf(Desktop, pidls[0], m_Malloc, SHGDN_FORPARSING);
 
         if (wEventId & SHCNE_DELETE || wEventId & SHCNE_RMDIR)
