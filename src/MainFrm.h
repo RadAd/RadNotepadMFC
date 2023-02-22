@@ -4,6 +4,7 @@
 #include "ClassView.h"
 #include "OutputWnd.h"
 #include "PropertiesWnd.h"
+#include "RadCtlColor.h"
 #include <vector>
 
 extern UINT NEAR WM_RADNOTEPAD;
@@ -68,7 +69,7 @@ protected:
     int m_PrevNext;
     std::vector<CWnd*> m_MDIStack;
     CMFCMenuBar       m_wndMenuBar;
-    CMFCToolBar       m_wndToolBar[5];
+    CRadToolbar       m_wndToolBar[5];
     CMFCStatusBar     m_wndStatusBar;
     CMFCToolBarImages m_UserImages;
     CFileView         m_wndFileView;

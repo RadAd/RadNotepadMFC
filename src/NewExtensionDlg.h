@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RadDialog.h"
+#include "RadCtlColor.h"
 
 struct Settings;
 
@@ -8,23 +8,23 @@ struct Settings;
 
 class CNewExtensionDlg : public CRadDialog
 {
-	DECLARE_DYNAMIC(CNewExtensionDlg)
+    DECLARE_DYNAMIC(CNewExtensionDlg)
 
 public:
-	CNewExtensionDlg(Settings* pSettings, CWnd* pParent = NULL);   // standard constructor
-	virtual ~CNewExtensionDlg();
+    CNewExtensionDlg(Settings* pSettings, CWnd* pParent = NULL);   // standard constructor
+    virtual ~CNewExtensionDlg();
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME
-	enum { IDD = IDD_GOTOLINE };
+    enum { IDD = IDD_GOTOLINE };
 #endif
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+    virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 
-	Settings* m_pSettings;
+    Settings* m_pSettings;
 public:
     CString m_strExtension;
 };

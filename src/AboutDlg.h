@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RadDialog.h"
+#include "RadCtlColor.h"
 
 // CAboutDlg dialog used for App About
 

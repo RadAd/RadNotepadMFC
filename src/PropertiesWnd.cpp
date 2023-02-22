@@ -646,7 +646,7 @@ CMFCPropertyGridProperty* CreateProperty(const CString& strName, const CString* 
 
 CPropertiesWnd::CPropertiesWnd()
 {
-	m_nComboHeight = 0;
+    m_nComboHeight = 0;
     m_pSettings = &theApp.m_Settings;
     m_pExtGroup = nullptr;
 }
@@ -655,19 +655,19 @@ CPropertiesWnd::~CPropertiesWnd()
 {
 }
 
-BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
-	ON_WM_CREATE()
-	ON_WM_SIZE()
-	ON_COMMAND(ID_EXPAND_ALL, OnExpandAllProperties)
-	ON_UPDATE_COMMAND_UI(ID_EXPAND_ALL, OnUpdateExpandAllProperties)
-	ON_COMMAND(ID_SORTPROPERTIES, OnSortProperties)
-	ON_UPDATE_COMMAND_UI(ID_SORTPROPERTIES, OnUpdateSortProperties)
-	ON_COMMAND(ID_PROPERTIES_RESET, OnPropertiesReset)
-	ON_UPDATE_COMMAND_UI(ID_PROPERTIES_RESET, OnUpdatePropertiesReset)
+BEGIN_MESSAGE_MAP(CPropertiesWnd, CRadDockablePane)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
+    ON_COMMAND(ID_EXPAND_ALL, OnExpandAllProperties)
+    ON_UPDATE_COMMAND_UI(ID_EXPAND_ALL, OnUpdateExpandAllProperties)
+    ON_COMMAND(ID_SORTPROPERTIES, OnSortProperties)
+    ON_UPDATE_COMMAND_UI(ID_SORTPROPERTIES, OnUpdateSortProperties)
+    ON_COMMAND(ID_PROPERTIES_RESET, OnPropertiesReset)
+    ON_UPDATE_COMMAND_UI(ID_PROPERTIES_RESET, OnUpdatePropertiesReset)
     ON_COMMAND(ID_PROPERTIES_NEW, OnPropertiesNew)
     ON_UPDATE_COMMAND_UI(ID_PROPERTIES_NEW, OnUpdatePropertiesNew)
     ON_WM_SETFOCUS()
-	ON_WM_SETTINGCHANGE()
+    ON_WM_SETTINGCHANGE()
     ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
     ON_WM_DESTROY()
     ON_CBN_SELCHANGE(ID_OBJECT_COMBO, OnComboSelChange)
@@ -706,78 +706,78 @@ void CPropertiesWnd::InitLanguages()
 
 void CPropertiesWnd::AdjustLayout()
 {
-	if (GetSafeHwnd () == NULL || (AfxGetMainWnd() != NULL && AfxGetMainWnd()->IsIconic()))
-	{
-		return;
-	}
+    if (GetSafeHwnd () == NULL || (AfxGetMainWnd() != NULL && AfxGetMainWnd()->IsIconic()))
+    {
+        return;
+    }
 
-	CRect rectClient;
-	GetClientRect(rectClient);
+    CRect rectClient;
+    GetClientRect(rectClient);
 
-	int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
+    int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
 
-	m_wndObjectCombo.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), m_nComboHeight, SWP_NOACTIVATE | SWP_NOZORDER);
-	m_wndToolBar.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
-	m_wndPropList.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight + cyTlb, rectClient.Width(), rectClient.Height() -(m_nComboHeight+cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
+    m_wndObjectCombo.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), m_nComboHeight, SWP_NOACTIVATE | SWP_NOZORDER);
+    m_wndToolBar.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
+    m_wndPropList.SetWindowPos(NULL, rectClient.left, rectClient.top + m_nComboHeight + cyTlb, rectClient.Width(), rectClient.Height() -(m_nComboHeight+cyTlb), SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 int CPropertiesWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CDockablePane::OnCreate(lpCreateStruct) == -1)
-		return -1;
+    if (CRadDockablePane::OnCreate(lpCreateStruct) == -1)
+        return -1;
 
-	CRect rectDummy;
-	rectDummy.SetRectEmpty();
+    CRect rectDummy;
+    rectDummy.SetRectEmpty();
 
-	// Create combo:
-	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL;
+    // Create combo:
+    const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | WS_BORDER | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL;
 
-	if (!m_wndObjectCombo.Create(dwViewStyle, rectDummy, this, ID_OBJECT_COMBO))
-	{
-		TRACE0("Failed to create Properties Combo \n");
-		return -1;      // fail to create
-	}
+    if (!m_wndObjectCombo.Create(dwViewStyle, rectDummy, this, ID_OBJECT_COMBO))
+    {
+        TRACE0("Failed to create Properties Combo \n");
+        return -1;      // fail to create
+    }
 
-	m_wndObjectCombo.AddString(_T("Application"));
-	m_wndObjectCombo.AddString(_T("Editor"));
-	m_wndObjectCombo.SetCurSel(0);
+    m_wndObjectCombo.AddString(_T("Application"));
+    m_wndObjectCombo.AddString(_T("Editor"));
+    m_wndObjectCombo.SetCurSel(0);
 
-	CRect rectCombo;
-	m_wndObjectCombo.GetClientRect(&rectCombo);
+    CRect rectCombo;
+    m_wndObjectCombo.GetClientRect(&rectCombo);
 
-	m_nComboHeight = rectCombo.Height();
+    m_nComboHeight = rectCombo.Height();
 
-	if (!m_wndPropList.Create(WS_VISIBLE | WS_CHILD, rectDummy, this, 2))
-	{
-		TRACE0("Failed to create Properties Grid \n");
-		return -1;      // fail to create
-	}
+    if (!m_wndPropList.Create(WS_VISIBLE | WS_CHILD, rectDummy, this, 2))
+    {
+        TRACE0("Failed to create Properties Grid \n");
+        return -1;      // fail to create
+    }
 
-	InitPropList();
+    InitPropList();
 
-	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_PROPERTIES);
-	m_wndToolBar.LoadToolBar(IDR_PROPERTIES, 0, 0, TRUE /* Is locked */);
+    m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_PROPERTIES);
+    m_wndToolBar.LoadToolBar(IDR_PROPERTIES, 0, 0, TRUE /* Is locked */);
 
-	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
-	m_wndToolBar.SetOwner(this);
+    m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
+    m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
+    m_wndToolBar.SetOwner(this);
 
-	// All commands will be routed via this control , not via the parent frame:
-	m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
+    // All commands will be routed via this control , not via the parent frame:
+    m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
 
-	AdjustLayout();
-	return 0;
+    AdjustLayout();
+    return 0;
 }
 
 void CPropertiesWnd::OnSize(UINT nType, int cx, int cy)
 {
-	CDockablePane::OnSize(nType, cx, cy);
-	AdjustLayout();
+    CRadDockablePane::OnSize(nType, cx, cy);
+    AdjustLayout();
 }
 
 void CPropertiesWnd::OnExpandAllProperties()
 {
-	m_wndPropList.ExpandAll();
+    m_wndPropList.ExpandAll();
 }
 
 void CPropertiesWnd::OnUpdateExpandAllProperties(CCmdUI* /* pCmdUI */)
@@ -786,12 +786,12 @@ void CPropertiesWnd::OnUpdateExpandAllProperties(CCmdUI* /* pCmdUI */)
 
 void CPropertiesWnd::OnSortProperties()
 {
-	m_wndPropList.SetAlphabeticMode(!m_wndPropList.IsAlphabeticMode());
+    m_wndPropList.SetAlphabeticMode(!m_wndPropList.IsAlphabeticMode());
 }
 
 void CPropertiesWnd::OnUpdateSortProperties(CCmdUI* pCmdUI)
 {
-	pCmdUI->SetCheck(m_wndPropList.IsAlphabeticMode());
+    pCmdUI->SetCheck(m_wndPropList.IsAlphabeticMode());
 }
 
 void CPropertiesWnd::OnPropertiesReset()
@@ -834,12 +834,12 @@ void CPropertiesWnd::OnUpdatePropertiesNew(CCmdUI* pCmdUI)
 
 void CPropertiesWnd::InitPropList()
 {
-	SetPropListFont();
+    SetPropListFont();
 
-	m_wndPropList.EnableHeaderCtrl(FALSE);
-	m_wndPropList.EnableDescriptionArea();
-	m_wndPropList.SetVSDotNetLook();
-	m_wndPropList.MarkModifiedProperties();
+    m_wndPropList.EnableHeaderCtrl(FALSE);
+    m_wndPropList.EnableDescriptionArea();
+    m_wndPropList.SetVSDotNetLook();
+    m_wndPropList.MarkModifiedProperties();
 
     int i = m_wndObjectCombo.GetCurSel();
     Language* pLanguage = (Language*) m_wndObjectCombo.GetItemDataPtr(i);
@@ -1029,14 +1029,14 @@ void CPropertiesWnd::InitPropList()
 
 void CPropertiesWnd::OnSetFocus(CWnd* pOldWnd)
 {
-	CDockablePane::OnSetFocus(pOldWnd);
-	m_wndPropList.SetFocus();
+    CRadDockablePane::OnSetFocus(pOldWnd);
+    m_wndPropList.SetFocus();
 }
 
 void CPropertiesWnd::OnSettingChange(UINT uFlags, LPCTSTR lpszSection)
 {
-	CDockablePane::OnSettingChange(uFlags, lpszSection);
-	SetPropListFont();
+    CRadDockablePane::OnSettingChange(uFlags, lpszSection);
+    SetPropListFont();
 }
 
 static void Refresh(CMFCPropertyGridProperty* pPropChild, const PropertyBase* propdef)
@@ -1075,30 +1075,31 @@ void CPropertiesWnd::OnComboSelChange()
 LRESULT CPropertiesWnd::OnChangeVisualManager(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
     CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+    //CRadVisualManagerDark::Init(&m_wndObjectCombo, pDark != nullptr);
     CRadVisualManagerDark::Init(m_wndPropList.GetScrollBarCtrl(SB_VERT), pDark != nullptr);
     return 0;
 }
 
 void CPropertiesWnd::SetPropListFont()
 {
-	::DeleteObject(m_fntPropList.Detach());
+    ::DeleteObject(m_fntPropList.Detach());
 
-	LOGFONT lf;
-	afxGlobalData.fontRegular.GetLogFont(&lf);
+    LOGFONT lf;
+    afxGlobalData.fontRegular.GetLogFont(&lf);
 
-	NONCLIENTMETRICS info;
-	info.cbSize = sizeof(info);
+    NONCLIENTMETRICS info;
+    info.cbSize = sizeof(info);
 
-	afxGlobalData.GetNonClientMetrics(info);
+    afxGlobalData.GetNonClientMetrics(info);
 
-	lf.lfHeight = info.lfMenuFont.lfHeight;
-	lf.lfWeight = info.lfMenuFont.lfWeight;
-	lf.lfItalic = info.lfMenuFont.lfItalic;
+    lf.lfHeight = info.lfMenuFont.lfHeight;
+    lf.lfWeight = info.lfMenuFont.lfWeight;
+    lf.lfItalic = info.lfMenuFont.lfItalic;
 
-	m_fntPropList.CreateFontIndirect(&lf);
+    m_fntPropList.CreateFontIndirect(&lf);
 
-	m_wndPropList.SetFont(&m_fntPropList);
-	m_wndObjectCombo.SetFont(&m_fntPropList);
+    m_wndPropList.SetFont(&m_fntPropList);
+    m_wndObjectCombo.SetFont(&m_fntPropList);
 }
 
 void CPropertiesWnd::FillExtensions()
@@ -1113,7 +1114,7 @@ void CPropertiesWnd::FillExtensions()
 
 void CPropertiesWnd::OnDestroy()
 {
-    CDockablePane::OnDestroy();
+    CRadDockablePane::OnDestroy();
 
     for (int i = 0; i < m_wndPropList.GetPropertyCount(); ++i)
         CleanUp(m_wndPropList.GetProperty(i));

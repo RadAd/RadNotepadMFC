@@ -3,6 +3,9 @@
 
 #include "ViewTree.h"
 #include "PaneToolBar.h"
+#include "RadCtlColor.h"
+
+typedef CRadCtlColor<CPaneToolBar> CRadPaneToolBar;
 
 struct TreeItem;
 
@@ -35,7 +38,7 @@ protected:
     PtrIDAbsolute m_pRootPidl;
     CComPtr<IMalloc> m_Malloc;
     CViewTree m_wndFileView;
-    CPaneToolBar m_wndToolBar;
+    CRadPaneToolBar m_wndToolBar;
 
 protected:
     void FillFileView();
