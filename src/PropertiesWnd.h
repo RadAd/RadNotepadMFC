@@ -51,6 +51,7 @@ protected:
 	afx_msg void OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
     afx_msg LRESULT OnPropertyChanged(WPARAM wParam, LPARAM lParam);
     afx_msg void OnComboSelChange();
+	afx_msg LRESULT OnChangeVisualManager(WPARAM wParam, LPARAM lParam);
 
 	DECLARE_MESSAGE_MAP()
 

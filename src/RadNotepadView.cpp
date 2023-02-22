@@ -7,6 +7,7 @@
 
 #include "RadNotepadDoc.h"
 #include "RadNotepadView.h"
+#include "RadVisualManager.h"
 #include "MainFrm.h"
 #include "GoToLineDlg.h"
 #include <algorithm>
@@ -824,6 +825,11 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
             GetCtrl().SetFirstVisibleLine(data.firstVisibleLine);
             Invalidate();
         }
+        break;
+
+    case HINT_THEME:
+        CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+        CRadVisualManagerDark::Init(&GetCtrl(), pDark != nullptr);
         break;
     }
 }

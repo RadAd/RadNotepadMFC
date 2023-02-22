@@ -10,6 +10,7 @@
 #include "RadToolBarsCustomizeDialog.h"
 #include "ToolBarHistoryButton.h"
 #include "OpenUrlDlg.h"
+#include "RadVisualManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -95,8 +96,11 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_WM_CREATE()
     ON_WM_SETTINGCHANGE()
     ON_WM_CONTEXTMENU()
+    ON_WM_SETCURSOR()
     ON_MESSAGE(WM_SETMESSAGESTRING, &CMainFrame::OnSetMessageString)
     ON_COMMAND(ID_FILE_OPENURL, &CMainFrame::OnFileOpenUrl)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_DARKMODE, &CMainFrame::OnUpdateDarkMode)
+    ON_COMMAND(ID_VIEW_DARKMODE, &CMainFrame::OnDarkMode)
     ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
     ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
     ON_COMMAND_RANGE(ID_VIEW_FILEVIEW, ID_VIEW_CLASSVIEW, &CMainFrame::OnViewPane)
@@ -111,7 +115,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWndEx)
     ON_REGISTERED_MESSAGE(WM_RADNOTEPAD, &CMainFrame::OnRadNotepad)
     ON_UPDATE_COMMAND_UI(ID_VIEW_DOCKINGWINDOWS, &CMainFrame::OnUpdateDockingWindows)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CMainFrame::OnUpdateViewMargin)
-    ON_WM_SETCURSOR()
+    ON_REGISTERED_MESSAGE(AFX_WM_CHANGEVISUALMANAGER, OnChangeVisualManager)
 END_MESSAGE_MAP()
 
 // CMainFrame construction/destruction
@@ -154,7 +158,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     // prevent the menu bar from taking the focus on activation
     CMFCPopupMenu::SetForceMenuFocus(FALSE);
 
-    CMFCToolBarComboBoxButton::SetFlatMode(FALSE);
+    //CMFCToolBarComboBoxButton::SetFlatMode(FALSE);
 
     EnableDocking(CBRS_ALIGN_ANY);
     m_wndMenuBar.EnableDocking(CBRS_ALIGN_ANY);
@@ -410,6 +414,21 @@ void CMainFrame::OnFileOpenUrl()
     COpenUrlDlg dlg(this);
     if (dlg.DoModal() == IDOK)
         theApp.OpenDocumentFile(dlg.m_strUrl);
+}
+
+void CMainFrame::OnUpdateDarkMode(CCmdUI* pCmdUI)
+{
+    CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+    pCmdUI->SetCheck(pDark != nullptr);
+}
+
+void CMainFrame::OnDarkMode()
+{
+    CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+    if (pDark != nullptr)
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
+    else
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CRadVisualManagerDark));
 }
 
 void CMainFrame::OnWindowManager()
@@ -750,4 +769,18 @@ BOOL CMainFrame::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
         return SetCursor(LoadCursor(NULL, IDC_WAIT)), TRUE;
     else
         return CMDIFrameWndEx::OnSetCursor(pWnd, nHitTest, message);
+}
+
+LRESULT CMainFrame::OnChangeVisualManager(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+    CObList lstBars;
+    GetDockingManager()->GetPaneList(lstBars, TRUE, RUNTIME_CLASS(CDockablePane), TRUE);
+    for (POSITION pos = lstBars.GetHeadPosition(); pos != NULL;)
+    {
+        CDockablePane* pPane = DYNAMIC_DOWNCAST(CDockablePane, lstBars.GetNext(pos));
+        pPane->SendMessage(AFX_WM_CHANGEVISUALMANAGER);
+    }
+    CRadDocManager* pDocManager = DYNAMIC_DOWNCAST(CRadDocManager, theApp.m_pDocManager);
+    pDocManager->UpdateAllViews(nullptr, HINT_THEME);
+    return 0;
 }

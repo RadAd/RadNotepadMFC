@@ -76,4 +76,5 @@ protected:
     DECLARE_MESSAGE_MAP()
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg LRESULT OnChangeVisualManager(WPARAM wParam, LPARAM lParam);
 };

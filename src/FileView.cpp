@@ -4,6 +4,7 @@
 #include "FileView.h"
 #include "RadNotepad.h"
 #include "RadDocManager.h"
+#include "RadVisualManager.h"
 #include <set>
 
 #include "..\resource.h"
@@ -366,9 +367,9 @@ CFileView::~CFileView()
 }
 
 BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
-	ON_WM_CREATE()
-	ON_WM_SIZE()
-	ON_WM_CONTEXTMENU()
+    ON_WM_CREATE()
+    ON_WM_SIZE()
+    ON_WM_CONTEXTMENU()
     ON_WM_PAINT()
     ON_WM_SETFOCUS()
     ON_COMMAND(ID_PROPERTIES, OnProperties)
@@ -389,6 +390,7 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
     ON_NOTIFY(NM_DBLCLK, ID_FILE_VIEW_TREE, OnDblClick)
     ON_CONTROL(CBN_SELCHANGE, ID_ROOT, OnRootSelChanged)
     ON_MESSAGE(MSG_SHELLCHANGE, OnShellChange)
+    ON_REGISTERED_MESSAGE(AFX_WM_CHANGEVISUALMANAGER, OnChangeVisualManager)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -396,25 +398,25 @@ END_MESSAGE_MAP()
 
 int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (CDockablePane::OnCreate(lpCreateStruct) == -1)
-		return -1;
+    if (CDockablePane::OnCreate(lpCreateStruct) == -1)
+        return -1;
 
     m_hAccel = LoadAccelerators(NULL, MAKEINTRESOURCE(IDR_EXPLORER));
     m_wndToolBar.SetAccel(m_hAccel);
 
-	CRect rectDummy;
-	rectDummy.SetRectEmpty();
+    CRect rectDummy;
+    rectDummy.SetRectEmpty();
 
-	// Create view:
-	const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_EDITLABELS;
+    // Create view:
+    const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_EDITLABELS;
 
-	if (!m_wndFileView.Create(dwViewStyle, rectDummy, this, ID_FILE_VIEW_TREE))
-	{
-		TRACE0("Failed to create file view\n");
-		return -1;      // fail to create
-	}
+    if (!m_wndFileView.Create(dwViewStyle, rectDummy, this, ID_FILE_VIEW_TREE))
+    {
+        TRACE0("Failed to create file view\n");
+        return -1;      // fail to create
+    }
 
-	// Load view images:
+    // Load view images:
     HIMAGELIST ImlLarge, ImlSmall;
     Shell_GetImageLists(&ImlLarge, &ImlSmall);
     CImageList il;
@@ -422,8 +424,8 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_wndFileView.SetImageList(&il, TVSIL_NORMAL);
     il.Detach();
 
-	m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_EXPLORER);
-	m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);
+    m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_EXPLORER);
+    m_wndToolBar.LoadToolBar(IDR_EXPLORER, 0, 0, TRUE /* Is locked */);
 
     CMFCToolBarComboBoxButton btnRoot(ID_ROOT, -1, CBS_DROPDOWNLIST | CBS_AUTOHSCROLL, 130);
     TreeItem ti = {};
@@ -432,24 +434,24 @@ int CFileView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     btnRoot.SelectItem(0);
     m_wndToolBar.InsertButton(btnRoot);
 
-	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-	m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
-	m_wndToolBar.SetOwner(this);
+    m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
+    m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
+    m_wndToolBar.SetOwner(this);
 
-	// All commands will be routed via this control , not via the parent frame:
-	m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
+    // All commands will be routed via this control , not via the parent frame:
+    m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
 
-	// Fill in some static tree view data (dummy code, nothing magic here)
-	FillFileView();
-	AdjustLayout();
+    // Fill in some static tree view data (dummy code, nothing magic here)
+    FillFileView();
+    AdjustLayout();
 
-	return 0;
+    return 0;
 }
 
 void CFileView::OnSize(UINT nType, int cx, int cy)
 {
-	CDockablePane::OnSize(nType, cx, cy);
-	AdjustLayout();
+    CDockablePane::OnSize(nType, cx, cy);
+    AdjustLayout();
 }
 
 void CFileView::FillFileView()
@@ -785,22 +787,22 @@ void CFileView::OnUpdateItem(PCIDLIST_ABSOLUTE pidls)
 
 void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
 {
-	CTreeCtrl* pWndTree = (CTreeCtrl*) &m_wndFileView;
-	ASSERT_VALID(pWndTree);
+    CTreeCtrl* pWndTree = (CTreeCtrl*) &m_wndFileView;
+    ASSERT_VALID(pWndTree);
 
-	if (pWnd != pWndTree)
-	{
-		CDockablePane::OnContextMenu(pWnd, point);
-		return;
-	}
+    if (pWnd != pWndTree)
+    {
+        CDockablePane::OnContextMenu(pWnd, point);
+        return;
+    }
 
-	if (point != CPoint(-1, -1))
-	{
-		// Select clicked item:
-		CPoint ptTree = point;
-		pWndTree->ScreenToClient(&ptTree);
+    if (point != CPoint(-1, -1))
+    {
+        // Select clicked item:
+        CPoint ptTree = point;
+        pWndTree->ScreenToClient(&ptTree);
 
-		UINT flags = 0;
+        UINT flags = 0;
         HTREEITEM hItem = pWndTree->HitTest(ptTree, &flags);
         pWndTree->SetFocus();
         if (hItem != NULL)
@@ -829,18 +831,18 @@ void CFileView::OnContextMenu(CWnd* pWnd, CPoint point)
 
 void CFileView::AdjustLayout()
 {
-	if (GetSafeHwnd() == NULL)
-	{
-		return;
-	}
+    if (GetSafeHwnd() == NULL)
+    {
+        return;
+    }
 
-	CRect rectClient;
-	GetClientRect(rectClient);
+    CRect rectClient;
+    GetClientRect(rectClient);
 
-	int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
+    int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
 
-	m_wndToolBar.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
-	m_wndFileView.SetWindowPos(NULL, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
+    m_wndToolBar.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
+    m_wndFileView.SetWindowPos(NULL, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
 CMFCToolBarComboBoxButton* CFileView::GetRootButton()
@@ -1046,21 +1048,21 @@ void CFileView::OnFolderRoot()
 
 void CFileView::OnPaint()
 {
-	CPaintDC dc(this); // device context for painting
+    CPaintDC dc(this); // device context for painting
 
-	CRect rectTree;
-	m_wndFileView.GetWindowRect(rectTree);
-	ScreenToClient(rectTree);
+    CRect rectTree;
+    m_wndFileView.GetWindowRect(rectTree);
+    ScreenToClient(rectTree);
 
-	rectTree.InflateRect(1, 1);
-	dc.Draw3dRect(rectTree, ::GetSysColor(COLOR_3DSHADOW), ::GetSysColor(COLOR_3DSHADOW));
+    rectTree.InflateRect(1, 1);
+    dc.Draw3dRect(rectTree, ::GetSysColor(COLOR_3DSHADOW), ::GetSysColor(COLOR_3DSHADOW));
 }
 
 void CFileView::OnSetFocus(CWnd* pOldWnd)
 {
-	CDockablePane::OnSetFocus(pOldWnd);
+    CDockablePane::OnSetFocus(pOldWnd);
 
-	m_wndFileView.SetFocus();
+    m_wndFileView.SetFocus();
 }
 
 void CFileView::OnItemExpanding(NMHDR* pHdr, LRESULT* pResult)
@@ -1187,6 +1189,12 @@ LRESULT CFileView::OnShellChange(WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
+LRESULT CFileView::OnChangeVisualManager(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+    CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+    CRadVisualManagerDark::Init(&m_wndFileView, pDark != nullptr);
+    return 0;
+}
 
 BOOL CFileView::PreTranslateMessage(MSG* pMsg)
 {

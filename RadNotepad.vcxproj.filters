@@ -115,6 +115,12 @@
     <ClInclude Include="src\RadRecentFileList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\RadVisualManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RadDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ChildFrm.cpp">
@@ -196,6 +202,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\RadRecentFileList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RadVisualManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RadDialog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,10 +1,11 @@
 #pragma once
 #include "afxwin.h"
 
+#include "RadDialog.h"
 
 // CSaveModifiedDlg dialog
 
-class CSaveModifiedDlg : public CDialogEx
+class CSaveModifiedDlg : public CRadDialog
 {
 	DECLARE_DYNAMIC(CSaveModifiedDlg)
 

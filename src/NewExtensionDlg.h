@@ -1,10 +1,12 @@
 #pragma once
 
+#include "RadDialog.h"
+
 struct Settings;
 
 // CNewExtensionDlg dialog
 
-class CNewExtensionDlg : public CDialogEx
+class CNewExtensionDlg : public CRadDialog
 {
 	DECLARE_DYNAMIC(CNewExtensionDlg)
 

@@ -4,6 +4,7 @@
 #include "PropertiesWnd.h"
 #include "MainFrm.h"
 #include "RadNotepad.h"
+#include "RadVisualManager.h"
 #include "NewExtensionDlg.h"
 
 #include "..\resource.h"
@@ -670,6 +671,7 @@ BEGIN_MESSAGE_MAP(CPropertiesWnd, CDockablePane)
     ON_REGISTERED_MESSAGE(AFX_WM_PROPERTY_CHANGED, OnPropertyChanged)
     ON_WM_DESTROY()
     ON_CBN_SELCHANGE(ID_OBJECT_COMBO, OnComboSelChange)
+    ON_REGISTERED_MESSAGE(AFX_WM_CHANGEVISUALMANAGER, OnChangeVisualManager)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1068,6 +1070,13 @@ void CPropertiesWnd::OnComboSelChange()
         CleanUp(m_wndPropList.GetProperty(i));
     m_wndPropList.RemoveAll();
     InitPropList();
+}
+
+LRESULT CPropertiesWnd::OnChangeVisualManager(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+    CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+    CRadVisualManagerDark::Init(m_wndPropList.GetScrollBarCtrl(SB_VERT), pDark != nullptr);
+    return 0;
 }
 
 void CPropertiesWnd::SetPropListFont()

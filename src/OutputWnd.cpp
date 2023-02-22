@@ -4,6 +4,7 @@
 #include "OutputWnd.h"
 #include "RadNotepad.h"
 #include "RadNotepadDoc.h"
+#include "RadVisualManager.h"
 #include "Theme.h"
 
 #include "..\resource.h"
@@ -36,6 +37,7 @@ COutputWnd::~COutputWnd()
 BEGIN_MESSAGE_MAP(COutputWnd, CDockablePane)
     ON_WM_CREATE()
     ON_WM_SIZE()
+    ON_REGISTERED_MESSAGE(AFX_WM_CHANGEVISUALMANAGER, OnChangeVisualManager)
 END_MESSAGE_MAP()
 
 int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
@@ -343,6 +345,17 @@ BOOL COutputWnd::OnCommand(WPARAM wParam, LPARAM lParam)
         return TRUE;
 
     return CDockablePane::OnCommand(wParam, lParam);
+}
+
+LRESULT COutputWnd::OnChangeVisualManager(WPARAM /*wParam*/, LPARAM /*lParam*/)
+{
+    CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+    for (int i = 0; i < m_wndTabs.GetTabsNum(); ++i)
+    {
+        CWnd* pWnd = m_wndTabs.GetTabWnd(i);
+        CRadVisualManagerDark::Init(pWnd, pDark != nullptr);
+    }
+    return 0;
 }
 
 void COutputList::OnUpdatePopupWordWrap(CCmdUI *pCmdUI)

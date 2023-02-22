@@ -1,15 +1,15 @@
 #pragma once
 
+#include "RadDialog.h"
 
 // OpenUrl dialog
 
-class COpenUrlDlg : public CDialogEx
+class COpenUrlDlg : public CRadDialog
 {
 	DECLARE_DYNAMIC(COpenUrlDlg)
 
 public:
 	COpenUrlDlg(CWnd* pParent = nullptr);   // standard constructor
-	virtual ~COpenUrlDlg();
 
 // Dialog Data
 #ifdef AFX_DESIGN_TIME

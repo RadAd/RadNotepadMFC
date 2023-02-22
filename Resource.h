@@ -77,12 +77,12 @@
 #define ID_COPYRIGHT                    1002
 #define ID_VERSION_SCINTILLA            1003
 #define ID_COPYRIGHT_SCINTILLA          1004
-#define ID_COPYRIGHT_LEXILLA            1008
 #define IDC_MFCLINK1                    1005
 #define IDC_MFCLINK2                    1006
 #define IDC_EXTENSION                   1006
 #define IDC_URL                         1007
 #define ID_VERSION_LEXILLA              1007
+#define ID_COPYRIGHT_LEXILLA            1008
 #define ID_FILE_REVERT                  32784
 #define ID_FILE_CLOSEALL                32788
 #define ID_FILE_SAVEALL                 32789
@@ -135,6 +135,7 @@
 #define ID_PROPERTIES_NEW               32897
 #define ID_FILE_NEWURL                  32898
 #define ID_FILE_OPENURL                 32899
+#define ID_VIEW_DARKMODE                32902
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -142,9 +143,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        331
-#define _APS_NEXT_COMMAND_VALUE         32902
-#define _APS_NEXT_CONTROL_VALUE         1008
+#define _APS_NEXT_RESOURCE_VALUE        335
+#define _APS_NEXT_COMMAND_VALUE         32903
+#define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           311
 #endif
 #endif

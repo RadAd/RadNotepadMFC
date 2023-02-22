@@ -242,6 +242,8 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\RadDialog.h" />
+    <ClInclude Include="src\RadVisualManager.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="src\AboutDlg.h" />
     <ClInclude Include="src\ChildFrm.h" />
@@ -275,6 +277,8 @@
     <ClInclude Include="src\ToolBarHistoryButton.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\RadDialog.cpp" />
+    <ClCompile Include="src\RadVisualManager.cpp" />
     <ClCompile Include="src\AboutDlg.cpp" />
     <ClCompile Include="src\ChildFrm.cpp" />
     <ClCompile Include="src\ClassView.cpp" />

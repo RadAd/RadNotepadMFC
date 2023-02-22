@@ -19,10 +19,10 @@ inline bool StartsWith(LPCTSTR pStr, LPCTSTR pBegin)
 
 // OpenUrl dialog
 
-IMPLEMENT_DYNAMIC(COpenUrlDlg, CDialogEx)
+IMPLEMENT_DYNAMIC(COpenUrlDlg, CRadDialog)
 
 COpenUrlDlg::COpenUrlDlg(CWnd* pParent /*=nullptr*/)
-    : CDialogEx(IDD_OPEN_URL, pParent)
+    : CRadDialog(IDD_OPEN_URL, pParent)
     , m_strUrl(_T(""))
 {
     if (pParent->OpenClipboard())
@@ -42,18 +42,14 @@ COpenUrlDlg::COpenUrlDlg(CWnd* pParent /*=nullptr*/)
     }
 }
 
-COpenUrlDlg::~COpenUrlDlg()
-{
-}
-
 void COpenUrlDlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDialogEx::DoDataExchange(pDX);
+    CRadDialog::DoDataExchange(pDX);
     DDX_Text(pDX, IDC_URL, m_strUrl);
 }
 
 
-BEGIN_MESSAGE_MAP(COpenUrlDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(COpenUrlDlg, CRadDialog)
 END_MESSAGE_MAP()
 
 

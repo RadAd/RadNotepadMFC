@@ -62,6 +62,7 @@
 #define HINT_SHELL_CHANGED      4
 #define HINT_REVERT_PRE         5
 #define HINT_REVERT             6
+#define HINT_THEME              7
 
 struct CShellChanged : public CObject
 {

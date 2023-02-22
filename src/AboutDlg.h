@@ -1,8 +1,10 @@
 #pragma once
 
+#include "RadDialog.h"
+
 // CAboutDlg dialog used for App About
 
-class CAboutDlg : public CDialogEx
+class CAboutDlg : public CRadDialog
 {
 public:
     CAboutDlg();

@@ -74,13 +74,13 @@ static void GetVersionData(HINSTANCE hInstance, VersionInfo* vi)
     }
 }
 
-CAboutDlg::CAboutDlg() : CDialogEx(IDD_ABOUTBOX)
+CAboutDlg::CAboutDlg() : CRadDialog(IDD_ABOUTBOX)
 {
 }
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDialogEx::DoDataExchange(pDX);
+    CRadDialog::DoDataExchange(pDX);
     if (!pDX->m_bSaveAndValidate)
     {
         VersionInfo viRadNotepad, viScintilla, viLexilla;
@@ -103,5 +103,5 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
     }
 }
 
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CAboutDlg, CRadDialog)
 END_MESSAGE_MAP()

@@ -5,10 +5,10 @@
 
 // CSaveModifiedDlg dialog
 
-IMPLEMENT_DYNAMIC(CSaveModifiedDlg, CDialogEx)
+IMPLEMENT_DYNAMIC(CSaveModifiedDlg, CRadDialog)
 
 CSaveModifiedDlg::CSaveModifiedDlg(CWnd* pParent /*=NULL*/)
-	: CDialogEx(IDD_SAVE_MODIFIED, pParent)
+	: CRadDialog(IDD_SAVE_MODIFIED, pParent)
 {
 }
 
@@ -18,11 +18,11 @@ CSaveModifiedDlg::~CSaveModifiedDlg()
 
 void CSaveModifiedDlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDialogEx::DoDataExchange(pDX);
+    CRadDialog::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_LIST1, m_List);
 }
 
-BEGIN_MESSAGE_MAP(CSaveModifiedDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CSaveModifiedDlg, CRadDialog)
     ON_BN_CLICKED(IDNO, &CSaveModifiedDlg::OnBnClickedNo)
     ON_WM_GETMINMAXINFO()
 END_MESSAGE_MAP()
@@ -31,7 +31,7 @@ END_MESSAGE_MAP()
 
 BOOL CSaveModifiedDlg::OnInitDialog()
 {
-    CDialogEx::OnInitDialog();
+    CRadDialog::OnInitDialog();
 
     SetIcon(theApp.LoadIcon(IDD_SAVE_MODIFIED), FALSE);
 
@@ -107,7 +107,7 @@ void CSaveModifiedDlg::OnOK()
         }
     }
     if (bSaved)
-        CDialogEx::OnOK();
+        CRadDialog::OnOK();
 }
 
 void CSaveModifiedDlg::OnGetMinMaxInfo(MINMAXINFO* pMinMaxInfo)

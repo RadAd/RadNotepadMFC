@@ -21,9 +21,9 @@ class CFileView : public CDockablePane
 {
 // Construction
 public:
-	CFileView();
+    CFileView();
 
-	void AdjustLayout();
+    void AdjustLayout();
 
 private:
     CMFCToolBarComboBoxButton* GetRootButton();
@@ -34,11 +34,11 @@ protected:
     ULONG m_Notify;
     PtrIDAbsolute m_pRootPidl;
     CComPtr<IMalloc> m_Malloc;
-	CViewTree m_wndFileView;
+    CViewTree m_wndFileView;
     CPaneToolBar m_wndToolBar;
 
 protected:
-	void FillFileView();
+    void FillFileView();
     void InsertChildren(HTREEITEM hNode, TreeItem* ti);
     void InsertChildren(CComPtr<IShellFolder>& Folder, HTREEITEM hParent);
     HTREEITEM FindItem(HTREEITEM hParentItem, PCITEMID_CHILD pidls);
@@ -55,13 +55,13 @@ protected:
 
 // Implementation
 public:
-	virtual ~CFileView();
+    virtual ~CFileView();
 
 protected:
-	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
-	afx_msg void OnProperties();
+    afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+    afx_msg void OnSize(UINT nType, int cx, int cy);
+    afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
+    afx_msg void OnProperties();
     afx_msg void OnUpdateFileSelected(CCmdUI *pCmdUI);
     afx_msg void OnUpdateActiveDocument(CCmdUI *pCmdUI);
     afx_msg void OnSync();
@@ -72,15 +72,16 @@ protected:
     afx_msg void OnNewFolder();
     afx_msg void OnFolderRoot();
     afx_msg void OnPaint();
-	afx_msg void OnSetFocus(CWnd* pOldWnd);
+    afx_msg void OnSetFocus(CWnd* pOldWnd);
     afx_msg void OnItemExpanding(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnDeleteItem(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnBeginLabelEdit(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnEndLabelEdit(NMHDR* pHdr, LRESULT* pResult);
     afx_msg void OnDblClick(NMHDR* pHdr, LRESULT* pResult);
     afx_msg LRESULT OnShellChange(WPARAM wParam, LPARAM lParam);
+    afx_msg LRESULT OnChangeVisualManager(WPARAM wParam, LPARAM lParam);
 
-	DECLARE_MESSAGE_MAP()
+    DECLARE_MESSAGE_MAP()
 public:
     virtual BOOL PreTranslateMessage(MSG* pMsg) override;
 };

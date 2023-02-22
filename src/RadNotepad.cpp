@@ -15,6 +15,7 @@
 #include "RadDocManager.h"
 #include "RadUserTool.h"
 #include "RadRecentFileList.h"
+#include "RadVisualManager.h"
 
 #include <afxinet.h>
 
@@ -170,6 +171,8 @@ CRadNotepadApp::CRadNotepadApp()
 	// TODO: replace application ID string below with unique ID string; recommended
 	// format for string is CompanyName.ProductName.SubProduct.VersionInformation
 	SetAppID(_T("RadNotepad.AppID.NoVersion"));
+
+    CRadVisualManagerDark::InitApp();
 }
 
 // The one and only CRadNotepadApp object

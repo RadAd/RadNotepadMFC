@@ -10,10 +10,10 @@
 
 // CNewExtensionDlg dialog
 
-IMPLEMENT_DYNAMIC(CNewExtensionDlg, CDialogEx)
+IMPLEMENT_DYNAMIC(CNewExtensionDlg, CRadDialog)
 
 CNewExtensionDlg::CNewExtensionDlg(Settings* pSettings, CWnd* pParent /*=NULL*/)
-	: CDialogEx(IDD_NEW_EXTENSION, pParent)
+	: CRadDialog(IDD_NEW_EXTENSION, pParent)
     , m_pSettings(pSettings)
 {
 
@@ -71,14 +71,14 @@ static void Validate(CDataExchange* pDX, bool bTest, LPCTSTR pMessage)
 
 void CNewExtensionDlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDialogEx::DoDataExchange(pDX);
+    CRadDialog::DoDataExchange(pDX);
     DDX_Text(pDX, IDC_EXTENSION, m_strExtension);
     Validate(pDX, !m_strExtension.IsEmpty(), _T("Must not be empty."));
     Validate(pDX, m_pSettings->user.mapExt.find(m_strExtension) == m_pSettings->user.mapExt.end(), _T("Already exists."));
 }
 
 
-BEGIN_MESSAGE_MAP(CNewExtensionDlg, CDialogEx)
+BEGIN_MESSAGE_MAP(CNewExtensionDlg, CRadDialog)
 END_MESSAGE_MAP()
 
 

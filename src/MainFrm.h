@@ -81,6 +81,8 @@ protected:
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg LRESULT OnSetMessageString(WPARAM wParam, LPARAM lParam);
     afx_msg void OnFileOpenUrl();
+    afx_msg void OnUpdateDarkMode(CCmdUI* pCmdUI);
+    afx_msg void OnDarkMode();
     afx_msg void OnWindowManager();
     afx_msg void OnViewCustomize();
     afx_msg void OnSchemeIndicator();
@@ -97,6 +99,7 @@ protected:
     afx_msg LRESULT OnRadNotepad(WPARAM wParam, LPARAM lParam);
     afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
     afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+    afx_msg LRESULT OnChangeVisualManager(WPARAM wParam, LPARAM lParam);
 };
 
 
