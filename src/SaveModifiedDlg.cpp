@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "RadNotepad.h"
 #include "SaveModifiedDlg.h"
-#include "afxdialogex.h"
+#include "RadVisualManager.h"
 
 // CSaveModifiedDlg dialog
 
@@ -32,6 +32,9 @@ END_MESSAGE_MAP()
 BOOL CSaveModifiedDlg::OnInitDialog()
 {
     CRadDialog::OnInitDialog();
+
+    CRadVisualManagerDark::Init(&m_List, true);
+    CRadVisualManagerDark::Init(m_List.GetHeaderCtrl(), true);
 
     SetIcon(theApp.LoadIcon(IDD_SAVE_MODIFIED), FALSE);
 

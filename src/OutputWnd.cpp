@@ -65,7 +65,7 @@ int COutputWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
         return -1;      // fail to create
     }
 
-	return 0;
+    return 0;
 }
 
 void COutputWnd::OnSize(UINT nType, int cx, int cy)
@@ -138,6 +138,8 @@ COutputList* COutputWnd::Get(LPCTSTR pOutput, BOOL bCreate)
         pOutputList->SetOwner(this);
         pOutputList->SetLanguage(pOutput);
         m_wndTabs.AddTab(pOutputList, pOutput, (UINT) 0);
+        CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+        CRadVisualManagerDark::Init(pOutputList, pDark != nullptr);
     }
     return pOutputList;
 }
@@ -355,6 +357,7 @@ LRESULT COutputWnd::OnChangeVisualManager(WPARAM /*wParam*/, LPARAM /*lParam*/)
         CWnd* pWnd = m_wndTabs.GetTabWnd(i);
         CRadVisualManagerDark::Init(pWnd, pDark != nullptr);
     }
+    CRadVisualManagerDark::Init(&m_wndTabs, pDark != nullptr);
     return 0;
 }
 

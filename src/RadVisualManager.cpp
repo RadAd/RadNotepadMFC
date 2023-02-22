@@ -47,6 +47,21 @@ void CRadVisualManagerDark::Init(CWnd* pWnd, bool fDarkMode)
         // TODO Choose appropriate colors
         pTreeCtrl->SetInsertMarkColor(RGB(255, 0, 255));
     }
+    CListCtrl* pListCtrl = DYNAMIC_DOWNCAST(CListCtrl, pWnd);
+    if (pListCtrl != nullptr)
+    {
+        pListCtrl->SetBkColor(GetGlobalData()->clrWindow);
+        pListCtrl->SetTextBkColor(GetGlobalData()->clrWindow);
+        pListCtrl->SetTextColor(GetGlobalData()->clrWindowText);
+        //pListCtrl->SetLineColor(GetGlobalData()->clrWindowText);
+        // TODO Choose appropriate colors
+        pListCtrl->SetInsertMarkColor(RGB(255, 0, 255));
+    }
+    CMFCTabCtrl* pTabCtrl = DYNAMIC_DOWNCAST(CMFCTabCtrl, pWnd);
+    if (pTabCtrl != nullptr)
+    {
+        pTabCtrl->SetActiveTabColor(GetGlobalData()->clrWindow);
+    }
 }
 
 void CRadVisualManagerDark::OnUpdateSystemColors()

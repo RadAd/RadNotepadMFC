@@ -503,6 +503,9 @@ int CRadNotepadView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     if (CScintillaView::OnCreate(lpCreateStruct) == -1)
         return -1;
 
+    CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+    CRadVisualManagerDark::Init(&GetCtrl(), pDark != nullptr);
+
     CCreateContext* pContext = (CCreateContext*) lpCreateStruct->lpCreateParams;
 #if 0
     CRadNotepadView* pLastView = (CRadNotepadView*) pContext->m_pLastView;

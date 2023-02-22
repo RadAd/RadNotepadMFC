@@ -23,7 +23,6 @@ private:
     {
         // Skip CMFCVisualManagerOffice2007, call CMFCVisualManagerOffice2003
         CMFCVisualManagerOffice2003::OnHighlightMenuItem(pDC, pButton, rect, clrText);
-        //pDC->FillRect(&rect, &m_brHighlight); // TODO Which brush to use???
     }
 
     virtual void OnDrawTab(CDC* pDC, CRect rectTab, int iTab, BOOL bIsActive, const CMFCBaseTabCtrl* pTabWnd)
@@ -46,11 +45,5 @@ private:
     virtual void OnEraseTabsArea(CDC* pDC, CRect rect, const CMFCBaseTabCtrl* pTabWnd)
     {
         CMFCVisualManagerOffice2003::OnEraseTabsArea(pDC, rect, pTabWnd);
-    }
-
-    // --------------------- To remove
-    void OnDrawComboDropButton(CDC* pDC, CRect rect, BOOL bDisabled, BOOL bIsDropped, BOOL bIsHighlighted, CMFCToolBarComboBoxButton* pButton)
-    {
-        CMFCVisualManagerOffice2007::OnDrawComboDropButton(pDC, rect, bDisabled, bIsDropped, bIsHighlighted, pButton);
     }
 };
