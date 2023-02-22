@@ -246,7 +246,10 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
     }
 
     // set the visual manager used to draw all user interface elements
-    CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
+    if (AfxGetApp()->GetProfileInt(_T("Settings"), _T("DarkMode"), 0))
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CRadVisualManagerDark));
+    else
+        CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
     // Enable enhanced windows management dialog
     EnableWindowsDialog(ID_WINDOW_MANAGER, ID_WINDOW_MANAGER, TRUE);
