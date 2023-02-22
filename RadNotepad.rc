@@ -902,7 +902,13 @@ END
 
 STRINGTABLE
 BEGIN
+    ID_LINEENDINGS_WINDOWS  "Switch to Windows line endings\nWindows"
+    ID_LINEENDINGS_MAC      "Switch to Macintosh line endings\nMacintosh"
+    ID_LINEENDINGS_UNIX     "Switch to Unix line endings\nUnix"
     IDS_CONVERTLINEENDINGS  "Convert line endings?"
+    ID_EDIT_MAKEUPPERCASE   "Make selected text uppercase\nUppercase"
+    ID_EDIT_MAKELOWERCASE   "Make selected text lowercase\nLowercase"
+    ID_EDIT_GOTOLINE        "Goto specific line number\nGoto"
 END
 
 STRINGTABLE
@@ -996,7 +1002,7 @@ BEGIN
     ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
     ID_EDIT_FIND            "Find the specified text\nFind"
     ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
-    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPEAT          "Repeat the last find action\nNext"
     ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
     ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
     ID_EDIT_UNDO            "Undo the last action\nUndo"
@@ -1062,6 +1068,7 @@ BEGIN
     ID_FIELD_FILE           "{file}"
     ID_FIELD_PATH           "{path}"
     ID_FIELD_SELECTED       "{selected}"
+    ID_VIEW_SAVESETTINGSONEXIT "Save settings on exit"
     ID_SEARCH_TEXT          "Text to search for\nSearch Text"
     ID_SEARCH_PREV          "Find the specified text up\nSearch Prev"
     ID_SEARCH_NEXT          "Find the specified text down\nSearch Next"
@@ -1070,6 +1077,15 @@ END
 STRINGTABLE
 BEGIN
     ID_FILE_READONLY        "Toggle the read only state\nRead Only"
+    ID_ENCODING_ANSI        "Switch to ANSI encoding\nANSI"
+    ID_ENCODING_UTF16LE     "Switch to UTF-16 little endian encoding\nUTF-16 LE"
+    ID_ENCODING_UTF16BE     "Switch to UTF-16 big endian encoding\nUTF-16 BE"
+    ID_ENCODING_UTF8        "Switch to UTF-8 encoding\nUTF-8"
+    ID_EDIT_FINDPREVIOUS    "Repeat the last find action in the opposite direction\nPrevious"
+    ID_EDIT_FINDNEXTCURRENTWORD "Find the selected text"
+    ID_EDIT_FINDPREVIOUSCURRENTWORD 
+                            "Find the selected text in the opposite direction"
+    ID_EDIT_FINDMATCHINGBRACE "Find matching brace\nBrace"
 END
 
 STRINGTABLE
@@ -1080,6 +1096,13 @@ END
 STRINGTABLE
 BEGIN
     ID_PROPERTIES_NEW       "Add a new property\nNew"
+    ID_FILE_OPENURL         "Open an existing document via a URL\nOpen URL"
+    ID_VIEW_DARKMODE        "Toggle dark mode\nDark Mode"
+END
+
+STRINGTABLE
+BEGIN
+    ID_SEARCH_INCREMENTAL   "Find as you type"
 END
 
 #endif    // English (United States) resources
