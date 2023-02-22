@@ -12,6 +12,7 @@ CRadWindowsManagerDialog::~CRadWindowsManagerDialog()
 
 BEGIN_MESSAGE_MAP(CRadWindowsManagerDialog, CMFCWindowsManagerDialog)
     ON_WM_DRAWITEM()
+    ON_WM_CTLCOLOR()
 END_MESSAGE_MAP()
 
 void CRadWindowsManagerDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDIS)
@@ -69,5 +70,22 @@ void CRadWindowsManagerDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDIS)
     if (lpDIS->itemAction & ODA_FOCUS)
     {
         pDC->DrawFocusRect(rect);
+    }
+}
+
+// TODO Better to reuse CRadDialog somehow
+HBRUSH CRadWindowsManagerDialog::OnCtlColor(CDC* pDC, CWnd* /*pWnd*/, UINT nCtlColor)
+{
+    switch (nCtlColor)
+    {
+    case CTLCOLOR_EDIT:
+        pDC->SetTextColor(GetGlobalData()->clrWindowText);
+        pDC->SetBkColor(GetGlobalData()->clrWindow);
+        return (HBRUSH) GetGlobalData()->brWindow.GetSafeHandle();
+
+    default:
+        pDC->SetTextColor(GetGlobalData()->clrBtnText);
+        pDC->SetBkColor(GetGlobalData()->clrBtnFace);
+        return (HBRUSH) GetGlobalData()->brBtnFace.GetSafeHandle();
     }
 }
