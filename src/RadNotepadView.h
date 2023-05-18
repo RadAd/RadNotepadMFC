@@ -79,6 +79,7 @@ protected:
     afx_msg void OnUpdateLineEndings(CCmdUI *pCmdUI);
     afx_msg void OnEditMakeUppercase();
     afx_msg void OnEditMakeLowercase();
+    afx_msg void OnEditDeleteTrailingSpaces();
     afx_msg LRESULT OnCheckUpdate(WPARAM wParam, LPARAM lParam);
     afx_msg void OnEditGotoLine();
     afx_msg void OnEditFindPrevious();

@@ -102,6 +102,7 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_UPDATE_COMMAND_UI_RANGE(ID_LINEENDINGS_WINDOWS, ID_LINEENDINGS_UNIX, &CRadNotepadView::OnUpdateLineEndings)
     ON_COMMAND(ID_EDIT_MAKEUPPERCASE, &CRadNotepadView::OnEditMakeUppercase)
     ON_COMMAND(ID_EDIT_MAKELOWERCASE, &CRadNotepadView::OnEditMakeLowercase)
+    ON_COMMAND(ID_EDIT_DELETETRAILINGSPACES, &CRadNotepadView::OnEditDeleteTrailingSpaces)
     ON_COMMAND(ID_EDIT_GOTOLINE, &CRadNotepadView::OnEditGotoLine)
     ON_COMMAND(ID_EDIT_FINDPREVIOUS, &CRadNotepadView::OnEditFindPrevious)
     ON_UPDATE_COMMAND_UI(ID_EDIT_FINDPREVIOUS, &CScintillaView::OnUpdateNeedFind)
@@ -661,6 +662,25 @@ void CRadNotepadView::OnEditMakeLowercase()
         Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
         rCtrl.LowerCase();
     }
+}
+
+void CRadNotepadView::OnEditDeleteTrailingSpaces()
+{
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    rCtrl.BeginUndoAction();
+    for (Scintilla::Line l = 0; l < rCtrl.GetLineCount(); ++l)
+    {
+        const CString strLine = rCtrl.GetLine(l).TrimRight(L"\r\n");
+        CString strLineTrim = strLine;
+        strLineTrim.TrimRight();
+        const int diff = strLine.GetLength() - strLineTrim.GetLength();
+        if (diff > 0)
+        {
+            Scintilla::Position end = rCtrl.GetLineEndPosition(l);
+            rCtrl.DeleteRange(end - diff, diff);
+        }
+    }
+    rCtrl.EndUndoAction();
 }
 
 void CRadNotepadView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)

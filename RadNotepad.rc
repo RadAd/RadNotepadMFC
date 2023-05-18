@@ -243,6 +243,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Make Uppercase\tCtrl+Shift+U", ID_EDIT_MAKEUPPERCASE
         MENUITEM "Make Lowercase\tCtrl+U",      ID_EDIT_MAKELOWERCASE
+        MENUITEM "Delete Trailing Spaces",      ID_EDIT_DELETETRAILINGSPACES
     END
     POPUP "&View"
     BEGIN
