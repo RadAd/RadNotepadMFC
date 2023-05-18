@@ -1059,6 +1059,7 @@ BEGIN
     ID_VIEW_WHITESPACE      "Toggle display of white space\nWhite Space"
     ID_VIEW_ENDOFLINE       "Toggle display of end of line\nEnd of Line"
     ID_VIEW_WORDWRAP        "Toggle wrapping of long lines\nWord Wrap"
+    ID_VIEW_USETABS         "Indent with tabs or spaces\nUse Tabs"
     ID_EDIT_TOGGLEBOOKMARK  "Toggle bookmark on current line\nToggle Bookmark"
     ID_EDIT_PREVIOUSBOOKMARK 
                             "Move to previous bookmark in file\nPrev Bookmark"
@@ -1093,7 +1094,7 @@ END
 
 STRINGTABLE
 BEGIN
-    ID_VIEW_RETURN          "Return to the main window"
+    ID_VIEW_RETURN          "Return to the main window\nReturn"
 END
 
 STRINGTABLE
@@ -1101,11 +1102,22 @@ BEGIN
     ID_PROPERTIES_NEW       "Add a new property\nNew"
     ID_FILE_OPENURL         "Open an existing document via a URL\nOpen URL"
     ID_VIEW_DARKMODE        "Toggle dark mode\nDark Mode"
+    ID_VIEW_TRAILINGSPACES  "Toggle highlight of trailing white space\nTrailing Spaces"
+    ID_EDIT_DELETETRAILINGSPACES 
+                            "Delete spaces and tabs from the end of the line\nDelete Trailing"
 END
 
 STRINGTABLE
 BEGIN
     ID_SEARCH_INCREMENTAL   "Find as you type"
+END
+
+STRINGTABLE
+BEGIN
+    IDR_SEARCH              "Toggle display of Search toolbar\nSearch Toolbar"
+    IDR_DOCKING             "Toggle display of Docking toolbar\nDocking Toolbar"
+    IDR_BOOKMARK            "Toggle display of Bookmark toolbar"
+    IDR_VIEW                "Toggle display of View toolbar\nView Toolbar"
 END
 
 #endif    // English (United States) resources
