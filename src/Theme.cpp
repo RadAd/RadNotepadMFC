@@ -427,7 +427,7 @@ void ProcessStyleClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     if (name == L"default")
                         pTheme->tDefault = rThemeItem;
                     else if (pStyleClass == nullptr)
-                        pTheme->vecStyleClass.emplace_back(StyleClass{ name, description, rThemeItem });
+                        pTheme->vecStyleClass.emplace_back(StyleClass{ (LPCTSTR) name, (LPCTSTR) description, rThemeItem });
                     else
                     {
                         if (!isnull(description))
@@ -850,7 +850,7 @@ void ProcessKeywordClasses(MSXML2::IXMLDOMNodePtr pXMLNode, Theme* pTheme)
                     KeywordClass* pKeywordClass = Get(pTheme->vecKeywordClass, name);
                     if (pKeywordClass == nullptr)
                     {
-                        pTheme->vecKeywordClass.emplace_back(KeywordClass({ name, keywords }));
+                        pTheme->vecKeywordClass.emplace_back(KeywordClass({ (LPCTSTR) name, (LPCTSTR) keywords }));
                         pKeywordClass = &pTheme->vecKeywordClass.back();
                     }
                     else
@@ -1006,7 +1006,7 @@ void ProcessKeywords(MSXML2::IXMLDOMNodePtr pXMLNode, Language* pLanguage)
                     }
                     // TODO Check for no other attributes
 
-                    pLanguage->vecKeywords[_wtoi(key)] = { name, sclass };
+                    pLanguage->vecKeywords[_wtoi(key)] = { (LPCTSTR) name, (LPCTSTR) sclass };
                 }
             }
             else
@@ -1283,7 +1283,11 @@ BOOL CALLBACK EnumResSchemeProc(
     EnumResData* pData = (EnumResData*) lParam;
 
     HRSRC hResInfo = FindResource(hModule, lpszName, lpszType);
+    if (hResInfo == NULL)
+        return FALSE;
     HGLOBAL hGlobal = LoadResource(hModule, hResInfo);
+    if (hGlobal == NULL)
+        return FALSE;
     const char* str = (const char*) LockResource(hGlobal);
     if (str)
     {
@@ -1330,7 +1334,11 @@ BOOL CALLBACK EnumResExtMapProc(
     EnumResData* pData = (EnumResData*) lParam;
 
     HRSRC hResInfo = FindResource(hModule, lpszName, lpszType);
+    if (hResInfo == NULL)
+        return FALSE;
     HGLOBAL hGlobal = LoadResource(hModule, hResInfo);
+    if (hGlobal == NULL)
+        return FALSE;
     const char* str = (const char*) LockResource(hGlobal);
     if (str)
     {

@@ -999,7 +999,7 @@ public:
   int NameOfStyle(_In_ int style, _Inout_opt_z_ char* name);
   int TagsOfStyle(_In_ int style, _Inout_opt_z_ char* tags);
   int DescriptionOfStyle(_In_ int style, _Inout_opt_z_ char* description);
-  void SetILexer(_In_ void* ilexer);
+  void SetILexer(_In_opt_ void* ilexer);
   [[nodiscard]] Bidirectional GetBidirectional();
   void SetBidirectional(_In_ Bidirectional bidirectional);
 
