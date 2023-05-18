@@ -493,7 +493,7 @@ void CMainFrame::OnSchemeIndicator()
 {
     CMenu* pMenu = CMenu::FromHandle(GetMenuBar()->GetHMenu());
     pMenu = CheckSubMenu(pMenu, 2, _T("&View"));
-    pMenu = CheckSubMenu(pMenu, 9, _T("Scheme"));
+    pMenu = CheckSubMenu(pMenu, 8, _T("Scheme"));
 
     CRect r;
     m_wndStatusBar.GetItemRect(m_wndStatusBar.CommandToIndex(ID_INDICATOR_SCHEME), &r);
@@ -505,8 +505,8 @@ void CMainFrame::OnSchemeIndicator()
 void CMainFrame::OnLineEndingIndicator()
 {
     CMenu* pMenu = CMenu::FromHandle(GetMenuBar()->GetHMenu());
-    pMenu = CheckSubMenu(pMenu, 2, _T("&View"));
-    pMenu = CheckSubMenu(pMenu, 6, _T("Line Endings"));
+    pMenu = CheckSubMenu(pMenu, 0, _T("&File"));
+    pMenu = CheckSubMenu(pMenu, 13, _T("Line Endings"));
 
     CRect r;
     m_wndStatusBar.GetItemRect(m_wndStatusBar.CommandToIndex(ID_INDICATOR_LINE_ENDING), &r);

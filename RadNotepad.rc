@@ -201,6 +201,12 @@ BEGIN
             MENUITEM "UTF-16 Big Endian",           ID_ENCODING_UTF16BE
             MENUITEM "UTF-16 Little Endian",        ID_ENCODING_UTF16LE
         END
+        POPUP "Line Endings"
+        BEGIN
+            MENUITEM "Windows (CRLF)",              ID_LINEENDINGS_WINDOWS
+            MENUITEM "Unix (LF)",                   ID_LINEENDINGS_UNIX
+            MENUITEM "Macintosh (CR)",              ID_LINEENDINGS_MAC
+        END
         MENUITEM SEPARATOR
         MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
         MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
@@ -252,12 +258,6 @@ BEGIN
         MENUITEM "Dark Mode",                   ID_VIEW_DARKMODE
         MENUITEM "Save Settings on Exit",       ID_VIEW_SAVESETTINGSONEXIT
         MENUITEM SEPARATOR
-        POPUP "Line Endings"
-        BEGIN
-            MENUITEM "Windows (CRLF)",              ID_LINEENDINGS_WINDOWS
-            MENUITEM "Unix (LF)",                   ID_LINEENDINGS_UNIX
-            MENUITEM "Macintosh (CR)",              ID_LINEENDINGS_MAC
-        END
         MENUITEM "Use Tabs",                    ID_VIEW_USETABS
         MENUITEM SEPARATOR
         POPUP "Scheme"
@@ -276,6 +276,7 @@ BEGIN
         MENUITEM "End of Line",                 ID_VIEW_ENDOFLINE
         MENUITEM "Word Wrap",                   ID_VIEW_WORDWRAP
         MENUITEM "Trailing Spaces",             ID_VIEW_TRAILINGSPACES
+        MENUITEM SEPARATOR
         MENUITEM "Return",                      ID_VIEW_RETURN
     END
     POPUP "&Tools"
