@@ -25,6 +25,8 @@
 
 #define RAD_MARKER_BOOKMARK 2
 
+#define RAD_INDIC_TRAILINGWS 4
+
 #define ID_VIEW_FIRSTSCHEME             33100
 #define ID_VIEW_LASTSCHEME              33199
 
@@ -83,6 +85,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadView, CScintillaView)
     ON_COMMAND(ID_FILE_PRINT_PREVIEW, &CRadNotepadView::OnFilePrintPreview)
     ON_COMMAND_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CRadNotepadView::OnViewMargin)
     ON_UPDATE_COMMAND_UI_RANGE(ID_MARGINS_1, ID_MARGINS_5, &CRadNotepadView::OnUpdateViewMargin)
+    ON_COMMAND(ID_VIEW_TRAILINGSPACES, &CRadNotepadView::OnViewTrailingSpaces)
+    ON_UPDATE_COMMAND_UI(ID_VIEW_TRAILINGSPACES, &CRadNotepadView::OnUpdateViewTrailingSpaces)
     ON_COMMAND(ID_VIEW_WHITESPACE, &CRadNotepadView::OnViewWhitespace)
     ON_UPDATE_COMMAND_UI(ID_VIEW_WHITESPACE, &CRadNotepadView::OnUpdateViewWhitespace)
     ON_COMMAND(ID_VIEW_ENDOFLINE, &CRadNotepadView::OnViewEndOfLine)
@@ -125,6 +129,7 @@ CRadNotepadView::CRadNotepadView()
     : m_pLanguage(nullptr)
     , m_bHighlightMatchingBraces(FALSE)
     , m_bAutoIndent(FALSE)
+    , m_bShowTrailingSpaces(FALSE)
 {
 }
 
@@ -169,6 +174,15 @@ void CRadNotepadView::OnModified(_Inout_ Scintilla::NotificationData* pSCNotific
     {
         CRadNotepadDoc* pDoc = GetDocument();
         pDoc->SyncModified();
+    }
+    if ((pSCNotification->modificationType & Scintilla::ModificationFlags::InsertText) == Scintilla::ModificationFlags::InsertText)
+    {
+        if (m_bShowTrailingSpaces)
+        {
+            Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+            const Scintilla::Line bl = rCtrl.LineFromPosition(pSCNotification->position);
+            ShowTrailingSpaces(bl, bl + pSCNotification->linesAdded);
+        }
     }
 }
 
@@ -215,6 +229,24 @@ void CRadNotepadView::TextNotFound(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In
     CFrameWnd* pMainWnd = DYNAMIC_DOWNCAST(CFrameWnd, AfxGetMainWnd());
     // TODO Want this message to stick for a little while
     pMainWnd->SetMessageText(IDS_SEARCH_NOT_FOUND);
+}
+
+void CRadNotepadView::ShowTrailingSpaces(const Scintilla::Line bl, const Scintilla::Line el)
+{
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    rCtrl.SetIndicatorCurrent(RAD_INDIC_TRAILINGWS);
+    for (Scintilla::Line l = bl; l <= el; ++l)
+    {
+        const CString strLine = rCtrl.GetLine(l).TrimRight(L"\r\n");
+        CString strLineTrim = strLine;
+        strLineTrim.TrimRight();
+        const int diff = strLine.GetLength() - strLineTrim.GetLength();
+        if (diff > 0)
+        {
+            Scintilla::Position end = rCtrl.GetLineEndPosition(l);
+            rCtrl.IndicatorFillRange(end - diff, diff);
+        }
+    }
 }
 
 // CRadNotepadView printing
@@ -387,6 +419,7 @@ void CRadNotepadView::OnInitialUpdate()
 
     const ThemeEditor& pThemeEditor = m_pLanguage != nullptr ? m_pLanguage->editor : pTheme->editor;
 
+    m_bShowTrailingSpaces = Merge(pThemeEditor.bShowTrailingSpaces, &pTheme->editor.bShowTrailingSpaces, Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
     m_bHighlightMatchingBraces = Merge(pThemeEditor.bHighlightMatchingBraces, &pTheme->editor.bHighlightMatchingBraces, Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
     m_bAutoIndent = Merge(pThemeEditor.bAutoIndent, &pTheme->editor.bAutoIndent, Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
 
@@ -398,6 +431,12 @@ void CRadNotepadView::OnInitialUpdate()
     rCtrl.UsePopUp(Scintilla::PopUp::Never);
     rCtrl.SetWrapVisualFlags(Scintilla::WrapVisualFlag::End);
     rCtrl.SetTechnology(Scintilla::Technology::DirectWrite);
+
+    rCtrl.IndicSetStyle(RAD_INDIC_TRAILINGWS, Scintilla::IndicatorStyle::FullBox);
+    rCtrl.IndicSetFore(RAD_INDIC_TRAILINGWS, 0x0000FF);
+    rCtrl.IndicSetAlpha(RAD_INDIC_TRAILINGWS, (Scintilla::Alpha) 128);
+    if (m_bShowTrailingSpaces)
+        ShowTrailingSpaces(0, rCtrl.GetLineCount() - 1);
 
 #if 0
     //Setup auto completion
@@ -452,6 +491,24 @@ void CRadNotepadView::OnUpdateViewMargin(CCmdUI *pCmdUI)
     }
     else if (pCmdUI->m_pMenu != nullptr)
         pCmdUI->m_pMenu->RemoveMenu(pCmdUI->m_nID, MF_BYCOMMAND);
+}
+
+void CRadNotepadView::OnViewTrailingSpaces()
+{
+    Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+    if (m_bShowTrailingSpaces)
+    {
+        rCtrl.SetIndicatorCurrent(RAD_INDIC_TRAILINGWS);
+        rCtrl.IndicatorClearRange(0, rCtrl.GetLength());
+    }
+    else
+        ShowTrailingSpaces(0, rCtrl.GetLineCount() - 1);
+    m_bShowTrailingSpaces = !m_bShowTrailingSpaces;
+}
+
+void CRadNotepadView::OnUpdateViewTrailingSpaces(CCmdUI* pCmdUI)
+{
+    pCmdUI->SetCheck(m_bShowTrailingSpaces);
 }
 
 void CRadNotepadView::OnViewWhitespace()
@@ -831,8 +888,10 @@ void CRadNotepadView::OnUpdate(CView* /*pSender*/, LPARAM lHint, CObject* pHint)
         break;
 
     case HINT_THEME:
-        CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
-        CRadVisualManagerDark::Init(&GetCtrl(), pDark != nullptr);
+        {
+            CRadVisualManagerDark* pDark = DYNAMIC_DOWNCAST(CRadVisualManagerDark, CMFCVisualManager::GetInstance());
+            CRadVisualManagerDark::Init(&GetCtrl(), pDark != nullptr);
+        }
         break;
     }
 }

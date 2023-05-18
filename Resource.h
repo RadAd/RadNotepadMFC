@@ -136,6 +136,7 @@
 #define ID_FILE_NEWURL                  32898
 #define ID_FILE_OPENURL                 32899
 #define ID_VIEW_DARKMODE                32902
+#define ID_VIEW_TRAILINGSPACES          32903
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
 
@@ -144,7 +145,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        335
-#define _APS_NEXT_COMMAND_VALUE         32903
+#define _APS_NEXT_COMMAND_VALUE         32904
 #define _APS_NEXT_CONTROL_VALUE         1009
 #define _APS_NEXT_SYMED_VALUE           311
 #endif

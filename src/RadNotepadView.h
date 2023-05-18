@@ -32,7 +32,9 @@ public:
 
     virtual BOOL FindText(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression) override;
     virtual void TextNotFound(_In_z_ LPCTSTR lpszFind, _In_ BOOL bNext, _In_ BOOL bCase, _In_ BOOL bWord, _In_ BOOL bRegularExpression, _In_ BOOL bReplaced) override;
+
 protected:
+    void ShowTrailingSpaces(Scintilla::Line bl, Scintilla::Line el);
 
 // Implementation
 public:
@@ -46,6 +48,7 @@ protected:
     const Language* m_pLanguage;
     BOOL m_bHighlightMatchingBraces;
     BOOL m_bAutoIndent;
+    BOOL m_bShowTrailingSpaces;
 
 // Generated message map functions
 protected:
@@ -64,6 +67,8 @@ protected:
     afx_msg void OnUpdateViewEndOfLine(CCmdUI *pCmdUI);
     afx_msg void OnViewWordWrap();
     afx_msg void OnUpdateViewWordWrap(CCmdUI *pCmdUI);
+    afx_msg void OnViewTrailingSpaces();
+    afx_msg void OnUpdateViewTrailingSpaces(CCmdUI* pCmdUI);
     afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnViewUseTabs();
     afx_msg void OnUpdateViewUseTabs(CCmdUI *pCmdUI);

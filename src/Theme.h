@@ -111,6 +111,7 @@ struct ThemeEditor
     Bool3 bHighlightMatchingBraces = Bool3::B3_UNDEFINED;
     Bool3 bAutoIndent = Bool3::B3_UNDEFINED;
 
+    Bool3 bShowTrailingSpaces = Bool3::B3_UNDEFINED;
     Bool3 bShowWhitespace = Bool3::B3_UNDEFINED;
     Bool3 bShowEOL = Bool3::B3_UNDEFINED;
     int nWhitespaceMode = 0;
@@ -132,6 +133,7 @@ struct ThemeEditor
             && nIndentGuideType == other.nIndentGuideType
             && bHighlightMatchingBraces == other.bHighlightMatchingBraces
             && bAutoIndent == other.bAutoIndent
+            && bShowTrailingSpaces == other.bShowTrailingSpaces
             && bShowWhitespace == other.bShowWhitespace
             && bShowEOL == other.bShowEOL
             && nWhitespaceMode == other.nWhitespaceMode

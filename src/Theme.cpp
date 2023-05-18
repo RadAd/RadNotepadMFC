@@ -134,6 +134,7 @@ static inline void ApplyEditor(Scintilla::CScintillaCtrl& rCtrl, const ThemeEdit
     rCtrl.SetIndentationGuides(Merge(rThemeEditor.nIndentGuideType, pn(pBaseThemeEditor, nIndentGuideType), -1, Scintilla::IndentView::LookBoth));
     //rCtrl.SetHighlightGuide(6); // TODO Not sure what this does
 
+    //rCtrl.SetViewTrailingSpaces(Merge(rThemeEditor.bShowTrailingSpaces, pn(pBaseThemeEditor, bShowTrailingSpaces), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
     bool bShowWS = Merge(rThemeEditor.bShowWhitespace, pn(pBaseThemeEditor, bShowWhitespace), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE;
     rCtrl.SetViewWS(bShowWS ? Merge(rThemeEditor.nWhitespaceMode, pn(pBaseThemeEditor, nWhitespaceMode), 0, Scintilla::WhiteSpace::VisibleAlways) : Scintilla::WhiteSpace::Invisible);
     rCtrl.SetViewEOL(Merge(rThemeEditor.bShowEOL, pn(pBaseThemeEditor, bShowEOL), Bool3::B3_UNDEFINED, Bool3::B3_FALSE) == Bool3::B3_TRUE);
@@ -914,6 +915,7 @@ void ProcessEditor(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeEditor& rThemeEditor)
             else if (bstrName == _T("whitespace"))
             {
                 _bstr_t show = GetAttribute(pXMLChildNode, _T("show"));
+                _bstr_t trailing = GetAttribute(pXMLChildNode, _T("trailing"));
                 _bstr_t stype = GetAttribute(pXMLChildNode, _T("type"));
                 _bstr_t size = GetAttribute(pXMLChildNode, _T("size"));
                 _bstr_t draw = GetAttribute(pXMLChildNode, _T("draw"));
@@ -921,6 +923,8 @@ void ProcessEditor(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeEditor& rThemeEditor)
 
                 if (!isnull(show))
                     rThemeEditor.bShowWhitespace = show == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
+                if (!isnull(trailing))
+                    rThemeEditor.bShowTrailingSpaces = trailing == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
                 if (!isnull(eol))
                     rThemeEditor.bShowEOL = show == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
                 if (!isnull(stype))
@@ -1510,6 +1514,8 @@ void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParen
 
         if (rThemeEditor.bShowWhitespace != Bool3::B3_UNDEFINED && rThemeEditor.bShowWhitespace != rDefaultThemeEditor.bShowWhitespace)
             pWhitespace->setAttribute(_T("show"), rThemeEditor.bShowWhitespace == Bool3::B3_TRUE ? _T("true") : _T("false"));
+        if (rThemeEditor.bShowTrailingSpaces != Bool3::B3_UNDEFINED && rThemeEditor.bShowTrailingSpaces != rDefaultThemeEditor.bShowTrailingSpaces)
+            pWhitespace->setAttribute(_T("trailing"), rThemeEditor.bShowWhitespace == Bool3::B3_TRUE ? _T("true") : _T("false"));
         if (rThemeEditor.bShowEOL != Bool3::B3_UNDEFINED && rThemeEditor.bShowEOL != rDefaultThemeEditor.bShowWhitespace)
             pWhitespace->setAttribute(_T("eol"), rThemeEditor.bShowEOL == Bool3::B3_TRUE ? _T("true") : _T("false"));
         if (rThemeEditor.nWhitespaceMode != rDefaultThemeEditor.nWhitespaceMode)

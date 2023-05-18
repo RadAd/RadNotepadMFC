@@ -275,6 +275,7 @@ BEGIN
         MENUITEM "White Space",                 ID_VIEW_WHITESPACE
         MENUITEM "End of Line",                 ID_VIEW_ENDOFLINE
         MENUITEM "Word Wrap",                   ID_VIEW_WORDWRAP
+        MENUITEM "Trailing Spaces",             ID_VIEW_TRAILINGSPACES
         MENUITEM "Return",                      ID_VIEW_RETURN
     END
     POPUP "&Tools"
