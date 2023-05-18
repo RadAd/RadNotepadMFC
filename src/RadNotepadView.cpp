@@ -27,9 +27,6 @@
 
 #define RAD_INDIC_TRAILINGWS 4
 
-#define ID_VIEW_FIRSTSCHEME             33100
-#define ID_VIEW_LASTSCHEME              33199
-
 namespace
 {
     void AddSearchTextToHistory(CMFCToolBarComboBoxButton* pButton)

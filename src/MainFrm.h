@@ -34,6 +34,7 @@ public:
 // Overrides
 protected:
     virtual BOOL PreTranslateMessage(MSG* pMsg) override;
+    virtual void GetMessageString(UINT nID, CString& rMessage) const override;
 
 public:
     virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd* pParentWnd = NULL, CCreateContext* pContext = NULL) override;

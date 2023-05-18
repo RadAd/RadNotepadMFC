@@ -879,6 +879,7 @@ END
 STRINGTABLE
 BEGIN
     IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
+    ID_WINDOW_MANAGER_TEXT  "&Windows..."
     IDS_FILE_REVERT         "File has changed. Revert?"
     IDS_TAB_MENU            "Tab"
     IDS_SEARCH_NOT_FOUND    "Not Found"
@@ -896,6 +897,7 @@ BEGIN
     ID_INDICATOR_LINE_ENDING "Ending"
     IDS_TOOLBAR_STANDARD    "Standard"
     IDS_TOOLBAR_CUSTOMIZE   "Customize..."
+    ID_VIEW_CUSTOMIZE       "Open Customize dialog\nCustomize"
 END
 
 STRINGTABLE
@@ -918,7 +920,7 @@ STRINGTABLE
 BEGIN
     IDR_MAINFRAME           "RadNotepad"
     IDR_RadNotepadTYPE      "\n\nRadNotepad\n\n\nRadNotepad.Document\nRadNotepad.Document"
-    ID_WINDOW_MANAGER       "&Windows..."
+    ID_WINDOW_MANAGER       "Show Window Manager dialog\nWindow Manager"
     ID_VIEW_FILEVIEW        "Toggle file window\nFile Window"
     ID_VIEW_OUTPUTWND       "Toggle output window\nOutput Window"
     ID_VIEW_PROPERTIESWND   "Toggle properties window\nProperties Window"
@@ -1116,7 +1118,7 @@ STRINGTABLE
 BEGIN
     IDR_SEARCH              "Toggle display of Search toolbar\nSearch Toolbar"
     IDR_DOCKING             "Toggle display of Docking toolbar\nDocking Toolbar"
-    IDR_BOOKMARK            "Toggle display of Bookmark toolbar"
+    IDR_BOOKMARK            "Toggle display of Bookmark toolbar\nBookmark Toolbar"
     IDR_VIEW                "Toggle display of View toolbar\nView Toolbar"
 END
 

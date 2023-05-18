@@ -252,7 +252,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
         CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
 
     // Enable enhanced windows management dialog
-    EnableWindowsDialog(ID_WINDOW_MANAGER, ID_WINDOW_MANAGER, TRUE);
+    EnableWindowsDialog(ID_WINDOW_MANAGER, ID_WINDOW_MANAGER_TEXT, TRUE);
 
     // Enable toolbar and docking window menu replacement
     EnablePaneMenu(TRUE, ID_VIEW_CUSTOMIZE, strCustomize, ID_VIEW_TOOLBAR, FALSE, TRUE);
@@ -729,6 +729,54 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
     }
 
     return CMDIFrameWndEx::PreTranslateMessage(pMsg);
+}
+
+void CMainFrame::GetMessageString(UINT nID, CString& rMessage) const
+{
+    if (nID >= ID_TOOLS_FIRSTTOOL && nID <= ID_TOOLS_LASTTOOL)
+    {
+        CUserTool* pTool = afxUserToolsManager->FindTool(nID);
+        if (pTool != nullptr)
+        {
+            rMessage.Format(L"Invoke %s", (const wchar_t*) pTool->m_strLabel);
+        }
+    }
+    else if (nID >= ID_MARGINS_1 && nID <= ID_MARGINS_5)
+    {
+        const Theme* pTheme = &theApp.m_Settings.user;
+        const std::vector<Margin>& vecMargin = pTheme->vecMargin;
+        const size_t i = nID - ID_MARGINS_1;
+        if (i >= 0 && i < vecMargin.size())
+        {
+            const Margin& margin = vecMargin[i];
+            rMessage.Format(L"Toggle display of %s in margin", (const wchar_t*) margin.name);
+        }
+    }
+    else if (nID >= uiFirstUserToolBarId && nID <= uiLastUserToolBarId)
+    {
+        CMFCToolBar* pUserToolbar = GetUserToolBarByIndex(nID - uiFirstUserToolBarId);
+        if (pUserToolbar != nullptr)
+        {
+            CString name;
+            pUserToolbar->GetPaneName(name);
+            rMessage.Format(L"Toggle display of %s toolbar", (const wchar_t*) name);
+        }
+    }
+    else if (nID >= ID_VIEW_FIRSTSCHEME && nID <= ID_VIEW_LASTSCHEME)
+    {
+        const std::vector<Language>& vecLanguage = theApp.m_Settings.user.vecLanguage;
+        const size_t i = nID - ID_VIEW_FIRSTSCHEME;
+        if (i >= 0 && i < vecLanguage.size())
+        {
+            const Language& rLanguage = vecLanguage[i];
+            rMessage.Format(L"Switch scheme to %s", (const wchar_t*) rLanguage.name);
+        }
+    }
+    else switch (nID)
+    {
+    case IDR_MAINFRAME: rMessage = "Toggle display of Standard toolbar"; break;
+    default: CMDIFrameWndEx::GetMessageString(nID, rMessage); break;
+    }
 }
 
 CWnd* TabWndFromPoint(CMDIClientAreaWnd& wndClientArea, CPoint ptScreen)

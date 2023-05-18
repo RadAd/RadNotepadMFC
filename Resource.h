@@ -4,6 +4,7 @@
 //
 #define IDD_ABOUTBOX                    100
 #define IDP_OLE_INIT_FAILED             100
+#define ID_WINDOW_MANAGER_TEXT          101
 #define IDS_FILE_REVERT                 102
 #define IDS_TAB_MENU                    103
 #define IDS_SEARCH_NOT_FOUND            104
@@ -139,6 +140,8 @@
 #define ID_EDIT_DELETETRAILINGSPACES    32904
 #define ID_TOOLS_FIRSTTOOL              33000
 #define ID_TOOLS_LASTTOOL               33099
+#define ID_VIEW_FIRSTSCHEME             33100
+#define ID_VIEW_LASTSCHEME              33199
 
 // Next default values for new objects
 // 
@@ -147,6 +150,6 @@
 #define _APS_NEXT_RESOURCE_VALUE        335
 #define _APS_NEXT_COMMAND_VALUE         32905
 #define _APS_NEXT_CONTROL_VALUE         1009
-#define _APS_NEXT_SYMED_VALUE           311
+#define _APS_NEXT_SYMED_VALUE           313
 #endif
 #endif
