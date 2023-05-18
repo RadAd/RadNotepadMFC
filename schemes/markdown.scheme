@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme>
+    <language name="markdown" title="Markdown">
+        <lexer name="markdown" />
+		<comments streamStart="&lt;!-- " streamEnd=" --&gt;"/>
+        <use-styles>
+            <style name="Default" key="0" />
+            <style name="Special" key="1" />
+            <style name="Strong Emphasis 1" key="2" fore="224466" bold="true"/>
+            <style name="Strong Emphasis 2" key="3" fore="224466" bold="true"/>
+            <style name="Emphasis 1" key="4" fore="663300" italic="true"/>
+            <style name="Emphasis 2" key="5" fore="663300" italic="true"/>
+            <style name="Level 1 Header" key="6" fore="5183C4" bold="true"/>
+            <style name="Level 2 Header" key="7" fore="5183C4" bold="true"/>
+            <style name="Level 3 Header" key="8" fore="5183C4" bold="true"/>
+            <style name="Level 4 Header" key="9" fore="5183C4" bold="true"/>
+            <style name="Level 5 Header" key="10" fore="5183C4" bold="true"/>
+            <style name="Level 6 Header" key="11" fore="5183C4" bold="true"/>
+            <style name="Prechar" key="12" fore="000000" back="EEEEAA"/>
+            <style name="Unordered List Item" key="13" fore="555555"/>
+            <style name="Ordered List Item" key="14" fore="555555"/>
+            <style name="Block Quote" key="15" fore="000088"/>
+            <style name="Strikeout" key="16" fore="18453B" back="A9BA9D"/>
+            <style name="Horizontal Rule" key="17" fore="555555"/>
+            <style name="Link or Image" key="18" fore="0000AA"/>
+            <style name="Inline Code" key="19" fore="000088" back="EEEEEE"/>
+            <style name="Inline Code 2" key="20" fore="000088" back="EEEEEE"/>
+            <style name="Code Block" key="21" fore="000088" back="EEEEEE"/>
+        </use-styles>
+    </language>
+</Scheme>

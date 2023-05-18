@@ -1209,6 +1209,8 @@ IDR_SCHEME_LUA          SCHEME                  "schemes\\lua.scheme"
 
 IDR_SCHEME_MATLAB       SCHEME                  "schemes\\matlab.scheme"
 
+IDR_SCHEME_MARKDOWN     SCHEME                  "schemes\\markdown.scheme"
+
 IDR_SCHEME_MISC         SCHEME                  "schemes\\misc.scheme"
 
 IDR_SCHEME_MODULA2      SCHEME                  "schemes\\modula2.scheme"

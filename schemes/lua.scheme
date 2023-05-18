@@ -8,23 +8,29 @@
             return then until while
         </keyword-class>
         <keyword-class name="luavalues">
-            nil true false _G _VERSION coroutine package string utf8 table math io file os debug 
+            nil true false _ENV _G _VERSION bit32 coroutine package string utf8 table math io file os debug
         </keyword-class>
         <keyword-class name="luafunc">
-            assert collectgarbage dofile error getmetatable ipairs
-            load loadfile next pairs pcall print
-            rawequal rawget rawlen rawset
-            select setmetatable tonumber tostring type xpcall require
+            _ALERT assert call collectgarbage copytagmethods
+            dofile dostring error foreach foreachi
+            gcinfo getfenv getglobal getn gettagmethod globals getmetatable
+            ipairs
+            load loadlib loadstring loadfile
+            newtag next pairs pcall print
+            rawequal rawget rawlen rawset require
+            select setfenv setglobal settag settagmethod setmetatable sort
+            tag tonumber tostring tinsert tremove type
+            unpack xpcall
         </keyword-class>
     </keyword-classes>
 
     <language name="lua" title="Lua">
         <lexer name="lua" />
         <comments line="--" streamStart="--[[" streamEnd="]]" blockStart="--[[" blockLine="--" blockEnd="]]" />
-    <property name="fold" value="1" />
-    <property name="fold.comment" value="1" />
-    <property name="fold.compact" value="0" />
-    <property name="fold.preprocessor" value="1" />
+        <property name="fold" value="1" />
+        <property name="fold.comment" value="1" />
+        <property name="fold.compact" value="0" />
+        <property name="fold.preprocessor" value="1" />
         <use-keywords>
             <keyword key="0" name="Keywords" class="lua"/>
             <keyword key="1" name="Values" class="luavalues"/>

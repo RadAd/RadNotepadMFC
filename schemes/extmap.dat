@@ -51,6 +51,8 @@
 .lisp=lisp
 .lsp=lisp
 .lua=lua
+.markdown=markdown
+.md=markdown
 .mk=makefile
 .mod=modula2
 .pag=vb
