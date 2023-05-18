@@ -769,7 +769,7 @@ void CMainFrame::GetMessageString(UINT nID, CString& rMessage) const
         if (i >= 0 && i < vecLanguage.size())
         {
             const Language& rLanguage = vecLanguage[i];
-            rMessage.Format(L"Switch scheme to %s", (const wchar_t*) rLanguage.name);
+            rMessage.Format(L"Switch scheme to %s", (const wchar_t*) rLanguage.title);
         }
     }
     else switch (nID)
