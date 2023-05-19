@@ -82,6 +82,7 @@
 .sty=latex
 .tcl=tcl
 .tex=latex
+.ts=javascript
 .url=properties
 .v=verilog
 .vb=vb

@@ -241,8 +241,16 @@ void CRadNotepadView::ShowTrailingSpaces(const Scintilla::Line bl, const Scintil
         const int diff = strLine.GetLength() - strLineTrim.GetLength();
         if (diff > 0)
         {
-            Scintilla::Position end = rCtrl.GetLineEndPosition(l);
+            const Scintilla::Position start = rCtrl.PositionFromLine(l);
+            const Scintilla::Position end = rCtrl.GetLineEndPosition(l);
+            rCtrl.IndicatorClearRange(start, end - start - diff);
             rCtrl.IndicatorFillRange(end - diff, diff);
+        }
+        else
+        {
+            const Scintilla::Position start = rCtrl.PositionFromLine(l);
+            const Scintilla::Position end = rCtrl.GetLineEndPosition(l);
+            rCtrl.IndicatorClearRange(start, end - start);
         }
     }
 }
