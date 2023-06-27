@@ -9,7 +9,7 @@ struct LANGANDCODEPAGE
 {
     WORD wLanguage;
     WORD wCodePage;
-} *lpTranslate;
+};
 
 struct VersionInfo
 {
@@ -20,21 +20,19 @@ struct VersionInfo
 
 static void GetVersionData(HINSTANCE hInstance, VersionInfo* vi)
 {
-    LOCALE_RETURN_NUMBER;
     TCHAR	FileName[1024];
     GetModuleFileName(hInstance, FileName, 1024);
 
     DWORD	Dummy = 0;
     DWORD	Size = GetFileVersionInfoSize(FileName, &Dummy);
 
-    if (Size > 0)
+    void* Info = Size > 0 ? malloc(Size) : nullptr;
+
+    if (Info != nullptr)
     {
-        void	*Info = malloc(Size);
+        GetFileVersionInfoEx(FILE_VER_GET_LOCALISED, FileName, 0, Size, Info);
 
-        // VS_VERSION_INFO   VS_VERSIONINFO  VS_FIXEDFILEINFO
-
-        GetFileVersionInfoEx(FILE_VER_GET_LOCALISED, FileName, Dummy, Size, Info);
-
+        LANGANDCODEPAGE* lpTranslate;
         UINT	cbTranslate;
         VerQueryValue(Info, TEXT("\\VarFileInfo\\Translation"), (LPVOID*) &lpTranslate, &cbTranslate);
 
