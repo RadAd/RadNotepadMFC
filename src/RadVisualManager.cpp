@@ -190,7 +190,7 @@ void CRadVisualManagerDark::OnUpdateSystemColors()
     m_clrBarGradientLight = RGB(31, 31, 31);
     m_clrToolBarGradientDark = RGB(46, 46, 46);
     m_clrToolBarGradientLight = RGB(46, 46, 46);
-    m_clrToolbarDisabled = NotSet;
+    m_clrToolbarDisabled = RGB(31, 31, 31);
     m_clrToolBarGradientVertLight = NotSet;
     m_clrToolBarGradientVertDark = NotSet;
     m_clrCustomizeButtonGradientDark = RGB(46, 46, 46);
