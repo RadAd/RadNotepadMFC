@@ -15,6 +15,13 @@ namespace Scintilla {
 
 enum class Message;	// Declare in case ScintillaMessages.h not included
 
+// Declare in case ScintillaStructures.h not included
+struct TextRangeFull;
+struct TextToFindFull;
+struct RangeToFormatFull;
+
+class IDocumentEditable;
+
 using FunctionDirect = intptr_t(*)(intptr_t ptr, unsigned int iMessage, uintptr_t wParam, intptr_t lParam, int *pStatus);
 
 struct Failure {
@@ -96,7 +103,7 @@ public:
 	void SelectAll();
 	void SetSavePoint();
 	Position GetStyledText(void *tr);
-	Position GetStyledTextFull(void *tr);
+	Position GetStyledTextFull(TextRangeFull *tr);
 	bool CanRedo();
 	Line MarkerLineFromHandle(int markerHandle);
 	void MarkerDeleteHandle(int markerHandle);
@@ -328,9 +335,9 @@ public:
 	void SetPrintColourMode(Scintilla::PrintOption mode);
 	Scintilla::PrintOption PrintColourMode();
 	Position FindText(Scintilla::FindOption searchFlags, void *ft);
-	Position FindTextFull(Scintilla::FindOption searchFlags, void *ft);
+	Position FindTextFull(Scintilla::FindOption searchFlags, TextToFindFull *ft);
 	Position FormatRange(bool draw, void *fr);
-	Position FormatRangeFull(bool draw, void *fr);
+	Position FormatRangeFull(bool draw, RangeToFormatFull *fr);
 	void SetChangeHistory(Scintilla::ChangeHistoryOption changeHistory);
 	Scintilla::ChangeHistoryOption ChangeHistory();
 	Line FirstVisibleLine();
@@ -347,7 +354,7 @@ public:
 	Position GetSelText(char *text);
 	std::string GetSelText();
 	Position GetTextRange(void *tr);
-	Position GetTextRangeFull(void *tr);
+	Position GetTextRangeFull(TextRangeFull *tr);
 	void HideSelection(bool hide);
 	bool SelectionHidden();
 	int PointXFromPosition(Position pos);
@@ -556,8 +563,8 @@ public:
 	Position BraceMatchNext(Position pos, Position startPos);
 	bool ViewEOL();
 	void SetViewEOL(bool visible);
-	void *DocPointer();
-	void SetDocPointer(void *doc);
+	IDocumentEditable *DocPointer();
+	void SetDocPointer(IDocumentEditable *doc);
 	void SetModEventMask(Scintilla::ModificationFlags eventMask);
 	Position EdgeColumn();
 	void SetEdgeColumn(Position column);
@@ -576,9 +583,9 @@ public:
 	bool SelectionIsRectangle();
 	void SetZoom(int zoomInPoints);
 	int Zoom();
-	void *CreateDocument(Position bytes, Scintilla::DocumentOption documentOptions);
-	void AddRefDocument(void *doc);
-	void ReleaseDocument(void *doc);
+	IDocumentEditable *CreateDocument(Position bytes, Scintilla::DocumentOption documentOptions);
+	void AddRefDocument(IDocumentEditable *doc);
+	void ReleaseDocument(IDocumentEditable *doc);
 	Scintilla::DocumentOption DocumentOptions();
 	Scintilla::ModificationFlags ModEventMask();
 	void SetCommandEvents(bool commandEvents);
@@ -629,7 +636,9 @@ public:
 	void CopyRange(Position start, Position end);
 	void CopyText(Position length, const char *text);
 	void SetSelectionMode(Scintilla::SelectionMode selectionMode);
+	void ChangeSelectionMode(Scintilla::SelectionMode selectionMode);
 	Scintilla::SelectionMode SelectionMode();
+	void SetMoveExtendsSelection(bool moveExtendsSelection);
 	bool MoveExtendsSelection();
 	Position GetLineSelStartPosition(Line line);
 	Position GetLineSelEndPosition(Line line);
@@ -758,6 +767,7 @@ public:
 	void ClearSelections();
 	void SetSelection(Position caret, Position anchor);
 	void AddSelection(Position caret, Position anchor);
+	int SelectionFromPoint(int x, int y);
 	void DropSelectionN(int selection);
 	void SetMainSelection(int selection);
 	int MainSelection();
