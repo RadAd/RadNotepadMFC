@@ -182,6 +182,15 @@ void CRadNotepadView::OnModified(_Inout_ Scintilla::NotificationData* pSCNotific
             ShowTrailingSpaces(bl, bl + pSCNotification->linesAdded);
         }
     }
+    if ((pSCNotification->modificationType & Scintilla::ModificationFlags::DeleteText) == Scintilla::ModificationFlags::DeleteText)
+    {
+        if (m_bShowTrailingSpaces)
+        {
+            Scintilla::CScintillaCtrl& rCtrl = GetCtrl();
+            const Scintilla::Line bl = rCtrl.LineFromPosition(pSCNotification->position);
+            ShowTrailingSpaces(bl, bl + pSCNotification->linesAdded + 1);
+        }
+    }
 }
 
 static bool IsBrace(int c)
