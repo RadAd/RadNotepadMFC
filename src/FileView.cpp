@@ -388,7 +388,7 @@ BEGIN_MESSAGE_MAP(CFileView, CDockablePane)
     ON_NOTIFY(TVN_BEGINLABELEDIT, ID_FILE_VIEW_TREE, OnBeginLabelEdit)
     ON_NOTIFY(TVN_ENDLABELEDIT, ID_FILE_VIEW_TREE, OnEndLabelEdit)
     ON_NOTIFY(NM_DBLCLK, ID_FILE_VIEW_TREE, OnDblClick)
-    ON_CONTROL(CBN_SELCHANGE, ID_ROOT, OnRootSelChanged)
+    ON_CONTROL(CBN_SELENDOK, ID_ROOT, OnRootSelChanged)
     ON_MESSAGE(MSG_SHELLCHANGE, OnShellChange)
     ON_REGISTERED_MESSAGE(AFX_WM_CHANGEVISUALMANAGER, OnChangeVisualManager)
 END_MESSAGE_MAP()
@@ -1034,10 +1034,12 @@ void CFileView::OnFolderRoot()
             m_pRootPidl.reset(pRootPidl);
 
             CString name = ti->GetDisplayNameOf(m_Malloc);
-            GetRootButton()->AddItem(name, reinterpret_cast<DWORD_PTR>(ILClone(pRootPidl)));
+            CMFCToolBarComboBoxButton* btnRoot = GetRootButton();
+            btnRoot->SelectItem(-1); // BUG in AddItem? the SetCurSel doesn't appear to work, so we clear it first
+            btnRoot->AddItem(name, reinterpret_cast<DWORD_PTR>(ILClone(pRootPidl)));
+            btnRoot->NotifyCommand(CBN_SELENDOK);
 
-            m_wndFileView.DeleteAllItems();
-            FillFileView();
+            OnRootSelChanged();
         }
         else
         {
