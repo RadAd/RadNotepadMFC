@@ -222,10 +222,11 @@ public:
 
         ParseLast(bLast);
     }
+#endif
 
     BOOL m_bNewWindow;
+    std::vector<CString> m_rootDirs;
 
-#endif
 protected:
     void ParseParamFlag(const char* pszParam)
     {
@@ -233,6 +234,8 @@ protected:
 
         if (lstrcmpiA(pszParam, "NewWindow") == 0)
             m_bNewWindow = TRUE;
+        else if (StrCmpNIA(pszParam, "RootDir=", 8) == 0)
+            m_rootDirs.push_back(CString(pszParam + 8));
     }
 };
 
@@ -277,6 +280,9 @@ BOOL CRadNotepadApp::InitInstance()
             PostMessage(hOther, WM_DROPFILES, (WPARAM) hMem, 0);
 
             SetForegroundWindow(hOther);
+
+            if (!cmdInfo.m_rootDirs.empty())
+                AfxMessageBox(_T("Opening in a new window. Root directories will be ignored."));
             return FALSE;
         }
     }
@@ -486,6 +492,10 @@ BOOL CRadNotepadApp::InitInstance()
     // app was launched with /RegServer, /Register, /Unregserver or /Unregister.
     if (!ProcessShellCommand(cmdInfo))
         return FALSE;
+
+    for (const CString& rootDir : cmdInfo.m_rootDirs)
+        pMainFrame->AddRootDir(rootDir);
+
     // The main window has been initialized, so show and update it
     pMainFrame->ShowWindow(m_nCmdShow);
     pMainFrame->UpdateWindow();

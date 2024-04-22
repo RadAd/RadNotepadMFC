@@ -19,6 +19,7 @@ public:
     COutputWnd* GetWndOutput() { return &m_wndOutput; }
     CMFCToolBarComboBoxButton* GetHistoryButton() const;
     void SaveSearch(LPCTSTR lpszSectionName);
+    void AddRootDir(LPCTSTR lpszRootDir);
 
 // Attributes
 public:

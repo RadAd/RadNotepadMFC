@@ -326,6 +326,11 @@ void CMainFrame::SaveSearch(LPCTSTR lpszSectionName)
     searchToolBar->SaveState(lpszSectionName);
 }
 
+void CMainFrame::AddRootDir(LPCTSTR lpszRootDir)
+{
+    m_wndFileView.AddRootDir(lpszRootDir);
+}
+
 INT_PTR CMainFrame::DoWindowsDialog()
 {
     // Same as ShowWindowsDialog() but returns result

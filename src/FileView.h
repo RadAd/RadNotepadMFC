@@ -27,6 +27,7 @@ public:
     CFileView();
 
     void AdjustLayout();
+    void AddRootDir(LPCTSTR lpszRootDir);
 
 private:
     CMFCToolBarComboBoxButton* GetRootButton();

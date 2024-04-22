@@ -845,6 +845,26 @@ void CFileView::AdjustLayout()
     m_wndFileView.SetWindowPos(NULL, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, rectClient.Height() - cyTlb - 2, SWP_NOACTIVATE | SWP_NOZORDER);
 }
 
+void CFileView::AddRootDir(LPCTSTR lpszRootDir)
+{
+    PIDLIST_ABSOLUTE pRootPidl = nullptr;
+    DWORD AttrFlags = SHCIDS_BITMASK;
+    SHILCreateFromPath(lpszRootDir, &pRootPidl, &AttrFlags);
+
+    BOOL bCanFolderRoot = (AttrFlags & SFGAO_FILESYSTEM) && (AttrFlags & SFGAO_FOLDER);
+    if (!bCanFolderRoot)
+    {
+        AfxMessageBox(L"Root directory is not a folder.", MB_OK | MB_ICONERROR);
+        return;
+    }
+
+    PWSTR name = nullptr;
+    SHGetNameFromIDList(pRootPidl, SIGDN_NORMALDISPLAY, &name);
+    CMFCToolBarComboBoxButton* btnRoot = GetRootButton();
+    btnRoot->AddItem(name, reinterpret_cast<DWORD_PTR>(pRootPidl));
+    CoTaskMemFree(name);
+}
+
 CMFCToolBarComboBoxButton* CFileView::GetRootButton()
 {
     const int i = m_wndToolBar.CommandToIndex(ID_ROOT);
@@ -1031,12 +1051,11 @@ void CFileView::OnFolderRoot()
 
             PIDLIST_ABSOLUTE pRootPidl = nullptr;
             SHGetIDListFromObject(Folder, &pRootPidl);
-            m_pRootPidl.reset(pRootPidl);
 
             CString name = ti->GetDisplayNameOf(m_Malloc);
             CMFCToolBarComboBoxButton* btnRoot = GetRootButton();
             btnRoot->SelectItem(-1); // BUG in AddItem? the SetCurSel doesn't appear to work, so we clear it first
-            btnRoot->AddItem(name, reinterpret_cast<DWORD_PTR>(ILClone(pRootPidl)));
+            btnRoot->AddItem(name, reinterpret_cast<DWORD_PTR>(pRootPidl));
             btnRoot->NotifyCommand(CBN_SELENDOK);
 
             OnRootSelChanged();
