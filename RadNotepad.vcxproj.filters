@@ -14263,5 +14263,8 @@
     <None Include="schemes\xml.scheme">
       <Filter>Schemes</Filter>
     </None>
+    <None Include="schemes\markdown.scheme">
+      <Filter>Schemes</Filter>
+    </None>
   </ItemGroup>
 </Project>

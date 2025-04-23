@@ -342,6 +342,7 @@
     <None Include="schemes\latex.scheme" />
     <None Include="schemes\lisp.scheme" />
     <None Include="schemes\lua.scheme" />
+    <None Include="schemes\markdown.scheme" />
     <None Include="schemes\master.scheme" />
     <None Include="schemes\matlab.scheme" />
     <None Include="schemes\misc.scheme" />
