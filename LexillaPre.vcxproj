@@ -3,7 +3,7 @@
   <Import Project="Common.tasks" />
 
   <Target Name="Download" Outputs="lexilla.zip">
-    <DownloadFile Address="https://www.scintilla.org/lexilla530.zip" FileName="lexilla.zip" />
+    <DownloadFile Address="https://www.scintilla.org/lexilla544.zip" FileName="lexilla.zip" />
   </Target>
 
   <Target Name="Extract" Inputs="lexilla.zip" Outputs="lexilla">
