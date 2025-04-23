@@ -3,13 +3,13 @@
 
 <head>
 <meta content="text/html; charset=iso-8859-1" http-equiv="Content-Type">
-<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.77</title>
+<title>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.93</title>
 <link href="naughter.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
 
-<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.77</h2>
+<h2>CScintillaCtrl, CScintillaView &amp; CScintillaDoc v1.93</h2>
 <h2><i>Freeware MFC and ATL/WTL wrapper classes for the Scintilla edit control</i></h2>
 <p>These classes provides a MFC and ATL/WTL wrapping for the Scintilla edit control (<a href="http://www.scintilla.org">http://www.scintilla.org</a>). 
 This control provides an open source cross platform edit control. Some of the features 
@@ -41,13 +41,12 @@ the control in MFC / WTL projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Features"></a>Features</h2>
 <ul>
-	<li>Implements all the functionality provided by Scintilla v5.3.2.</li>
+	<li>Implements all the functionality provided by Scintilla v5.5.6.</li>
 	<li>The CScintillaCtrl wrapper class observes the same semantics as the built 
 	in MFC &quot;CEdit&quot; wrapper class. This class can also be used with ATL 
 	/ WTL without taking a dependency on MFC.</li>
-	<li>Uses the direct access functions provided by Scintilla to improve performance. 
-	Multi threaded code can still use SendMessage by calling the method SetCallDirect 
-	with a FALSE parameter value.</li>
+	<li>Automatically uses the direct access functions provided by Scintilla to 
+	improve performance.</li>
 	<li>The CScintillaView and CScintillaDoc classes provide a complete doc / view 
 	implementation which can be dropped into an existing project instead of the 
 	built in MFC rich edit or edit control classes.</li>
@@ -63,6 +62,8 @@ the control in MFC / WTL projects on Windows.</p>
 	<li>Includes a framework for Print headers and footers.</li>
 	<li>Includes support for all the standard MFC menu items, such as Cut, Copy, 
 	Paste etc.</li>
+	<li>Automatically handles Ascii, UTF8 with BOM, UTF8 without BOM, UTF16LE 
+	with BOM, UTF16LE without BOM and UTF16BE with BOM documents.</li>
 	<li>The sample app demonstrates how top level messages should be forwarded to 
 	the Scintilla control.</li>
 	<li>The sample app also demonstrates how you would implement autocompletion 
@@ -129,6 +130,135 @@ the control in MFC / WTL projects on Windows.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2><a name="History"></a>History</h2>
+<p><b>v1.93 (11 April 2025)</b></p>
+<ul>
+	<li>Updated CScintillaCtrl:: MarkerSymbolDefined method to return 
+	MarkerSymbol.</li>
+	<li>Verified the code against Scintilla v5.5.6. </li>
+</ul>
+<p><b>v1.92 (16 March 2025)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v5.5.5. New messages wrapped 
+	include: SCI_SETUNDOSELECTIONHISTORY, SCI_GETUNDOSELECTIONHISTORY, 
+	SCI_GETSELECTIONSERIALIZED and SCI_SETSELECTIONSERIALIZED.</li>
+</ul>
+<p><b>v1.91 (26 January 2025)</b></p>
+<ul>
+	<li>Updated copyright detail.</li>
+	<li>The code now includes &lt;string&gt; prior to #including &lt;ScintillaCall.h&gt;. 
+	This fixes an issue when the code is used with GSL Library 4.1.0. Thanks to 
+	Andrew Truckle for reporting this issue.</li>
+	<li>Reworked CScintillaDemoApp::LoadLibraryFromApplicationDirectory to use 
+	std::filesystem::path.</li>
+	<li>Updated GetModuleFileName calls to handle path length &gt; _MAX_PATH.</li>
+</ul>
+<p><b>21 December 2024</b></p>
+<ul>
+	<li>Verified the code against Scintilla v5.5.4. </li>
+</ul>
+<p><b>v1.90 (19 November 2024)</b></p>
+<ul>
+	<li>Updated CScintillaView::Serialize to better handle loading a non UTF 
+	encoded file. Thanks to Jörg Hellenkamp for reporting this issue.</li>
+</ul>
+<p><b>26 October 2024</b></p>
+<ul>
+	<li>Verified the code against Scintilla v5.5.3.</li>
+</ul>
+<p><b>v1.89 (24 August 2024)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v5.5.2. New messages wrapped 
+	include: SCI_STYLESETSTRETCH, SCI_STYLEGETSTRETCH, SCI_GETUNDOSEQUENCE, 
+	SCI_LineIndent, SCI_LINEDEDENT, SCI_SETCOPYSEPARATOR &amp; SCI_GETCOPYSEPARATOR. </li>
+</ul>
+<p><b>v1.88 (22 July 2024)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v5.5.1. New messages wrapped 
+	include: SCI_AUTOCSETSTYLE, SCI_AUTOCGETSTYLE &amp; SCI_CUTALLOWLINE. </li>
+</ul>
+<p><b>v1.87 (6 May 2024)</b></p>
+<ul>
+	<li>Rationalized some of the code in CScintillaView::Serialize. </li>
+	<li>The size of the buffer used in SScintillaView::Serialize can now be 
+	customized via a member variable &quot;m_nLoadSaveBufferSize&quot;. </li>
+</ul>
+<p><b>v1.86 (5 May 2024)</b></p>
+<ul>
+	<li>Fixed a bug in CScintillaView::Serialize where SetUndoCollection was not 
+	being called when a document was being loaded. This prevents the view from 
+	being marked as modified as it is edited. Thanks to Andrew Truckle for 
+	reporting this issue. </li>
+	<li>Updated CScintillaView::Serialize to correctly load Ascii, UTF8 with 
+	BOM, UTF8 without BOM, UTF16LE with BOM, UTF16LE without BOM and UTF16BE 
+	with BOM documents. </li>
+	<li>Updated CScintillaView::Serialize to save documents with whatever BOM 
+	they were initially loaded with. </li>
+</ul>
+<p><b>v1.85 (27 April 2024)</b></p>
+<ul>
+	<li>Reimplemented CScintillaView::Serialize to use CreateLoader interface 
+	and SetDocPointer function when loading a document. This change 
+	significantly improves the load time for large documents. </li>
+	<li>Reimplemented CScintillaView::Serialize to use GetCharacterPointer 
+	function when saving a document. This change significantly improves the save 
+	time for large documents. </li>
+</ul>
+<p><b>v1.84 (26 April 2024)</b></p>
+<ul>
+	<li>Verified the code against Scintilla v5.5.0.</li>
+</ul>
+<p><b>v1.83 (29 March 2024)</b></p>
+<ul>
+	<li>Updated copyright details.</li>
+	<li>Updated class to work with Scintilla v5.4.3. New messages wrapped 
+	include: SCI_GETUNDOACTIONS, SCI_GETUNDOSAVEPOINT, SCI_SETUNDODETACH, 
+	SCI_SETUNDOTENTATIVE, SCI_SETUNDOCURRENT, SCI_PUSHUNDOACTIONTYPE, 
+	SCI_CHANGELASTUNDOACTIONTEXT, SCI_GETUNDOACTIONTYPE, 
+	SCI_GETUNDOACTIONPOSITION &amp; SCI_GETUNDOACTIONTEXT. </li>
+</ul>
+<p><b>v1.82 (28 December 2023)</b></p>
+<ul>
+	<li>Updated class to work with Scintilla v5.4.1. New messages wrapped 
+	include: SCI_CHANGESELECTIONMODE, SCI_SETMOVEEXTENDSSELECTION &amp; 
+	SCI_SELECTIONFROMPOINT. Also updated the signatures of the following 
+	methods: GetDocPointer, SetDocPointer, CreateDocument, AddRefDocument and 
+	ReleaseDocument.</li>
+</ul>
+<p><b>v1.81 (14 December 2023)</b></p>
+<ul>
+	<li>Updated the code to fully support PreSubclassWindow in the MFC code 
+	path. </li>
+</ul>
+<p><b>v1.80 (9 December 2023)</b></p>
+<ul>
+	<li>Verified the code against Scintilla v5.4.0. </li>
+	<li>Removed the SetCallDirect &amp; GetCallDirect methods. Instead now the 
+	CScintillaCtrl class will call the m_DirectStatusFunction if the calling 
+	thread is the same as the thread on which the Scintilla control was created. 
+	Thanks to Markus Nissl for this update. </li>
+</ul>
+<p><b>28 August 2023</b></p>
+<ul>
+	<li>Verified the code against Scintilla v5.3.6.</li>
+</ul>
+<p><b>11 June 2023</b></p>
+<ul>
+	<li>Verified the code against Scintilla v5.3.5.</li>
+</ul>
+<p><b>v1.79 (21 May 2023)</b></p>
+<ul>
+	<li>Updated modules to indicate that it needs to be compiled using 
+	/std:c++17. Thanks to Martin Richter for reporting this issue.</li>
+</ul>
+<p><b>22 March 2023</b></p>
+<ul>
+	<li>Verified the code against Scintilla v5.3.4. </li>
+</ul>
+<p><b>v1.78 (25 February 2023)</b></p>
+<ul>
+	<li>Updated copyright details.</li>
+	<li>Verified the code against Scintilla v5.3.3. </li>
+</ul>
 <p><b>v1.77 (19 December 2022)</b></p>
 <ul>
 	<li>Fixed a bug where the first parameter to SetXCaretPolicy and 
@@ -161,7 +291,7 @@ the control in MFC / WTL projects on Windows.</p>
 	<li>All classes are now contained in the workspace &quot;Scintilla&quot;. </li>
 	<li>Updated code to use enums from Scintilla provided &quot;ScintillaTypes.h&quot; 
 	header file. </li>
-	<li>Updated class to work with Scintilla v5.3.2. New messages wrapperd 
+	<li>Updated class to work with Scintilla v5.3.2. New messages wrapped 
 	include: SCI_GETSTYLEDTEXTFULL and SCI_REPLACETARGETMINIMAL. </li>
 </ul>
 <p><b>v1.74 (29 October 2022)</b></p>
@@ -951,8 +1081,7 @@ the control in MFC / WTL projects on Windows.</p>
 <p>&nbsp;</p>
 <h2><a name="Contact"></a>Contacting the Author</h2>
 <p>PJ Naughter<br>Email: <a href="mailto:pjna@naughter.com">pjna@naughter.com</a><br>
-Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>19 
-December 2022</p>
+Web: <a href="http://www.naughter.com">http://www.naughter.com</a><br>11 April 2025</p>
 
 </body>
 

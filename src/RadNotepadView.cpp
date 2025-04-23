@@ -590,7 +590,7 @@ int CRadNotepadView::OnCreate(LPCREATESTRUCT lpCreateStruct)
     CRadNotepadDoc* pDoc = (CRadNotepadDoc*) pContext->m_pCurrentDoc;
     if (pDoc->GetView() != this)
     {
-        void* p = pDoc->GetView()->GetCtrl().GetDocPointer();
+        Scintilla::IDocumentEditable* p = pDoc->GetView()->GetCtrl().GetDocPointer();
         GetCtrl().SetDocPointer(p);
     }
 #endif

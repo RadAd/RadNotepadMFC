@@ -88,7 +88,7 @@ History: PJN / 12-08-2004 1. Made all the remaining non virtual functions relate
                           Alexei Letov for reporting this bug.
          PJN / 01-04-2011 1. Updated CScintillaFindReplaceDlg::Create to use AfxFindResourceHandle instead of 
                           AfxGetResourceHandle. Thanks to Nißl Markus for reporting this nice addition.
-         PJN / 18-01-2013 1. Updated copryight details.
+         PJN / 18-01-2013 1. Updated copyright details.
                           2. Added virtual methods for SCN_INDICATORCLICK, SCN_INDICATORRELEASE, SCN_AUTOCCHARDELETED, 
                           SCN_AUTOCCANCELLED & SCN_HOTSPOTRELEASECLICK notifications. Thanks to Markus Nißl for 
                           prompting this update.
@@ -146,8 +146,25 @@ History: PJN / 12-08-2004 1. Made all the remaining non virtual functions relate
          PJN / 16-12-2022 1. Changed virtual functions in CScintillaView to use Scintilla::NotificationData struct.
          PJN / 19-12-2022 1. Removed unnecessary Scintilla namespace usage in ScintillaDocView.cpp. Thanks to 
                           Markus Nissl for reporting this issue.
+         PJN / 27-04-2024 1. Reimplemented CScintillaView::Serialize to use CreateLoader interface and SetDocPointer
+                          function when loading a document. This change significantly improves the load time for 
+                          large documents.
+                          2. Reimplemented CScintillaView::Serialize to use GetCharacterPointer function when 
+                          saving a document. This change significantly improves the save time for large documents.
+         PJN / 05-05-2024 1. Fixed a bug in CScintillaView::Serialize where SetUndoCollection was not being called
+                          when a document was being loaded. This prevents the view from being marked as modified
+                          as it is edited. Thanks to Andrew Truckle for reporting this issue.
+                          2. Updated CScintillaView::Serialize to correctly load Ascii, UTF8 with BOM, UTF8 
+                          without BOM, UTF16LE with BOM, UTF16LE without BOM and UTF16BE with BOM documents.
+                          3. Updated CScintillaView::Serialize to save documents with whatever BOM they were
+                          initially loaded with.
+         PJN / 06-05-2024 1. Rationalized some of the code in CScintillaView::Serialize.
+                          2. The size of the buffer used in SScintillaView::Serialize can now be customized via a
+                          member variable "m_nLoadSaveBufferSize".
+         PJN / 19-11-2024 1. Updated CScintillaView::Serialize to better handle loading a non UTF encoded file.
+                          Thanks to Jörg Hellenkamp for reporting this issue.
 
-Copyright (c) 2004 - 2022 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2025 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -166,6 +183,10 @@ to maintain a single distribution point for the source code.
 
 #include "stdafx.h"
 #include "ScintillaDocView.h"
+#ifndef SCINTILLA_H
+#pragma message("To avoid this message, please put Scintilla.h in your pre compiled header (normally stdafx.h)")
+#include <Scintilla.h>
+#endif //#ifndef SCINTILLA_H
 #include "resource.h"
 
 
@@ -194,7 +215,7 @@ CScintillaEditState::CScintillaEditState() noexcept : pFindReplaceDlg{nullptr},
 }
 
 
-#pragma warning(suppress: 26433 26440)
+#pragma warning(suppress: 26433 26435 26440)
 BEGIN_MESSAGE_MAP(CScintillaFindReplaceDlg, CFindReplaceDialog) //NOLINT(modernize-avoid-c-arrays)
   ON_BN_CLICKED(IDC_REGULAR_EXPRESSION, &CScintillaFindReplaceDlg::OnRegularExpression)
   ON_WM_NCDESTROY()
@@ -260,7 +281,7 @@ IMPLEMENT_DYNCREATE(CScintillaView, CView)
 #pragma warning(suppress: 26426)
 const UINT _ScintillaMsgFindReplace{::RegisterWindowMessage(FINDMSGSTRING)};
 
-#pragma warning(suppress: 26440 26433)
+#pragma warning(suppress: 26435 26440 26433)
 BEGIN_MESSAGE_MAP(CScintillaView, CView) //NOLINT(modernize-avoid-c-arrays)
   ON_WM_PAINT()
   ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, &CScintillaView::OnUpdateNeedSel)
@@ -305,7 +326,9 @@ CScintillaView::CScintillaView() : m_rMargin{0, 0, 0, 0},
                                               m_bPrintFooter{TRUE},
                                               m_bUsingMetric{UserWantsMetric()},
                                               m_bPersistMarginSettings{TRUE},
-                                              m_bCPP11Regex{TRUE}
+                                              m_bCPP11Regex{TRUE},
+                                              m_BOM{BOM::Unknown},
+                                              m_nLoadSaveBufferSize{4096}
 {
 }
 
@@ -700,8 +723,8 @@ void CScintillaView::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
   const UINT nPage{pInfo->m_nCurPage};
   ASSERT(nPage <= static_cast<UINT>(m_PageStart.size()));
-#pragma warning(suppress: 26446)
-  Position nIndex{m_PageStart[nPage - 1]};
+#pragma warning(suppress: 26446 26472)
+  Position nIndex{m_PageStart[static_cast<size_t>(nPage) - 1]};
 
   //Determine where we should end the printing
   Position nEndPrint{0};
@@ -897,7 +920,7 @@ void CScintillaView::OnEditRepeat()
   //Validate our parameters
   ASSERT_VALID(this);
 
-  if (!FindText(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression))
+  if (!FindText(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression)) //NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     TextNotFound(g_scintillaEditState.strFind, g_scintillaEditState.bNext, g_scintillaEditState.bCase, g_scintillaEditState.bWord, g_scintillaEditState.bRegularExpression, FALSE);
   else
   {
@@ -1083,7 +1106,7 @@ void CScintillaView::OnReplaceAll(_In_z_ LPCTSTR lpszFind, _In_z_ LPCTSTR lpszRe
 
   CWaitCursor wait;
 
-  //Set the selection to the begining of the document to ensure all text is replaced in the document
+  //Set the selection to the beginning of the document to ensure all text is replaced in the document
   CScintillaCtrl& rCtrl{GetCtrl()};
   rCtrl.SetSel(0, 0);
 
@@ -1120,10 +1143,10 @@ LRESULT CScintillaView::OnFindReplaceCmd(WPARAM /*wParam*/, LPARAM lParam)
 #pragma warning(suppress: 26466)
   const CScintillaFindReplaceDlg* pDialog{static_cast<CScintillaFindReplaceDlg*>(CFindReplaceDialog::GetNotifier(lParam))};
 #pragma warning(suppress: 26496)
-  AFXASSUME(pDialog != nullptr);
-  ASSERT(pDialog == g_scintillaEditState.pFindReplaceDlg);
+  AFXASSUME(pDialog != nullptr); //NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
+  ASSERT(pDialog == g_scintillaEditState.pFindReplaceDlg); //NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
 
-  if (pDialog->IsTerminating())
+  if (pDialog->IsTerminating()) //NOLINT(clang-analyzer-optin.core.EnumCastOutOfRange)
     g_scintillaEditState.pFindReplaceDlg = nullptr;
   else if (pDialog->FindNext())
     OnFindNext(pDialog->GetFindString(), pDialog->SearchDown(), pDialog->MatchCase(), pDialog->MatchWholeWord(), pDialog->GetRegularExpression());
@@ -1403,27 +1426,142 @@ void CScintillaView::Serialize(CArchive& ar)
   ASSERT_VALID(this);
 
   CScintillaCtrl& rCtrl{GetCtrl()};
-
   if (ar.IsLoading())
   {
-    //Tell the control not to maintain any undo info while we stream the data
-    rCtrl.Cancel();
-    rCtrl.SetUndoCollection(FALSE);
-
-    //Read the data in from the file in blocks
 #pragma warning(suppress: 26429)
     CFile* pFile{ar.GetFile()};
     ASSERT(pFile != nullptr);
-    CStringA sBuffer;
-    LPSTR psBuffer{sBuffer.GetBufferSetLength(4096)};
+    const auto nFileSize = pFile->GetLength();
+#pragma warning(suppress: 26472)
+    const auto nFileSizeForLoader{static_cast<Position>(nFileSize)};
+
+    rCtrl.Cancel();
+
+    //Check if the size of the file to be loaded can be handled via CreateLoader and fail if not
+#pragma warning(suppress: 26472)
+    if (nFileSize != static_cast<ULONGLONG>(nFileSizeForLoader))
+    {
+      AfxMessageBox(IDP_FAIL_SCINTILLA_DOCUMENT_TOO_LARGE, MB_ICONEXCLAMATION);
+      AfxThrowUserException();
+    }
+
+    //Create an ILoader instance
+    auto pLoader = static_cast<Scintilla::ILoader*>(rCtrl.CreateLoader(nFileSizeForLoader, DocumentOption::Default));
+    if (pLoader == nullptr)
+    {
+      AfxMessageBox(IDP_FAIL_SCINTILLA_CREATE_ILOADER, MB_ICONEXCLAMATION);
+      AfxThrowUserException();
+    }
+
+    //Read the data in from the file in blocks
+    std::vector<BYTE> byBuffer{m_nLoadSaveBufferSize, std::allocator<BYTE>{}};
     int nBytesRead{0};
+    m_BOM = BOM::Unknown;
+    bool bDetectedBOM{false};
     do
     {
-      nBytesRead = pFile->Read(psBuffer, 4096);
+#pragma warning(suppress: 26472)
+      nBytesRead = pFile->Read(byBuffer.data(), static_cast<UINT>(byBuffer.size()));
       if (nBytesRead)
-        rCtrl.AddText(nBytesRead, psBuffer);
+      {
+        int nSkip{0};
+        if (!bDetectedBOM)
+        {
+          bDetectedBOM = true;
+          int nUniTest = IS_TEXT_UNICODE_STATISTICS;
+          //detect UTF-16BE with BOM
+#pragma warning(suppress: 26446)
+          if ((nBytesRead > 1) && ((nFileSize % 2) == 0) && ((nBytesRead % 2) == 0) && (byBuffer[0] == 0xFE) && (byBuffer[1] == 0xFF))
+          {
+            m_BOM = BOM::UTF16BE;
+            nSkip = 2;
+          }
+          //detect UTF-16LE with BOM
+#pragma warning(suppress: 26446)
+          else if ((nBytesRead > 1) && ((nFileSize % 2) == 0) && ((nBytesRead % 2) == 0) && (byBuffer[0] == 0xFF) && (byBuffer[1] == 0xFE))
+          {
+            m_BOM = BOM::UTF16LE;
+            nSkip = 2;
+          }
+          //detect UTF-8 with BOM
+#pragma warning(suppress: 26446)
+          else if ((nBytesRead > 2) && (byBuffer[0] == 0xEF) && (byBuffer[1] == 0xBB) && (byBuffer[2] == 0xBF))
+          {
+            m_BOM = BOM::UTF8;
+            nSkip = 3;
+          }
+          //detect UTF-16LE without BOM (Note IS_TEXT_UNICODE_STATISTICS implies Little Endian for all versions of supported Windows platforms i.e. x86, x64, ARM & ARM64)
+#pragma warning(suppress: 26446)
+          else if ((nBytesRead > 1) && ((nFileSize % 2) == 0) && ((nBytesRead % 2) == 0) && (byBuffer[0] != 0) && (byBuffer[1] == 0) && IsTextUnicode(byBuffer.data(), nBytesRead, &nUniTest))
+          {
+            m_BOM = BOM::UTF16LE_NOBOM;
+            nSkip = 0;
+          }
+        }
+
+        //Work out the data to pass to ILoader->AddData
+        const char* pLoadData{nullptr};
+        int nBytesToLoad{0};
+        CScintillaCtrl::StringA sUTF8Data;
+        if ((m_BOM == BOM::UTF16LE_NOBOM) || (m_BOM == BOM::UTF16LE))
+        {
+          //Handle conversion from UTF16LE to UTF8
+#pragma warning(suppress: 26481 26490)
+          sUTF8Data = CScintillaCtrl::W2UTF8(reinterpret_cast<const wchar_t*>(byBuffer.data() + nSkip), (nBytesRead - nSkip) / 2);
+          pLoadData = sUTF8Data;
+          nBytesToLoad = sUTF8Data.GetLength();
+        }
+        else if (m_BOM == BOM::UTF16BE)
+        {
+          //Handle conversion from UTF16BE to UTF8
+#pragma warning(suppress: 26429 26481)
+          BYTE* p = byBuffer.data() + nSkip;
+          const int nUTF16CharsRead = (nBytesRead - nSkip) / 2;
+          for (int i=0; i< nUTF16CharsRead; i++)
+          {
+            const BYTE t{*p};
+#pragma warning(suppress: 26481)
+            *p = p[1];
+#pragma warning(suppress: 26481)
+            p[1] = t;
+#pragma warning(suppress: 26481)
+            p += 2;
+          }
+#pragma warning(suppress: 26481 26490)
+          sUTF8Data = CScintillaCtrl::W2UTF8(reinterpret_cast<const wchar_t*>(byBuffer.data() + nSkip), (nBytesRead - nSkip) / 2);
+          pLoadData = sUTF8Data;
+          nBytesToLoad = sUTF8Data.GetLength();
+        }
+        else
+        {
+#pragma warning(suppress: 26481 26490)
+          pLoadData = reinterpret_cast<const char*>(byBuffer.data()) + nSkip;
+          nBytesToLoad = nBytesRead - nSkip;
+        }
+        ASSERT(pLoadData != nullptr);
+        const auto nAddDataError{pLoader->AddData(pLoadData, nBytesToLoad)};
+        if (nAddDataError != SC_STATUS_OK)
+        {
+          pLoader->Release();
+          CString sError;
+          sError.Format(_T("%d"), nAddDataError);
+          CString sMsg;
+          AfxFormatString1(sMsg, IDP_FAIL_SCINTILLA_ADDDATA_DURING_LOAD, sError);
+          AfxMessageBox(sMsg, MB_ICONEXCLAMATION);
+          AfxThrowUserException();
+        }
+      }
     }
     while (nBytesRead);
+
+    //Set the document pointer to the loaded content
+    rCtrl.SetDocPointer(static_cast<IDocumentEditable*>(pLoader->ConvertToDocument())); //NOLINT(clang-analyzer-core.CallAndMessage)
+
+    //If we detected UTF data, then use the UTF8 codepage else disable multi-byte support
+    if (m_BOM == BOM::Unknown)
+      rCtrl.SetCodePage(0);
+    else
+      rCtrl.SetCodePage(CpUtf8);
 
     //Set the read only state if required
     if (m_bUseROFileAttributeDuringLoading && ((GetFileAttributes(pFile->GetFilePath()) & FILE_ATTRIBUTE_READONLY) == FILE_ATTRIBUTE_READONLY))
@@ -1439,31 +1577,95 @@ void CScintillaView::Serialize(CArchive& ar)
   }
   else
   {
-    //Get the length of the document
-    const Position nDocLength{rCtrl.GetLength()};
-
-    //Write the data in blocks to disk
 #pragma warning(suppress: 26429)
     CFile* pFile{ar.GetFile()};
     ASSERT(pFile != nullptr);
-    for (int i=0; i<nDocLength; i+=4095) //4095 because data will be returned null terminated
+    Position nBytesToWrite{rCtrl.GetLength()};
+    const char* CharacterPointer = rCtrl.GetCharacterPointer();
+    bool bHandledBOM{false};
+    while (nBytesToWrite > 0)
     {
-      Position nGrabSize{nDocLength - i};
-      if (nGrabSize > 4095)
-        nGrabSize = 4095;
+      Position nDataToWrite{nBytesToWrite};
+      if (nDataToWrite > UINT_MAX)
+        nDataToWrite = UINT_MAX;
 
-      //Get the data from the control
-      TextRangeFull tr{};
-      tr.chrg.cpMin = i;
-      tr.chrg.cpMax = i + nGrabSize;
-      CStringA sBuffer;
-      tr.lpstrText = sBuffer.GetBuffer(4096);
-      rCtrl.GetTextRangeFull(&tr);
+      //Handle writing the BOM if necessary
+      if (!bHandledBOM)
+      {
+        bHandledBOM = true;
+        switch (m_BOM)
+        {
+          case BOM::UTF8:
+          {
+            pFile->Write("\xEF\xBB\xBF", 3);
+            break;
+          }
+          case BOM::UTF16BE:
+          {
+            pFile->Write("\xFE\xFF", 2);
+            break;
+          }
+          case BOM::UTF16LE:
+          {
+            pFile->Write("\xFF\xFE", 2);
+            break;
+          }
+          default:
+          {
+            break;
+          }
+        }
+      }
 
-      //Write it to disk
+      //Work out the data to save to file
+      const void* pSaveData{nullptr};
+      UINT nBytesToSave{0};
+      CScintillaCtrl::StringW sUTF16Data;
+      if ((m_BOM == BOM::UTF16LE_NOBOM) || ((m_BOM == BOM::UTF16LE)))
+      {
+        //Handle conversion from UTF8 to UTF16LE
 #pragma warning(suppress: 26472)
-      pFile->Write(tr.lpstrText, static_cast<UINT>(nGrabSize));
-      sBuffer.ReleaseBuffer();
+        sUTF16Data = CScintillaCtrl::UTF82W(CharacterPointer, static_cast<int>(nDataToWrite));
+        pSaveData = sUTF16Data.GetString();
+        nBytesToSave = sUTF16Data.GetLength() * sizeof(wchar_t);
+      }
+      else if (m_BOM == BOM::UTF16BE)
+      {
+        //Handle conversion from UTF8 to UTF16BE
+#pragma warning(suppress: 26472)
+        sUTF16Data = CScintillaCtrl::UTF82W(CharacterPointer, static_cast<int>(nDataToWrite));
+#pragma warning(suppress: 26429 26490)
+        BYTE* p = reinterpret_cast<BYTE*>(sUTF16Data.GetBuffer());
+        const int nUTF16CharsWrite = sUTF16Data.GetLength();
+        for (int i=0; i<nUTF16CharsWrite; i++)
+        {
+          const BYTE t{*p};
+#pragma warning(suppress: 26481)
+          *p = p[1];
+#pragma warning(suppress: 26481)
+          p[1] = t;
+#pragma warning(suppress: 26481)
+          p += 2;
+        }
+        sUTF16Data.ReleaseBuffer();
+        pSaveData = sUTF16Data.GetString();
+        nBytesToSave = sUTF16Data.GetLength() * sizeof(wchar_t);
+      }
+      else
+      {
+        pSaveData = CharacterPointer;
+#pragma warning(suppress: 26472)
+        nBytesToSave = static_cast<UINT>(nDataToWrite);
+      }
+
+      //Write the data to file
+      ASSERT(pSaveData != nullptr);
+      pFile->Write(pSaveData, nBytesToSave);
+
+      //Prepare for the next loop around
+#pragma warning(suppress: 26481)
+      CharacterPointer += nDataToWrite;
+      nBytesToWrite -= nDataToWrite;
     }
   }
 }
@@ -1485,7 +1687,7 @@ void CScintillaView::OnFilePageSetup()
   if (m_bPersistMarginSettings)
     LoadMarginSettings();
 
-  //Set the current margin settings to the current value from m_rectMargin 
+  //Set the current margin settings to the current value from m_rMargin
   dlg.m_psd.rtMargin = m_rMargin;
 
   //get the current device from the app

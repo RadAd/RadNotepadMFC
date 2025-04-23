@@ -38,7 +38,9 @@
 #include <Scintilla.h>
 #include <ScintillaTypes.h>
 #include <ScintillaCall.h>
+#include <ScintillaMessages.h>
 #include <ScintillaStructures.h>
+#include <ILoader.h>
 #include "scintillawrappers\ScintillaDocView.h"
 
 

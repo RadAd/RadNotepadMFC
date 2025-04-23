@@ -295,7 +295,7 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           SCI_STYLESETINVISIBLEREPRESENTATION & SCI_STYLEGETINVISIBLEREPRESENTATION.
          PJN / 13-12-2022 1. All classes are now contained in the workspace "Scintilla".
                           2. Updated code to use enums from Scintilla provided "ScintillaTypes.h" header file.
-                          3. Updated class to work with Scintilla v5.3.2. New messages wrapperd include: SCI_GETSTYLEDTEXTFULL and
+                          3. Updated class to work with Scintilla v5.3.2. New messages wrapped include: SCI_GETSTYLEDTEXTFULL and
                           SCI_REPLACETARGETMINIMAL.
          PJN / 14-12-2022 1. Fixed up issue with Regular expression checkbox not appearing in find and replace dialogs.
                           2. Replaced intptr_t type with Line typedef.
@@ -310,8 +310,29 @@ History: PJN / 19-03-2004 1. Initial implementation synchronized to the v1.59 re
                           CaretPolicy instead of VisiblePolicy. Thanks to Markus Nissl for reporting this issue.
                           2. Removed unnecessary Scintilla namespace usage in ScintillaCtrl.cpp. Thanks to Markus 
                           Nissl for reporting this issue.
+         PJN / 21-03-2023 1. Updated modules to indicate that it needs to be compiled using /std:c++17. Thanks to Martin Richter for
+                          reporting this issue.
+         PJN / 28-12-2023 1. Updated class to work with Scintilla v5.4.1. New messages wrapped include: SCI_CHANGESELECTIONMODE,
+                          SCI_SETMOVEEXTENDSSELECTION & SCI_SELECTIONFROMPOINT. Also updated the signatures of the following
+                          methods: GetDocPointer, SetDocPointer, CreateDocument, AddRefDocument and ReleaseDocument.
+         PJN / 29-03-2024 1. Updated copyright details.
+                          2. Updated class to work with Scintilla v5.4.3. New messages wrapped include: SCI_GETUNDOACTIONS,
+                          SCI_GETUNDOSAVEPOINT, SCI_SETUNDODETACH, SCI_SETUNDOTENTATIVE, SCI_SETUNDOCURRENT, SCI_PUSHUNDOACTIONTYPE,
+                          SCI_CHANGELASTUNDOACTIONTEXT, SCI_GETUNDOACTIONTYPE, SCI_GETUNDOACTIONPOSITION & SCI_GETUNDOACTIONTEXT.
+         PJN / 26-04-2024 1. Verified the code against Scintilla v5.5.0.
+         PJN / 22-07-2024 1. Updated class to work with Scintilla v5.5.1. New messages wrapped include: SCI_AUTOCSETSTYLE,
+                          SCI_AUTOCGETSTYLE & SCI_CUTALLOWLINE.
+         PJN / 24-08-2024 1. Updated class to work with Scintilla v5.5.2. New messages wrapped include: SCI_STYLESETSTRETCH,
+                          SCI_STYLEGETSTRETCH, SCI_GETUNDOSEQUENCE, SCI_LineIndent, SCI_LINEDEDENT, SCI_SETCOPYSEPARATOR & 
+                          SCI_GETCOPYSEPARATOR.
+         PJN / 26-10-2024 1. Verified the code against Scintilla v5.5.3.
+         PJN / 21-12-2024 1. Verified the code against Scintilla v5.5.4.
+         PJN / 16-03-2025 1. Updated class to work with Scintilla v5.5.5. New messages wrapped include: SCI_SETUNDOSELECTIONHISTORY,
+                          SCI_GETUNDOSELECTIONHISTORY, SCI_GETSELECTIONSERIALIZED and SCI_SETSELECTIONSERIALIZED.
+         PJN / 11-04-2025 1. Updated CScintillaCtrl::MarkerSymbolDefined method to return MarkerSymbol.
+                          2. Verified the code against Scintilla v5.5.6.
 
-Copyright (c) 2004 - 2022 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2025 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -353,10 +374,11 @@ using namespace Scintilla;
 IMPLEMENT_DYNAMIC(CScintillaCtrl, CWnd)
 #endif //#ifdef _AFX
 
-CScintillaCtrl::CScintillaCtrl() noexcept : m_bCallDirect{TRUE},
-                                                       m_DirectStatusFunction{nullptr},
-                                                       m_DirectPointer{0},
-                                                       m_LastStatus(Status::Ok)
+CScintillaCtrl::CScintillaCtrl() noexcept : m_DirectStatusFunction{nullptr},
+                                            m_DirectPointer{0},
+                                            m_LastStatus{Status::Ok},
+                                            m_dwOwnerThreadID{0},
+                                            m_bDoneInitialSetup{false}
 {
 }
 
@@ -371,22 +393,58 @@ BOOL CScintillaCtrl::Create(DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, U
 BOOL CScintillaCtrl::Create(_In_ HWND hWndParent, _In_ ATL::_U_RECT rect, _In_ DWORD dwStyle, _In_ UINT nID, _In_ DWORD dwExStyle, _In_opt_ LPVOID lpParam)
 {
   //Call our base class implementation of ATL::CWindow::Create
-  if (!__super::Create(_T("scintilla"), hWndParent, rect, nullptr, dwStyle, dwExStyle, nID, lpParam))
+  if (!__super::Create(GetWndClassName(), hWndParent, rect, nullptr, dwStyle, dwExStyle, nID, lpParam))
     return FALSE;
 #endif //#ifdef _AFX
 
   //Setup the direct access data
-  SetupDirectAccess();
+  if (!m_bDoneInitialSetup)
+  {
+    m_bDoneInitialSetup = true;
 
-  //If we are running as Unicode, then use the UTF8 codepage else use the ANSI codepage
+    SetupDirectAccess();
+
+    //If we are running as Unicode, then use the UTF8 codepage else disable multi-byte support
 #ifdef _UNICODE
-  SetCodePage(CpUtf8);
+    SetCodePage(CpUtf8);
 #else
-  SetCodePage(0);
+    SetCodePage(0);
 #endif //#ifdef _UNICODE
+
+    //Cache the return value from GetWindowThreadProcessId in the m_dwOwnerThreadID member variable
+    m_dwOwnerThreadID = GetWindowThreadProcessId(m_hWnd, nullptr);
+  }
 
   return TRUE;
 }
+
+#ifdef _AFX
+void CScintillaCtrl::PreSubclassWindow()
+{
+  //Let the base class do its thing
+  __super::PreSubclassWindow();
+
+  //Setup the direct access data
+  if (!m_bDoneInitialSetup)
+  {
+    SetupDirectAccess();
+    if ((m_DirectPointer == 0) || (m_DirectStatusFunction == nullptr))
+      return;
+
+    m_bDoneInitialSetup = true;
+
+    //If we are running as Unicode, then use the UTF8 codepage else use the ANSI codepage
+#ifdef _UNICODE
+    SetCodePage(CpUtf8);
+#else
+    SetCodePage(0);
+#endif //#ifdef _UNICODE
+
+    //Cache the return value from GetWindowThreadProcessId in the m_dwOwnerThreadID member variable
+    m_dwOwnerThreadID = GetWindowThreadProcessId(m_hWnd, nullptr);
+  }
+}
+#endif //#ifdef _AFX
 
 void CScintillaCtrl::SetupDirectAccess()
 {
@@ -401,16 +459,6 @@ sptr_t CScintillaCtrl::GetDirectPointer()
   return SendMessage(static_cast<UINT>(Message::GetDirectPointer), 0, 0);
 }
 
-BOOL CScintillaCtrl::GetCallDirect() const noexcept
-{
-  return m_bCallDirect;
-}
-
-void CScintillaCtrl::SetCallDirect(_In_ BOOL bDirect) noexcept
-{
-  m_bCallDirect = bDirect;
-}
-
 #pragma warning(suppress: 26440)
 FunctionDirect CScintillaCtrl::GetDirectStatusFunction()
 {
@@ -418,12 +466,11 @@ FunctionDirect CScintillaCtrl::GetDirectStatusFunction()
   return reinterpret_cast<FunctionDirect>(SendMessage(static_cast<UINT>(Message::GetDirectStatusFunction), 0, 0));
 }
 
-Status CScintillaCtrl::GetLastStatus() noexcept
+Status CScintillaCtrl::GetLastStatus() const noexcept
 {
   return m_LastStatus;
 }
 
-#ifdef _UNICODE
 CScintillaCtrl::StringA CScintillaCtrl::W2UTF8(_In_NLS_string_(nLength) const wchar_t* pszText, _In_ int nLength)
 {
   //First call the function to determine how much space we need to allocate
@@ -480,6 +527,7 @@ CScintillaCtrl::StringW CScintillaCtrl::UTF82W(_In_NLS_string_(nLength) const ch
   return sWideString;
 }
 
+#ifdef _UNICODE
 void CScintillaCtrl::AddText(_In_ int length, _In_ const wchar_t* text)
 {
   //Convert the unicode text to UTF8
@@ -606,6 +654,20 @@ CScintillaCtrl::StringW CScintillaCtrl::GetLine(_In_ Line line)
   StringA sUTF8;
 #pragma warning(suppress: 26472)
   GetLine(line, sUTF8.GetBufferSetLength(static_cast<int>(nUTF8Length)));
+  sUTF8.ReleaseBuffer();
+
+  return UTF82W(sUTF8, -1);
+}
+
+CScintillaCtrl::StringW CScintillaCtrl::GetSelectionSerialized()
+{
+  //Work out the length of string to allocate
+  const Position nUTF8Length{GetSelectionSerialized(nullptr)};
+
+  //Call the function which does the work
+  StringA sUTF8;
+#pragma warning(suppress: 26472)
+  GetSelectionSerialized(sUTF8.GetBufferSetLength(static_cast<int>(nUTF8Length)));
   sUTF8.ReleaseBuffer();
 
   return UTF82W(sUTF8, -1);
@@ -776,6 +838,15 @@ void CScintillaCtrl::SetIdentifiers(_In_ int style, _In_z_ const wchar_t* identi
   SetIdentifiers(style, sUTF8);
 }
 
+void CScintillaCtrl::ChangeLastUndoActionText(_In_z_ const wchar_t* text)
+{
+  //Convert the unicode text to UTF8
+  StringA sUTF8{W2UTF8(text, -1)};
+
+  //Call the native scintilla version of the function with the UTF8 text
+  ChangeLastUndoActionText(sUTF8.GetLength(), sUTF8);
+}
+
 CScintillaCtrl::StringW CScintillaCtrl::GetSCIProperty(_In_z_ const wchar_t* key)
 {
   //Validate our parameters
@@ -940,6 +1011,15 @@ void CScintillaCtrl::StyleSetInvisibleRepresentation(_In_ int style, _In_z_ cons
 
   //Call the native scintilla version of the function with the UTF8 text
   StyleSetInvisibleRepresentation(style, sUTF8);
+}
+
+void CScintillaCtrl::SetCopySeparator(_In_z_ const wchar_t* separator)
+{
+  //Convert the unicode text to UTF8
+  StringA sUTF8{W2UTF8(separator, -1)};
+
+  //Call the native scintilla version of the function with the UTF8 text
+  SetCopySeparator(sUTF8);
 }
 
 CScintillaCtrl::StringW CScintillaCtrl::EOLAnnotationGetText(_In_ Line line)
@@ -1200,6 +1280,35 @@ CScintillaCtrl::StringW CScintillaCtrl::StyleGetInvisibleRepresentation(_In_ int
   return UTF82W(sUTF8, -1);
 }
 
+CScintillaCtrl::StringW CScintillaCtrl::GetUndoActionText(_In_ int action)
+{
+  //Work out the length of string to allocate
+  const int nUTF8Length{GetUndoActionText(action, nullptr)};
+
+  //Call the function which does the work
+  StringA sUTF8;
+  GetUndoActionText(action, sUTF8.GetBufferSetLength(nUTF8Length));
+  sUTF8.ReleaseBuffer();
+
+  //Now convert the UTF8 text back to Unicode
+  return UTF82W(sUTF8, -1);
+}
+
+CScintillaCtrl::StringW CScintillaCtrl::GetCopySeparator()
+{
+  //Work out the length of string to allocate
+  const int nUTF8Length{GetCopySeparator(nullptr)};
+
+  //Call the function which does the work
+  StringA sUTF8;
+#pragma warning(suppress: 26472)
+  GetCopySeparator(sUTF8.GetBufferSetLength(static_cast<int>(nUTF8Length)));
+  sUTF8.ReleaseBuffer();
+
+  //Now convert the UTF8 text back to Unicode
+  return UTF82W(sUTF8, -1);
+}
+
 #else
 
 CScintillaCtrl::StringA CScintillaCtrl::GetSelText()
@@ -1237,6 +1346,18 @@ CScintillaCtrl::StringA CScintillaCtrl::GetLine(_In_ Line line)
   GetLine(line, pszLine);
   sLine.ReleaseBuffer();
   return sLine;
+}
+
+CScintillaCtrl::StringA CScintillaCtrl::GetSelectionSerialized()
+{
+  //Call the function which does the work
+  StringA sSelectionSerialized;
+  const Position nLength{GetSelectionSerialized(nullptr)};
+#pragma warning(suppress: 26472)
+  char* pszSelectionSerialized{sSelectionSerialized.GetBufferSetLength(static_cast<int>(nLength))};
+  GetSelectionSerialized(pszSelectionSerialized);
+  sSelectionSerialized.ReleaseBuffer();
+  return sSelectionSerialized;
 }
 
 CScintillaCtrl::StringA CScintillaCtrl::GetSCIProperty(_In_z_ const char* key)
@@ -1578,6 +1699,32 @@ CScintillaCtrl::StringA CScintillaCtrl::StyleGetInvisibleRepresentation(_In_ int
   //Call the function which does the work
   StringA sValue;
   StyleGetInvisibleRepresentation(style, sValue.GetBufferSetLength(nValueLength));
+  sValue.ReleaseBuffer();
+
+  return sValue;
+}
+
+CScintillaCtrl::StringA CScintillaCtrl::GetUndoActionText(_In_ int action)
+{
+  //Work out the length of string to allocate
+  const int nValueLength{GetUndoActionText(action, nullptr) };
+
+  //Call the function which does the work
+  StringA sValue;
+  GetUndoActionText(action, sValue.GetBufferSetLength(nValueLength));
+  sValue.ReleaseBuffer();
+
+  return sValue;
+}
+
+CScintillaCtrl::StringA CScintillaCtrl::GetCopySeparator()
+{
+  //Work out the length of string to allocate
+  const int nValueLength{GetCopySeparator(nullptr)};
+
+  //Call the function which does the work
+  StringA sValue;
+  GetCopySeparator(sValue.GetBufferSetLength(nValueLength));
   sValue.ReleaseBuffer();
 
   return sValue;
@@ -2193,6 +2340,16 @@ BOOL CScintillaCtrl::StyleGetCheckMonospaced(_In_ int style)
   return static_cast<BOOL>(Call(static_cast<UINT>(Message::StyleGetCheckMonospaced), static_cast<WPARAM>(style), 0));
 }
 
+void CScintillaCtrl::StyleSetStretch(_In_ int style, _In_ FontStretch stretch)
+{
+  Call(static_cast<UINT>(Message::StyleSetStretch), static_cast<WPARAM>(style), static_cast<LPARAM>(stretch));
+}
+
+FontStretch CScintillaCtrl::StyleGetStretch(_In_ int style)
+{
+  return static_cast<FontStretch>(Call(static_cast<UINT>(Message::StyleGetStretch), static_cast<WPARAM>(style), 0));
+}
+
 void CScintillaCtrl::StyleSetInvisibleRepresentation(_In_ int style, _In_z_ const char* representation)
 {
   Call(static_cast<UINT>(Message::StyleSetInvisibleRepresentation), static_cast<WPARAM>(style), reinterpret_cast<LPARAM>(representation));
@@ -2361,6 +2518,86 @@ void CScintillaCtrl::BeginUndoAction()
 void CScintillaCtrl::EndUndoAction()
 {
   Call(static_cast<UINT>(Message::EndUndoAction), 0, 0);
+}
+
+int CScintillaCtrl::GetUndoSequence()
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetUndoSequence), 0, 0));
+}
+
+int CScintillaCtrl::GetUndoActions()
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetUndoActions), 0, 0));
+}
+
+void CScintillaCtrl::SetUndoSavePoint(_In_ int action)
+{
+  Call(static_cast<UINT>(Message::SetUndoSavePoint), static_cast<WPARAM>(action), 0);
+}
+
+int CScintillaCtrl::GetUndoSavePoint()
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetUndoSavePoint), 0, 0));
+}
+
+void CScintillaCtrl::SetUndoDetach(_In_ int action)
+{
+  Call(static_cast<UINT>(Message::SetUndoDetach), static_cast<WPARAM>(action), 0);
+}
+
+int CScintillaCtrl::GetUndoDetach()
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetUndoDetach), 0, 0));
+}
+
+void CScintillaCtrl::SetUndoTentative(_In_ int action)
+{
+  Call(static_cast<UINT>(Message::SetUndoTentative), static_cast<WPARAM>(action), 0);
+}
+
+int CScintillaCtrl::GetUndoTentative()
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetUndoTentative), 0, 0));
+}
+
+void CScintillaCtrl::SetUndoCurrent(_In_ int action)
+{
+  Call(static_cast<UINT>(Message::SetUndoCurrent), static_cast<WPARAM>(action), 0);
+}
+
+int CScintillaCtrl::GetUndoCurrent()
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetUndoCurrent), 0, 0));
+}
+
+void CScintillaCtrl::PushUndoActionType(_In_ int type, Position pos)
+{
+  Call(static_cast<UINT>(Message::PushUndoActionType), static_cast<WPARAM>(type), static_cast<LPARAM>(pos));
+}
+
+void CScintillaCtrl::ChangeLastUndoActionText(_In_z_ const char* text)
+{
+  ChangeLastUndoActionText(strlen(text), text);
+}
+
+void CScintillaCtrl::ChangeLastUndoActionText(_In_ Position length, _In_reads_bytes_(length) const char* text)
+{
+  Call(static_cast<UINT>(Message::ChangeLastUndoActionText), static_cast<WPARAM>(length), reinterpret_cast<LPARAM>(text));
+}
+
+int CScintillaCtrl::GetUndoActionType(_In_ int action)
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetUndoActionType), static_cast<WPARAM>(action), 0));
+}
+
+Position CScintillaCtrl::GetUndoActionPosition(_In_ int action)
+{
+  return Call(static_cast<UINT>(Message::GetUndoActionPosition), static_cast<WPARAM>(action), 0);
+}
+
+int CScintillaCtrl::GetUndoActionText(_In_ int action, _Inout_opt_z_ char* text)
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetUndoActionText), static_cast<WPARAM>(action), reinterpret_cast<LPARAM>(text)));
 }
 
 void CScintillaCtrl::IndicSetStyle(_In_ int indicator, _In_ IndicatorStyle indicatorStyle)
@@ -2658,6 +2895,16 @@ int CScintillaCtrl::AutoCGetMaxHeight()
   return static_cast<int>(Call(static_cast<UINT>(Message::AutoCGetMaxHeight), 0, 0));
 }
 
+void CScintillaCtrl::AutoCSetStyle(_In_ int style)
+{
+  Call(static_cast<UINT>(Message::AutoCSetStyle), static_cast<WPARAM>(style), 0);
+}
+
+int CScintillaCtrl::AutoCGetStyle()
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::AutoCGetStyle), 0, 0));
+}
+
 void CScintillaCtrl::SetIndent(_In_ int indentSize)
 {
   Call(static_cast<UINT>(Message::SetIndent), static_cast<WPARAM>(indentSize), 0);
@@ -2836,6 +3083,26 @@ void CScintillaCtrl::SetChangeHistory(_In_ ChangeHistoryOption changeHistory)
 int CScintillaCtrl::GetChangeHistory()
 {
   return static_cast<int>(Call(static_cast<UINT>(Message::GetChangeHistory), 0, 0));
+}
+
+void CScintillaCtrl::SetUndoSelectionHistory(_In_ UndoSelectionHistoryOption undoSelectionHistory)
+{
+  Call(static_cast<UINT>(Message::SetUndoSelectionHistory), static_cast<WPARAM>(undoSelectionHistory), 0);
+}
+
+UndoSelectionHistoryOption CScintillaCtrl::GetUndoSelectionHistory()
+{
+  return static_cast<UndoSelectionHistoryOption>(Call(static_cast<UINT>(Message::GetUndoSelectionHistory), 0, 0));
+}
+
+void CScintillaCtrl::SetSelectionSerialized(_In_z_ const char* selectionString)
+{
+  Call(static_cast<UINT>(Message::SetSelectionSerialized), 0, reinterpret_cast<LPARAM>(selectionString));
+}
+
+Position CScintillaCtrl::GetSelectionSerialized(_Inout_opt_z_ char* selectionString)
+{
+  return static_cast<Position>(Call(static_cast<UINT>(Message::GetSelectionSerialized), 0, reinterpret_cast<LPARAM>(selectionString)));
 }
 
 Line CScintillaCtrl::GetFirstVisibleLine()
@@ -3703,9 +3970,19 @@ void CScintillaCtrl::Tab()
   Call(static_cast<UINT>(Message::Tab), 0, 0);
 }
 
+void CScintillaCtrl::LineIndent()
+{
+  Call(static_cast<UINT>(Message::LineIndent), 0, 0);
+}
+
 void CScintillaCtrl::BackTab()
 {
   Call(static_cast<UINT>(Message::BackTab), 0, 0);
+}
+
+void CScintillaCtrl::LineDedent()
+{
+  Call(static_cast<UINT>(Message::LineDedent), 0, 0);
 }
 
 void CScintillaCtrl::NewLine()
@@ -3908,13 +4185,13 @@ void CScintillaCtrl::SetViewEOL(_In_ BOOL visible)
   Call(static_cast<UINT>(Message::SetViewEOL), static_cast<WPARAM>(visible), 0);
 }
 
-void* CScintillaCtrl::GetDocPointer()
+IDocumentEditable* CScintillaCtrl::GetDocPointer()
 {
 #pragma warning(suppress: 26487)
-  return reinterpret_cast<void*>(Call(static_cast<UINT>(Message::GetDocPointer), 0, 0));
+  return reinterpret_cast<IDocumentEditable*>(Call(static_cast<UINT>(Message::GetDocPointer), 0, 0));
 }
 
-void CScintillaCtrl::SetDocPointer(_In_opt_ void* doc)
+void CScintillaCtrl::SetDocPointer(_In_opt_ IDocumentEditable* doc)
 {
   Call(static_cast<UINT>(Message::SetDocPointer), 0, reinterpret_cast<LPARAM>(doc));
 }
@@ -4009,18 +4286,18 @@ int CScintillaCtrl::GetZoom()
   return static_cast<int>(Call(static_cast<UINT>(Message::GetZoom), 0, 0));
 }
 
-void* CScintillaCtrl::CreateDocument(_In_ Position bytes, _In_ DocumentOption documentOptions)
+IDocumentEditable* CScintillaCtrl::CreateDocument(_In_ Position bytes, _In_ DocumentOption documentOptions)
 {
 #pragma warning(suppress: 26487)
-  return reinterpret_cast<void*>(Call(static_cast<UINT>(Message::CreateDocument), static_cast<WPARAM>(bytes), static_cast<LPARAM>(documentOptions)));
+  return reinterpret_cast<IDocumentEditable*>(Call(static_cast<UINT>(Message::CreateDocument), static_cast<WPARAM>(bytes), static_cast<LPARAM>(documentOptions)));
 }
 
-void CScintillaCtrl::AddRefDocument(_In_ void* doc)
+void CScintillaCtrl::AddRefDocument(_In_ IDocumentEditable* doc)
 {
   Call(static_cast<UINT>(Message::AddRefDocument), 0, reinterpret_cast<LPARAM>(doc));
 }
 
-void CScintillaCtrl::ReleaseDocument(_In_ void* doc)
+void CScintillaCtrl::ReleaseDocument(_In_ IDocumentEditable* doc)
 {
   Call(static_cast<UINT>(Message::ReleaseDocument), 0, reinterpret_cast<LPARAM>(doc));
 }
@@ -4275,9 +4552,19 @@ void CScintillaCtrl::SetSelectionMode(_In_ SelectionMode selectionMode)
   Call(static_cast<UINT>(Message::SetSelectionMode), static_cast<WPARAM>(selectionMode), 0);
 }
 
+void CScintillaCtrl::ChangeSelectionMode(_In_ SelectionMode selectionMode)
+{
+  Call(static_cast<UINT>(Message::ChangeSelectionMode), static_cast<WPARAM>(selectionMode), 0);
+}
+
 SelectionMode CScintillaCtrl::GetSelectionMode()
 {
   return static_cast<SelectionMode>(Call(static_cast<UINT>(Message::GetSelectionMode), 0, 0));
+}
+
+void CScintillaCtrl::SetMoveExtendsSelection(_In_ BOOL moveExtendsSelection)
+{
+  Call(static_cast<UINT>(Message::SetMoveExtendsSelection), static_cast<WPARAM>(moveExtendsSelection), 0);
 }
 
 BOOL CScintillaCtrl::GetMoveExtendsSelection()
@@ -4600,6 +4887,21 @@ void CScintillaCtrl::CopyAllowLine()
   Call(static_cast<UINT>(Message::CopyAllowLine), 0, 0);
 }
 
+void CScintillaCtrl::CutAllowLine()
+{
+  Call(static_cast<UINT>(Message::CutAllowLine), 0, 0);
+}
+
+void CScintillaCtrl::SetCopySeparator(_In_z_ const char* separator)
+{
+  Call(static_cast<UINT>(Message::SetCopySeparator), 0, reinterpret_cast<LPARAM>(separator));
+}
+
+int CScintillaCtrl::GetCopySeparator(_Inout_opt_z_ char* separator)
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::GetCopySeparator), 0, reinterpret_cast<LPARAM>(separator)));
+}
+
 const char* CScintillaCtrl::GetCharacterPointer()
 {
 #pragma warning(suppress: 26487)
@@ -4657,9 +4959,9 @@ int CScintillaCtrl::GetExtraDescent()
   return static_cast<int>(Call(static_cast<UINT>(Message::GetExtraDescent), 0, 0));
 }
 
-int CScintillaCtrl::MarkerSymbolDefined(_In_ int markerNumber)
+MarkerSymbol CScintillaCtrl::MarkerSymbolDefined(_In_ int markerNumber)
 {
-  return static_cast<int>(Call(static_cast<UINT>(Message::MarkerSymbolDefined), static_cast<WPARAM>(markerNumber), 0));
+  return static_cast<MarkerSymbol>(Call(static_cast<UINT>(Message::MarkerSymbolDefined), static_cast<WPARAM>(markerNumber), 0));
 }
 
 void CScintillaCtrl::MarginSetText(_In_ Line line, _In_z_ const char* text)
@@ -4875,6 +5177,11 @@ void CScintillaCtrl::SetSelection(_In_ Position caret, _In_ Position anchor)
 void CScintillaCtrl::AddSelection(_In_ Position caret, _In_ Position anchor)
 {
   Call(static_cast<UINT>(Message::AddSelection), static_cast<WPARAM>(caret), static_cast<LPARAM>(anchor));
+}
+
+int CScintillaCtrl::SelectionFromPoint(_In_ int x, _In_ int y)
+{
+  return static_cast<int>(Call(static_cast<UINT>(Message::SelectionFromPoint), static_cast<WPARAM>(x), static_cast<LPARAM>(y)));
 }
 
 void CScintillaCtrl::DropSelectionN(_In_ int selection)

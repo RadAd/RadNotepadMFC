@@ -3,7 +3,7 @@ Module : ScintillaCtrl.h
 Purpose: Defines the interface for an MFC wrapper class for the Scintilla edit control (www.scintilla.org)
 Created: PJN / 19-03-2004
 
-Copyright (c) 2004 - 2022 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2025 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -22,6 +22,10 @@ to maintain a single distribution point for the source code.
 
 #pragma once
 
+#if _MSVC_LANG < 201703
+#error CScintillaCtrl requires a minimum C++ language standard of /std:c++17
+#endif //#if _MSVC_LANG < 201703
+
 #ifndef __SCINTILLACTRL_H__
 #define __SCINTILLACTRL_H__
 
@@ -32,6 +36,7 @@ to maintain a single distribution point for the source code.
 
 #ifndef SCINTILLACALL_H
 #pragma message("To avoid this message, please put ScintillaCall.h in your pre compiled header (normally stdafx.h)")
+#include <string>
 #include <ScintillaCall.h>
 #endif //#ifndef SCINTILLACALL_H
 
@@ -39,6 +44,11 @@ to maintain a single distribution point for the source code.
 #pragma message("To avoid this message, please put ScintillaStructures.h in your pre compiled header (normally stdafx.h)")
 #include <ScintillaStructures.h>
 #endif //#ifndef SCINTILLASTRUCTURES_H
+
+#ifndef ILOADER_H
+#pragma message("To avoid this message, please put ILoader.h in your pre compiled header (normally stdafx.h)")
+#include <ILoader.h>
+#endif //#ifndef ILOADER_H
 
 #ifndef SCINTILLACTRL_EXT_CLASS
 #define SCINTILLACTRL_EXT_CLASS
@@ -85,6 +95,14 @@ public:
 #endif //#ifdef _AFX
 
 //Misc
+#ifdef _AFX
+  void PreSubclassWindow() override;
+#else
+  static LPCTSTR GetWndClassName() noexcept
+  {
+    return _T("scintilla");
+  }
+#endif //#idef _AFX
   void SetupDirectAccess();
 
 #pragma warning(suppress: 26440)
@@ -94,7 +112,7 @@ public:
 #pragma warning(suppress: 26477)
     ATLASSERT(::IsWindow(m_hWnd)); //Window must be valid
 
-    if (m_bCallDirect)
+    if (::GetCurrentThreadId() == m_dwOwnerThreadID)
     {
       int nLastStatus{0};
       const auto nReturn = Call(message, wParam, lParam, &nLastStatus);
@@ -118,12 +136,12 @@ public:
   }
 
   [[nodiscard]] sptr_t GetDirectPointer();
-  [[nodiscard]] BOOL GetCallDirect() const noexcept;
-  void SetCallDirect(_In_ BOOL bDirect) noexcept;
   [[nodiscard]] FunctionDirect GetDirectStatusFunction();
-  [[nodiscard]] Status GetLastStatus() noexcept;
+  [[nodiscard]] Status GetLastStatus() const noexcept;
 
 //Unicode support
+  [[nodiscard]] static StringA W2UTF8(_In_NLS_string_(nLength) const wchar_t* pszText, _In_ int nLength);
+  [[nodiscard]] static StringW UTF82W(_In_NLS_string_(nLength) const char* pszText, _In_ int nLength);
 #ifdef _UNICODE
   void AddText(_In_ int length, _In_ const wchar_t* text);
   void InsertText(_In_ Position pos, _In_z_ const wchar_t* text);
@@ -138,6 +156,7 @@ public:
   void AutoCSetFillUps(_In_z_ const wchar_t* characterSet);
   void UserListShow(_In_ int listType, _In_z_ const wchar_t* itemList);
   [[nodiscard]] StringW GetLine(_In_ Line line);
+  [[nodiscard]] StringW GetSelectionSerialized();
   void ReplaceSel(_In_z_ const wchar_t* text);
   void SetText(_In_z_ const wchar_t* text);
   [[nodiscard]] StringW GetText(_In_ int length);
@@ -155,6 +174,7 @@ public:
   void SetSCIProperty(_In_z_ const wchar_t* key, _In_z_ const wchar_t* value);
   void SetKeyWords(_In_ int keywordSet, _In_z_ const wchar_t* keyWords);
   void SetIdentifiers(_In_ int style, _In_z_ const wchar_t* identifiers);
+  void ChangeLastUndoActionText(_In_z_ const wchar_t* text);
   [[nodiscard]] StringW GetSCIProperty(_In_z_ const wchar_t* key);
   [[nodiscard]] StringW GetPropertyExpanded(_In_z_ const wchar_t* key);
   [[nodiscard]] int GetPropertyInt(_In_z_ const wchar_t* key, _In_ int defaultValue);
@@ -169,6 +189,7 @@ public:
   void SetDefaultFoldDisplayText(_In_z_ const wchar_t* text);
   void EOLAnnotationSetText(_In_ Line line, _In_ const wchar_t* text);
   void StyleSetInvisibleRepresentation(_In_ int style, _In_z_ const wchar_t* representation);
+  void SetCopySeparator(_In_z_ const wchar_t* separator);
   [[nodiscard]] StringW EOLAnnotationGetText(_In_ Line line);
   [[nodiscard]] StringW DescribeProperty(_In_z_ const wchar_t* name);
   [[nodiscard]] StringW DescribeKeyWordSets();
@@ -188,13 +209,13 @@ public:
   [[nodiscard]] StringW AnnotationGetStyles(_In_ Line line);
   [[nodiscard]] StringW GetSubStyleBases();
   [[nodiscard]] StringW StyleGetInvisibleRepresentation(_In_ int style);
-
-  [[nodiscard]] static StringW UTF82W(_In_NLS_string_(nLength) const char* pszText, _In_ int nLength);
-  [[nodiscard]] static StringA W2UTF8(_In_NLS_string_(nLength) const wchar_t* pszText, _In_ int nLength);
+  [[nodiscard]] StringW GetUndoActionText(_In_ int action);
+  [[nodiscard]] StringW GetCopySeparator();
 #else
   [[nodiscard]] StringA GetSelText();
   [[nodiscard]] StringA GetCurLine();
   [[nodiscard]] StringA GetLine(_In_ Line line);
+  [[nodiscard]] StringA GetSelectionSerialized();
   [[nodiscard]] StringA GetSCIProperty(_In_z_ const char* key);
   [[nodiscard]] StringA GetText(_In_ int length);
   [[nodiscard]] StringA GetPropertyExpanded(_In_z_ const char* key);
@@ -221,6 +242,8 @@ public:
   [[nodiscard]] StringA AnnotationGetStyles(_In_ Line line);
   [[nodiscard]] StringA GetSubStyleBases();
   [[nodiscard]] StringA StyleGetInvisibleRepresentation(_In_ int style);
+  [[nodiscard]] StringA GetUndoActionText(_In_ int action);
+  [[nodiscard]] StringA GetCopySeparator();
 #endif //#ifdef _UNICODE
 
 //Auto generated using the "ConvertScintillaiface.js" script
@@ -345,6 +368,8 @@ public:
   void StyleSetHotSpot(_In_ int style, _In_ BOOL hotspot);
   void StyleSetCheckMonospaced(_In_ int style, _In_ BOOL checkMonospaced);
   [[nodiscard]] BOOL StyleGetCheckMonospaced(_In_ int style);
+  void StyleSetStretch(_In_ int style, _In_ FontStretch stretch);
+  FontStretch StyleGetStretch(_In_ int style);
   void StyleSetInvisibleRepresentation(_In_ int style, _In_z_ const char* representation);
   int StyleGetInvisibleRepresentation(_In_ int style, _Inout_opt_z_ char* representation);
   void SetElementColour(_In_ Element element, _In_ int colourElement);
@@ -379,6 +404,22 @@ public:
   [[nodiscard]] int GetCharacterCategoryOptimization();
   void BeginUndoAction();
   void EndUndoAction();
+  [[nodiscard]] int GetUndoSequence();
+  [[nodiscard]] int GetUndoActions();
+  void SetUndoSavePoint(_In_ int action);
+  [[nodiscard]] int GetUndoSavePoint();
+  void SetUndoDetach(_In_ int action);
+  [[nodiscard]] int GetUndoDetach();
+  void SetUndoTentative(_In_ int action);
+  [[nodiscard]] int GetUndoTentative();
+  void SetUndoCurrent(_In_ int action);
+  [[nodiscard]] int GetUndoCurrent();
+  void PushUndoActionType(_In_ int type, Position pos);
+  void ChangeLastUndoActionText(_In_z_ const char* text);
+  void ChangeLastUndoActionText(_In_ Position length, _In_reads_bytes_(length) const char* text);
+  [[nodiscard]] int GetUndoActionType(_In_ int action);
+  [[nodiscard]] Position GetUndoActionPosition(_In_ int action);
+  int GetUndoActionText(_In_ int action, _Inout_opt_z_ char* text);
   void IndicSetStyle(_In_ int indicator, _In_ IndicatorStyle indicatorStyle);
   [[nodiscard]] IndicatorStyle IndicGetStyle(_In_ int indicator);
   void IndicSetFore(_In_ int indicator, _In_ COLORREF fore);
@@ -438,6 +479,8 @@ public:
   [[nodiscard]] int AutoCGetMaxWidth();
   void AutoCSetMaxHeight(_In_ int rowCount);
   [[nodiscard]] int AutoCGetMaxHeight();
+  void AutoCSetStyle(_In_ int style);
+  [[nodiscard]] int AutoCGetStyle();
   void SetIndent(_In_ int indentSize);
   [[nodiscard]] int GetIndent();
   void SetUseTabs(_In_ BOOL useTabs);
@@ -474,6 +517,10 @@ public:
   [[nodiscard]] Position FormatRangeFull(_In_ BOOL draw, _In_ RangeToFormatFull* fr);
   void SetChangeHistory(_In_ ChangeHistoryOption changeHistory);
   [[nodiscard]] int GetChangeHistory();
+  void SetUndoSelectionHistory(_In_ UndoSelectionHistoryOption undoSelectionHistory);
+  [[nodiscard]] UndoSelectionHistoryOption GetUndoSelectionHistory();
+  void SetSelectionSerialized(_In_z_ const char* selectionString);
+  Position GetSelectionSerialized(_Inout_opt_z_ char* selectionString);
   [[nodiscard]] Line GetFirstVisibleLine();
   Position GetLine(_In_ Line line, _Inout_opt_z_ char* text);
   [[nodiscard]] Line GetLineCount();
@@ -647,7 +694,9 @@ public:
   void Cancel();
   void DeleteBack();
   void Tab();
+  void LineIndent();
   void BackTab();
+  void LineDedent();
   void NewLine();
   void FormFeed();
   void VCHome();
@@ -688,8 +737,8 @@ public:
   [[nodiscard]] Position BraceMatchNext(_In_ Position pos, _In_ Position startPos);
   [[nodiscard]] BOOL GetViewEOL();
   void SetViewEOL(_In_ BOOL visible);
-  [[nodiscard]] void* GetDocPointer();
-  void SetDocPointer(_In_opt_ void* doc);
+  [[nodiscard]] IDocumentEditable* GetDocPointer();
+  void SetDocPointer(_In_opt_ IDocumentEditable* doc);
   void SetModEventMask(_In_ ModificationFlags eventMask);
   [[nodiscard]] Position GetEdgeColumn();
   void SetEdgeColumn(_In_ Position column);
@@ -708,9 +757,9 @@ public:
   [[nodiscard]] BOOL SelectionIsRectangle();
   void SetZoom(_In_ int zoomInPoints);
   [[nodiscard]] int GetZoom();
-  [[nodiscard]] void* CreateDocument(_In_ Position bytes, _In_ DocumentOption documentOptions);
-  void AddRefDocument(_In_ void* doc);
-  void ReleaseDocument(_In_ void* doc);
+  [[nodiscard]] IDocumentEditable* CreateDocument(_In_ Position bytes, _In_ DocumentOption documentOptions);
+  void AddRefDocument(_In_ IDocumentEditable* doc);
+  void ReleaseDocument(_In_ IDocumentEditable* doc);
   [[nodiscard]] DocumentOption GetDocumentOptions();
   [[nodiscard]] ModificationFlags GetModEventMask();
   void SetCommandEvents(_In_ BOOL commandEvents);
@@ -761,7 +810,9 @@ public:
   void CopyRange(_In_ Position start, _In_ Position end);
   void CopyText(_In_ Position length, _In_reads_bytes_(length) const char* text);
   void SetSelectionMode(_In_ SelectionMode selectionMode);
+  void ChangeSelectionMode(_In_ SelectionMode selectionMode);
   [[nodiscard]] SelectionMode GetSelectionMode();
+  void SetMoveExtendsSelection(_In_ BOOL moveExtendsSelection);
   [[nodiscard]] BOOL GetMoveExtendsSelection();
   [[nodiscard]] Position GetLineSelStartPosition(_In_ Line line);
   [[nodiscard]] Position GetLineSelEndPosition(_In_ Line line);
@@ -826,6 +877,9 @@ public:
   void SetLayoutThreads(_In_ int threads);
   [[nodiscard]] int GetLayoutThreads();
   void CopyAllowLine();
+  void CutAllowLine();
+  void SetCopySeparator(_In_z_ const char* separator);
+  int GetCopySeparator(_Inout_opt_z_ char* separator);
   [[nodiscard]] const char* GetCharacterPointer();
   [[nodiscard]] void* GetRangePointer(_In_ Position start, _In_ Position lengthRange);
   [[nodiscard]] Position GetGapPosition();
@@ -837,7 +891,7 @@ public:
   [[nodiscard]] int GetExtraAscent();
   void SetExtraDescent(_In_ int extraDescent);
   [[nodiscard]] int GetExtraDescent();
-  [[nodiscard]] int MarkerSymbolDefined(_In_ int markerNumber);
+  [[nodiscard]] MarkerSymbol MarkerSymbolDefined(_In_ int markerNumber);
   void MarginSetText(_In_ Line line, _In_z_ const char* text);
   int MarginGetText(_In_ Line line, _Inout_opt_z_ char* text);
   void MarginSetStyle(_In_ Line line, _In_ int style);
@@ -881,6 +935,7 @@ public:
   void ClearSelections();
   void SetSelection(_In_ Position caret, _In_ Position anchor);
   void AddSelection(_In_ Position caret, _In_ Position anchor);
+  [[nodiscard]] int SelectionFromPoint(_In_ int x, _In_ int y);
   void DropSelectionN(_In_ int selection);
   void SetMainSelection(_In_ int selection);
   [[nodiscard]] int GetMainSelection();
@@ -999,7 +1054,7 @@ public:
   int NameOfStyle(_In_ int style, _Inout_opt_z_ char* name);
   int TagsOfStyle(_In_ int style, _Inout_opt_z_ char* tags);
   int DescriptionOfStyle(_In_ int style, _Inout_opt_z_ char* description);
-  void SetILexer(_In_opt_ void* ilexer);
+  void SetILexer(_In_ void* ilexer);
   [[nodiscard]] Bidirectional GetBidirectional();
   void SetBidirectional(_In_ Bidirectional bidirectional);
 
@@ -1009,10 +1064,11 @@ protected:
 #endif //#ifdef _AFX
 
 //Member variables
-  BOOL m_bCallDirect;
   FunctionDirect m_DirectStatusFunction;
   sptr_t m_DirectPointer;
   Status m_LastStatus;
+  DWORD m_dwOwnerThreadID;
+  bool m_bDoneInitialSetup;
 };
 
 

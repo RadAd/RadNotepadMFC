@@ -65,6 +65,10 @@ STRINGTABLE
 BEGIN
     IDS_SCINTILLA_DEFAULT_PRINT_HEADER "%1 - Printed on %2"
     IDS_SCINTILLA_DEFAULT_PRINT_FOOTER "Page %1"
+    IDP_FAIL_SCINTILLA_ADDDATA_DURING_LOAD "Failed to load document, Error:%1"
+    IDP_FAIL_SCINTILLA_CREATE_ILOADER
+                            "Failed to create Loader interface while loading a document"
+    IDP_FAIL_SCINTILLA_DOCUMENT_TOO_LARGE "Document is too large to be loaded"
 END
 
 #endif    // English (United States) resources

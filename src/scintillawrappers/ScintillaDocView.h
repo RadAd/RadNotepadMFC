@@ -4,7 +4,7 @@ Purpose: Defines the interface for MFC CView and CDocument derived wrapper class
          edit control (www.scintilla.org)
 Created: PJN / 19-03-2004
 
-Copyright (c) 2004 - 2022 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
+Copyright (c) 2004 - 2025 by PJ Naughter (Web: www.naughter.com, Email: pjna@naughter.com)
 
 All rights reserved.
 
@@ -106,6 +106,16 @@ public:
 class SCINTILLADOCVIEW_EXT_CLASS CScintillaView : public CView
 {
 public:
+//Enums
+  enum class BOM
+  {
+    Unknown,
+    UTF8,
+    UTF16BE,
+    UTF16LE,
+    UTF16LE_NOBOM
+  };
+
 //Constructors / Destructors
   CScintillaView();
   CScintillaView(const CScintillaView&) = delete;
@@ -211,6 +221,8 @@ protected:
   BOOL m_bUsingMetric; //TRUE if the margin is specified in Metric units, else FALSE implies imperial
   BOOL m_bPersistMarginSettings; //Should we persist the margin settings for the Page Setup dialog
   BOOL m_bCPP11Regex; //Should the C++11 regex functionality in Scintilla be used
+  BOM m_BOM; //The BOM which applies to this view
+  UINT m_nLoadSaveBufferSize; //The size of the buffer to use for serialization
 
 //Message handlers
   afx_msg void OnPaint();
