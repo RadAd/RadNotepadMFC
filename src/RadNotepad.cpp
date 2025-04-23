@@ -588,7 +588,7 @@ CDocument* CRadNotepadApp::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU
 
     const wchar_t* p = _tcsrchr(lpszFileName, _T(':'));
     int line = p != nullptr ? _tstoi(p + 1) - 1 : -1;
-    if (line > 0)
+    if (line >= 0)
     {
         size_t len = (p - lpszFileName);
         TCHAR szFileName[MAX_PATH];
