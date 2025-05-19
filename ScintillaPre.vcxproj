@@ -1,9 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Update" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="Common.tasks" />
+  <PropertyGroup>
+      <Version>5.5.6</Version>
+  </PropertyGroup>
 
   <Target Name="Download" Outputs="scintilla.zip">
-    <DownloadFile Address="https://www.scintilla.org/scintilla556.zip" FileName="scintilla.zip" />
+    <DownloadFile Address="https://www.scintilla.org/scintilla$(Version.Replace('.', '')).zip" FileName="scintilla.zip" />
   </Target>
 
   <Target Name="Extract" Inputs="scintilla.zip" Outputs="scintilla">
