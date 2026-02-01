@@ -28,6 +28,7 @@ struct ThemeItem
         , font(font)
         , eolfilled(Bool3::B3_UNDEFINED)
         , hotspot(Bool3::B3_UNDEFINED)
+        , visible(Bool3::B3_UNDEFINED)
     {
     }
 
@@ -36,6 +37,7 @@ struct ThemeItem
     LOGFONT font; // TODO Maybe just capture the bits Im interested in
     Bool3 eolfilled;
     Bool3 hotspot;
+    Bool3 visible;
     // TODO add flags to say which parts are applicable
 
     bool operator==(const ThemeItem& other) const
@@ -44,7 +46,8 @@ struct ThemeItem
             && back == other.back
             && memcmp(&font, &other.font, sizeof(LOGFONT)) == 0
             && eolfilled == other.eolfilled
-            && hotspot == other.hotspot;
+            && hotspot == other.hotspot
+            && visible == other.visible;
     }
 
     bool operator!=(const ThemeItem& other) const

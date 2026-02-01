@@ -91,6 +91,8 @@ static inline void ApplyThemeItem(Scintilla::CScintillaCtrl& rCtrl, int nStyle, 
         rCtrl.StyleSetEOLFilled(nStyle, rTheme.eolfilled == Bool3::B3_TRUE);
     if (rTheme.hotspot != Bool3::B3_UNDEFINED)
         rCtrl.StyleSetHotSpot(nStyle, rTheme.hotspot == Bool3::B3_TRUE);
+    if (rTheme.visible != Bool3::B3_UNDEFINED)
+        rCtrl.StyleSetVisible(nStyle, rTheme.visible == Bool3::B3_TRUE);
 }
 
 const Language* GetLanguage(const Theme* pTheme, LPCTSTR strName)
@@ -365,6 +367,8 @@ void LoadThemeItem(MSXML2::IXMLDOMNodePtr pXMLNode, ThemeItem& rThemeItem)
                 rThemeItem.hotspot = pXMLChildNode->text == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
             else if (bstrName == _T("eolfilled"))
                 rThemeItem.eolfilled = pXMLChildNode->text == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
+            else if (bstrName == _T("visible"))
+                rThemeItem.visible = pXMLChildNode->text == _T("true") ? Bool3::B3_TRUE : Bool3::B3_FALSE;
             else
             {
                 CString msg;
@@ -1459,6 +1463,8 @@ void SaveTheme(MSXML2::IXMLDOMElementPtr pNode, const ThemeItem& ti, const Theme
         pNode->setAttribute(_T("eolfilled"), ti.eolfilled == Bool3::B3_TRUE ? _T("true") : _T("false"));
     if (ti.hotspot != Bool3::B3_UNDEFINED && ti.hotspot != dti.hotspot)
         pNode->setAttribute(_T("hotspot"), ti.hotspot == Bool3::B3_TRUE ? _T("true") : _T("false"));
+    if (ti.visible != Bool3::B3_UNDEFINED && ti.visible != dti.visible)
+        pNode->setAttribute(_T("visible"), ti.visible == Bool3::B3_TRUE ? _T("true") : _T("false"));
 }
 
 void SaveTheme(MSXML2::IXMLDOMDocumentPtr pDoc, MSXML2::IXMLDOMElementPtr pParent, const std::vector<Style>& vecStyle, const std::vector<Style>& vecDefaultStyle)

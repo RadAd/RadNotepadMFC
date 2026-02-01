@@ -108,8 +108,10 @@ void COutputWnd::NotifySettingsChanged()
 {
     for (int i = 0; i < m_wndTabs.GetTabsNum(); ++i)
     {
+        CString strLabel;
+        m_wndTabs.GetTabLabel(i, strLabel);
         COutputList* pWnd = DYNAMIC_DOWNCAST(COutputList, m_wndTabs.GetTabWnd(i));
-        pWnd->NotifySettingsChanged();
+        pWnd->SetLanguage(strLabel);
     }
 }
 
@@ -173,12 +175,6 @@ void COutputList::SetLanguage(LPCTSTR pOutput)
     m_pLanguage = GetLanguage(pTheme, pOutput);
     if (m_pLanguage == nullptr)
         m_pLanguage = GetLanguage(pTheme, _T("output"));
-    Apply(*this, m_pLanguage, pTheme);
-}
-
-void COutputList::NotifySettingsChanged()
-{
-    const Theme* pTheme = &theApp.m_Settings.user;
     Apply(*this, m_pLanguage, pTheme);
 }
 

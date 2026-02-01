@@ -84,6 +84,7 @@
 		</use-styles>
 	</base-language>
 	<language name="output" base="outputbase" title="Output" internal="true">
+		<property name="lexer.errorlist.escape.sequences" value="1" />
 		<use-styles>
 			<style name="Python error" key="1" class="error" hotspot="true" />
 			<style name="gcc error" key="2" class="error" hotspot="true" />
@@ -104,6 +105,29 @@
 			<!-- this is the style used by the container-based error lexer. It may in the future
 			clash with that used by scintilla so will need updating then. -->
 			<style name="Custom error" key="20" class="error" hotspot="true" />
+
+			<group name="ansi">
+				<style name="Escape sequence" key="23" fore="000000" back="FFFFFF" visible="false" eolfilled="true" />
+				<style name="Escape sequence unknown" key="24" back="FFE0A0" />
+
+				<style name="Color 40" key="40" fore="000000" />
+				<style name="Color 41" key="41" fore="800000" />
+				<style name="Color 42" key="42" fore="008000" />
+				<style name="Color 43" key="43" fore="808000" />
+				<style name="Color 44" key="44" fore="000080" />
+				<style name="Color 45" key="45" fore="800080" />
+				<style name="Color 46" key="46" fore="008080" />
+				<style name="Color 47" key="47" fore="A0A0A0" />
+
+				<style name="Color 48" key="48" fore="000000" bold="true" />
+				<style name="Color 49" key="49" fore="800000" bold="true" />
+				<style name="Color 50" key="50" fore="008000" bold="true" />
+				<style name="Color 51" key="51" fore="808000" bold="true" />
+				<style name="Color 52" key="52" fore="000080" bold="true" />
+				<style name="Color 53" key="53" fore="800080" bold="true" />
+				<style name="Color 54" key="54" fore="008080" bold="true" />
+				<style name="Color 55" key="55" fore="A0A0A0" bold="true" />
+			</group>
 		</use-styles>
 	</language>
 	<language name="find" base="outputbase" title="Find" internal="true">

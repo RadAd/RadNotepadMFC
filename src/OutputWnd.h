@@ -14,7 +14,6 @@ public:
 
 public:
     void SetLanguage(LPCTSTR pOutput);
-    void NotifySettingsChanged();
     void Clear();
     void SetDirectory(LPCTSTR pText) { m_strDirectory = pText; }
     void AppendText(LPCSTR pText, int nLen);
