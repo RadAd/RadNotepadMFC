@@ -929,8 +929,16 @@ void CPropertiesWnd::InitPropList()
                 CMFCPropertyGridProperty* pMarkerGroup = new CMFCPropertyGridProperty(marker.name, 0, TRUE);
                 pMarkerGroup->AllowEdit(FALSE);
                 pMarkerGroup->AddSubItem(CreateProperty(_T("Type"), &marker.type, /*SC_MARK_CIRCLE*/ -1, SC_MARK_BOOKMARK));
-                pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, { pn(pBaseMarker, fore) }));
-                pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, { pn(pBaseMarker, back) }));
+                if (pBaseMarker)
+                {
+                    pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, { &pBaseMarker->fore }));
+                    pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, { &pBaseMarker->back }));
+                }
+                else
+                {
+                    pMarkerGroup->AddSubItem(CreateProperty(_T("Fore"), &marker.fore, {}));
+                    pMarkerGroup->AddSubItem(CreateProperty(_T("Back"), &marker.back, {}));
+                }
                 pGroup->AddSubItem(pMarkerGroup);
             }
             m_wndPropList.AddProperty(pGroup);
