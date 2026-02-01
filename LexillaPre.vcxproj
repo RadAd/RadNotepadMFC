@@ -2,7 +2,7 @@
 <Project DefaultTargets="Update" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="Common.tasks" />
   <PropertyGroup>
-      <Version>5.4.4</Version>
+      <Version>5.4.6</Version>
   </PropertyGroup>
 
   <Target Name="Download" Outputs="lexilla.zip">
