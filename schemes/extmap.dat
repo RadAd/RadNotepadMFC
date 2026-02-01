@@ -49,6 +49,7 @@
 .js=javascript
 .json=javascript
 .lisp=lisp
+.log=output
 .lsp=lisp
 .lua=lua
 .markdown=markdown

@@ -83,7 +83,7 @@
 			<style name="Margin" key="33" class="linenumbers" />
 		</use-styles>
 	</base-language>
-	<language name="output" base="outputbase" title="Output" internal="true">
+	<language name="output" base="outputbase" title="Output" internal="false">
 		<property name="lexer.errorlist.escape.sequences" value="1" />
 		<use-styles>
 			<style name="Python error" key="1" class="error" hotspot="true" />
