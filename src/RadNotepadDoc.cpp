@@ -19,6 +19,12 @@
 #define new DEBUG_NEW
 #endif
 
+#ifdef UNICODE
+#define CF_TTEXT    CF_UNICODETEXT
+#else
+#define CF_TTEXT    CF_TEXT
+#endif
+
 static std::unique_ptr<CInternetSession> g_pInternetSession;
 
 static CString GetSourceUrlName(LPCTSTR lpszFileName)
@@ -137,6 +143,8 @@ BEGIN_MESSAGE_MAP(CRadNotepadDoc, CScintillaDoc)
     ON_UPDATE_COMMAND_UI(ID_FILE_READONLY, &CRadNotepadDoc::OnUpdateFileReadOnly)
     ON_COMMAND_RANGE(ID_ENCODING_ANSI, ID_ENCODING_UTF8, &CRadNotepadDoc::OnEncoding)
     ON_UPDATE_COMMAND_UI_RANGE(ID_ENCODING_ANSI, ID_ENCODING_UTF8, &CRadNotepadDoc::OnUpdateEncoding)
+    ON_COMMAND(ID_TAB_COPYFILENAME, &CRadNotepadDoc::OnTabCopyFilename)
+    ON_UPDATE_COMMAND_UI(ID_TAB_COPYFILENAME, &CRadNotepadDoc::OnUpdateTabCopyFilename)
 END_MESSAGE_MAP()
 
 
@@ -665,4 +673,28 @@ void CRadNotepadDoc::OnUpdateEncoding(CCmdUI *pCmdUI)
 {
     Encoding e = static_cast<Encoding>(pCmdUI->m_nID - ID_ENCODING_ANSI);
     pCmdUI->SetCheck(e == m_eEncoding);
+}
+
+void CRadNotepadDoc::OnTabCopyFilename()
+{
+    if (AfxGetMainWnd()->OpenClipboard())
+    {
+        EmptyClipboard();
+
+        const SIZE_T length = GetPathName().GetLength() + 1;
+        HGLOBAL hClip = GlobalAlloc(GHND | GMEM_SHARE, length * sizeof(TCHAR));
+        AFXASSUME(hClip != NULL);
+        TCHAR* pText = (TCHAR*) GlobalLock(hClip);
+        AFXASSUME(pText != NULL);
+        _tcscpy_s(pText, length, GetPathName());
+        GlobalUnlock(hClip);
+        SetClipboardData(CF_TTEXT, hClip);
+
+        CloseClipboard();
+    }
+}
+
+void CRadNotepadDoc::OnUpdateTabCopyFilename(CCmdUI* pCmdUI)
+{
+    pCmdUI->Enable(!GetPathName().IsEmpty());
 }

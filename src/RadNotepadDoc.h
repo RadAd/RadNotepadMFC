@@ -67,4 +67,6 @@ public:
     afx_msg void OnUpdateFileReadOnly(CCmdUI *pCmdUI);
     afx_msg void OnEncoding(UINT nID);
     afx_msg void OnUpdateEncoding(CCmdUI *pCmdUI);
+    afx_msg void OnTabCopyFilename();
+    afx_msg void OnUpdateTabCopyFilename(CCmdUI* pCmdUI);
 };

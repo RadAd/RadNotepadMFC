@@ -341,6 +341,7 @@ BEGIN
         MENUITEM "&Close",                      ID_FILE_CLOSE
         MENUITEM "Close All",                   ID_FILE_CLOSEALL
         MENUITEM "Close Others",                ID_FILE_CLOSEOTHERS
+        MENUITEM "Copy Filename",               ID_TAB_COPYFILENAME
     END
 END
 
