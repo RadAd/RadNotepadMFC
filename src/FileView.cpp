@@ -6,6 +6,7 @@
 #include "RadDocManager.h"
 #include "RadVisualManager.h"
 #include <set>
+#include <windowsx.h>
 
 #include "..\resource.h"
 
@@ -865,7 +866,7 @@ void CFileView::AddRootDir(LPCTSTR lpszRootDir)
     CoTaskMemFree(name);
 
     btnRoot->NotifyCommand(CBN_SELENDOK);
-    SendMessage(WM_COMMAND, MAKEWPARAM(ID_ROOT, CBN_SELENDOK), (LPARAM) btnRoot->GetHwnd());
+    FORWARD_WM_COMMAND(*this, ID_ROOT, btnRoot->GetHwnd(), CBN_SELENDOK, ::SendMessage);
 }
 
 CMFCToolBarComboBoxButton* CFileView::GetRootButton()

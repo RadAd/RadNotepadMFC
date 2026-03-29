@@ -57,7 +57,7 @@ void CRadWindowsManagerDialog::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDIS)
     // Draw icon:
     //-----------
     //HICON hIcon = (HICON) (LONG_PTR) GetClassLongPtr((HWND) lpDIS->itemData, GCLP_HICONSM);
-    HICON hIcon = (HICON) ::SendMessage((HWND) lpDIS->itemData, WM_GETICON, FALSE, 0);
+    HICON hIcon = (HICON) ::SendMessage((HWND) lpDIS->itemData, WM_GETICON, ICON_SMALL, 0);
     if (hIcon != NULL)
     {
         CRect rectIcon = rect;
