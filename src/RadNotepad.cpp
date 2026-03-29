@@ -111,8 +111,8 @@ static void PathMakeAbsolute(CString& strFileName)
 
 static BOOL CALLBACK FindRadNotepadProc(_In_ HWND hWnd, _In_ LPARAM lParam)
 {
-    INT nCloaked = 0;
-    DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &nCloaked, sizeof(INT));
+    DWORD nCloaked = 0;
+    DwmGetWindowAttribute(hWnd, DWMWA_CLOAKED, &nCloaked, sizeof(nCloaked));
     if (nCloaked)
         return TRUE;
 
@@ -579,7 +579,14 @@ void CRadNotepadApp::SaveCustomState()
 
 CDocument* CRadNotepadApp::OpenDocumentFile(LPCTSTR lpszFileName)
 {
-    return OpenDocumentFile(lpszFileName, TRUE);
+    if (PathIsDirectory(lpszFileName))
+    {
+        CMainFrame* pMainFrame = DYNAMIC_DOWNCAST(CMainFrame, m_pMainWnd);
+        pMainFrame->AddRootDir(lpszFileName);
+        return nullptr;
+    }
+    else
+        return OpenDocumentFile(lpszFileName, TRUE);
 }
 
 CDocument* CRadNotepadApp::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU)

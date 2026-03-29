@@ -863,6 +863,9 @@ void CFileView::AddRootDir(LPCTSTR lpszRootDir)
     CMFCToolBarComboBoxButton* btnRoot = GetRootButton();
     btnRoot->AddItem(name, reinterpret_cast<DWORD_PTR>(pRootPidl));
     CoTaskMemFree(name);
+
+    btnRoot->NotifyCommand(CBN_SELENDOK);
+    SendMessage(WM_COMMAND, MAKEWPARAM(ID_ROOT, CBN_SELENDOK), (LPARAM) btnRoot->GetHwnd());
 }
 
 CMFCToolBarComboBoxButton* CFileView::GetRootButton()
