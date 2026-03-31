@@ -871,9 +871,12 @@ void CFileView::AddRootDir(LPCTSTR lpszRootDir)
         if (ILIsEqual(reinterpret_cast<PCIDLIST_ABSOLUTE>(btnRoot->GetItemData(i)), pRootPidl))
         {
             ILFree(pRootPidl);
-            btnRoot->SelectItem(i);
-            btnRoot->NotifyCommand(CBN_SELENDOK);
-            FORWARD_WM_COMMAND(*this, ID_ROOT, btnRoot->GetHwnd(), CBN_SELENDOK, ::SendMessage);
+            if (btnRoot->GetCurSel() != i)
+            {
+                btnRoot->SelectItem(i);
+                //btnRoot->NotifyCommand(CBN_SELENDOK);
+                FORWARD_WM_COMMAND(*this, ID_ROOT, btnRoot->GetHwnd(), CBN_SELENDOK, ::SendMessage);
+            }
             return;
         }
     }
