@@ -328,7 +328,14 @@ void CMainFrame::SaveSearch(LPCTSTR lpszSectionName)
 
 void CMainFrame::AddRootDir(LPCTSTR lpszRootDir)
 {
-    m_wndFileView.AddRootDir(lpszRootDir);
+    if (PathIsRelative(lpszRootDir))
+    {
+        WCHAR FullName[MAX_PATH];
+        GetFullPathName(lpszRootDir, ARRAYSIZE(FullName), FullName, nullptr);
+        m_wndFileView.AddRootDir(FullName);
+    }
+    else
+        m_wndFileView.AddRootDir(lpszRootDir);
 }
 
 INT_PTR CMainFrame::DoWindowsDialog()

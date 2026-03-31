@@ -490,7 +490,7 @@ BOOL CRadNotepadApp::InitInstance()
 
     // Dispatch commands specified on the command line.  Will return FALSE if
     // app was launched with /RegServer, /Register, /Unregserver or /Unregister.
-    if (!ProcessShellCommand(cmdInfo))
+    if (!ProcessShellCommand(cmdInfo) && cmdInfo.m_nShellCommand != CCommandLineInfo::FileOpen)
         return FALSE;
 
     for (const CString& rootDir : cmdInfo.m_rootDirs)

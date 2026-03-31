@@ -850,18 +850,37 @@ void CFileView::AddRootDir(LPCTSTR lpszRootDir)
 {
     PIDLIST_ABSOLUTE pRootPidl = nullptr;
     DWORD AttrFlags = SHCIDS_BITMASK;
-    SHILCreateFromPath(lpszRootDir, &pRootPidl, &AttrFlags);
+    if (SHILCreateFromPath(lpszRootDir, &pRootPidl, &AttrFlags) != S_OK)
+    {
+        AfxMessageBox(L"Root directory is not valid.", MB_OK | MB_ICONERROR);
+        return;
+    }
 
     BOOL bCanFolderRoot = (AttrFlags & SFGAO_FILESYSTEM) && (AttrFlags & SFGAO_FOLDER);
     if (!bCanFolderRoot)
     {
+        ILFree(pRootPidl);
         AfxMessageBox(L"Root directory is not a folder.", MB_OK | MB_ICONERROR);
         return;
     }
 
+    CMFCToolBarComboBoxButton* btnRoot = GetRootButton();
+
+    for (int i = 0; i < btnRoot->GetCount(); i++)
+    {
+        if (ILIsEqual(reinterpret_cast<PCIDLIST_ABSOLUTE>(btnRoot->GetItemData(i)), pRootPidl))
+        {
+            ILFree(pRootPidl);
+            btnRoot->SelectItem(i);
+            btnRoot->NotifyCommand(CBN_SELENDOK);
+            FORWARD_WM_COMMAND(*this, ID_ROOT, btnRoot->GetHwnd(), CBN_SELENDOK, ::SendMessage);
+            return;
+        }
+    }
+
     PWSTR name = nullptr;
     SHGetNameFromIDList(pRootPidl, SIGDN_NORMALDISPLAY, &name);
-    CMFCToolBarComboBoxButton* btnRoot = GetRootButton();
+    // TODO Delete pRootPidl on exit
     btnRoot->AddItem(name, reinterpret_cast<DWORD_PTR>(pRootPidl));
     CoTaskMemFree(name);
 
